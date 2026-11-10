@@ -207,9 +207,9 @@ h1 .modetag{font-family:var(--font-body);font-size:.7rem;font-weight:600;letter-
 #hand .howbody{gap:12px}
 /* only the list scrolls; the dice and Play stay put at the bottom */
 #hand[open]{display:flex;flex-direction:column;overflow:hidden}
-#hand .howbody{flex:1;min-height:0;overflow:hidden;padding-top:0}
+#hand .howbody{flex:1 1 auto;min-height:0;overflow:hidden;padding-top:0}
 /* the intro and the list scroll together, starting right under the header line */
-#hand .handscroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px;padding:16px 2px 2px;margin:0 -2px}
+#hand .handscroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px;padding:16px 2px 2px;margin:0 -2px}
 #hand .handscroll .intro{margin:0}
 #hand .droprow{flex:none}
 .sp i img{display:block;margin:0 auto}
@@ -743,7 +743,7 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
 #droprow{gap:12px}
 
 
-@media (max-width:600px){#hand{width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;max-height:calc(100dvh - 8px);padding-bottom:env(safe-area-inset-bottom,0px)}#hand .mhead,#hand .howbody{padding-left:14px;padding-right:14px}}
+@media (max-width:600px){#hand{width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;height:calc(100dvh - 8px);max-height:calc(100dvh - 8px);padding-bottom:env(safe-area-inset-bottom,0px)}#hand .mhead,#hand .howbody{padding-left:14px;padding-right:14px}}
 @media (prefers-reduced-motion: reduce){.hcard{transition:none}}
 
 @media (min-width:600px) and (min-aspect-ratio:4/5){.crt,.crt:popover-open{border-radius:16px;overflow:hidden;clip-path:inset(0 round 16px)}}
