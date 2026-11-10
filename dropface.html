@@ -1,0 +1,1816 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="dc-db.js"></script>
+<script src="dc-crt.js"></script>
+<title>Dropface</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wdth,wght@125,800;125,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: trading-app style — header with auto-pick, 10 boards stacked in one column (each with its slot chips), fixed bottom bar holding the running tally and the mint Drop button. Single dark look by choice. */
+:root{
+  --bg:#0E0F0F; --panel:#1C1E1E; --panel2:#2A2C2C; --fg:#F2F4F3; --muted:#8B908E;
+  --mint:#9DEBA8; --mint-ink:#0B2A12; --red:#E5484D; --amber:#F2C14E; --violet:#C49BFF; --sky:#7CC8FF; --pink:#FF8AD8; --lime:#D6F25B; --orange:#FF9F5A; --teal:#4FD8C8; --blue:#6E8BFF; --steel:#A9BCCF; --gold-solid:#F6D77A;
+  --gold:linear-gradient(115deg,#B8862B 0%,#F6D77A 30%,#FFF1C2 45%,#E2B24C 62%,#9C6E1E 100%);
+  --peg:#5A605D; --grid:#232625;
+  --body:"Inter", -apple-system, system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme:dark;
+}
+html,body{background:var(--bg)}
+body{color:var(--fg);font-family:var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:16px 16px}
+.barspace{flex:none;height:var(--barh,130px)} /* room for the whole bottom bar (tray + Drop), so the last board clears it */
+.wrap{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  padding-bottom:4px}
+h1{font-family:"Archivo Black","Arial Black",Impact,system-ui,sans-serif;font-weight:400;font-size:20px;line-height:1;margin:0;letter-spacing:-.01em;color:var(--fg)}
+h1 span{color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0}
+.chip{font:inherit;font-size:.85rem;font-weight:500;border:0;border-radius:10px;padding:8px 14px;
+  background:var(--panel);color:var(--fg);cursor:pointer}
+.chip:disabled{opacity:.4;cursor:default}
+.hint{font-size:.8rem;color:var(--muted);margin:0;line-height:1.45}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.legend li{font-size:.75rem;padding:4px 10px;border-radius:999px;background:var(--panel);color:var(--muted)}
+.legend b{font-weight:600;margin-right:4px}
+.legend .lb b{color:var(--red)} .legend .lx b{color:var(--violet)} .legend .ls b{color:var(--sky)}
+.level{display:flex;flex-direction:column;gap:6px}
+@keyframes boomshake{0%,100%{transform:none}20%{transform:translate(-5px,2px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,-1px)}80%{transform:translate(2px,2px)}}
+.level.boom .board{animation:boomshake .45s ease}
+@media (prefers-reduced-motion: reduce){.level.boom .board{animation:none}}
+.lhead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.82rem;color:var(--muted)}
+.lhead b{color:var(--fg);font-weight:600}
+.res{font-family:var(--mono);font-size:.72rem;padding:2px 10px;border-radius:999px;background:var(--panel);color:var(--muted);white-space:nowrap}
+.res.p100{background:var(--mint);color:var(--mint-ink)}
+.res.p10{background:var(--amber);color:#2B2103}
+.res.p1{background:var(--panel2);color:var(--fg)}
+.res.pbomb{background:var(--red);color:#fff}
+.res.px10{background:var(--violet);color:#24113F}
+.res.psplit{background:var(--sky);color:#0A2233}
+.count{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:2}
+.count>span{font-size:5.5rem;font-weight:700;color:var(--mint);line-height:1;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 28px color-mix(in srgb,var(--mint) 55%,transparent);animation:pop .85s ease-out both}
+.count>span.go{font-size:3.2rem;letter-spacing:.04em}
+.count>span.goldc{background-image:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 16px rgba(246,215,122,.5))}
+@keyframes pop{0%{transform:scale(1.8);opacity:0}25%{transform:scale(1);opacity:1}75%{opacity:1}100%{transform:scale(.85);opacity:0}}
+@media (prefers-reduced-motion: reduce){.count>span{animation:none}}
+.board{position:relative;border-radius:4px;overflow:hidden;
+  background-image:radial-gradient(var(--grid) 1px,transparent 1.2px);background-size:12px 12px}
+canvas{display:block;width:100%}
+.slots{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:6px 0 2px;border-top:1px solid var(--panel)}
+.slot{font:inherit;border:0;background:var(--panel);color:var(--muted);border-radius:4.5px;
+  padding:7px 0;cursor:pointer;display:grid;place-items:center;min-height:34px;min-width:0}
+.slot b{font-weight:600;font-size:.88rem;color:var(--fg);font-variant-numeric:tabular-nums}
+.slot.v100{background:#2D3B30} .slot.v100 b{color:var(--mint)}
+.slot.v10{background:#332D1C} .slot.v10 b{color:var(--amber)}
+.slot.v1 b{color:var(--muted)}
+.slot.bomb{background:#3A1A1C} .slot.bomb b{color:var(--red)}
+.slot.x10{background:#2B2140} .slot.x10 b{color:var(--violet)}
+.slot.split{background:#15283A} .slot.split b{color:var(--sky);font-size:.78rem}
+.slot.land{outline:2px solid var(--fg);outline-offset:-2px}
+/* a slot the ball lands in flips to the inverse colours: filled with its bright colour, label dark (stays lit for the rest of the drop) */
+.slot.land.v100{background:var(--mint)} .slot.land.v100 b{color:#0b2a12}
+.slot.land.v10{background:var(--amber)} .slot.land.v10 b{color:#2b2103}
+.slot.land.v1{background:var(--muted)} .slot.land.v1 b{color:#141515}
+.slot.land.bomb{background:var(--red)} .slot.land.bomb b{color:#2a0708}
+.slot.land.x10{background:var(--violet)} .slot.land.x10 b{color:#24113f}
+.slot.land.split{background:var(--sky)} .slot.land.split b{color:#0a2233}
+.slot.land.portal{background:var(--pink)} .slot.land.portal b{color:#3a0d2c}
+.slot.land.rewind{background:var(--orange)} .slot.land.rewind b{color:#3a1a06}
+.slot.land.trip{background:var(--lime)} .slot.land.trip b{color:#262e05}
+.slot.land.half{background:var(--teal)} .slot.land.half b{color:#08302b}
+.slot.land.aim{background:var(--blue)} .slot.land.aim b{color:#0b1238}
+.slot.land.magnet{background:var(--steel)} .slot.land.magnet b{color:#16202b}
+.slot.land.freefall{background:var(--fg)} .slot.land.freefall b{color:#141515}
+.slot.land.bonus{background:var(--gold)} .slot.land.bonus b{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#2a1e06}
+.slot.land.v100,.slot.land.v10,.slot.land.v1,.slot.land.bomb,.slot.land.x10,.slot.land.split,.slot.land.portal,.slot.land.rewind,.slot.land.trip,.slot.land.half,.slot.land.aim,.slot.land.magnet,.slot.land.freefall,.slot.land.bonus{outline:0}
+.howto{background:var(--panel);border-radius:16px}
+.howto summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:16px}
+.howto summary::-webkit-details-marker{display:none}
+.howto summary:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.howto h2{margin:0;font-size:1rem;font-weight:600}
+.chev{position:relative;width:14px;height:14px;flex:none}
+.chev::before,.chev::after{content:"";position:absolute;left:0;top:6px;width:14px;height:2px;border-radius:2px;background:var(--muted);transition:transform .2s}
+.chev::after{transform:rotate(90deg)}
+.howto[open] .chev::after{transform:rotate(0deg)}
+.howbody{display:flex;flex-direction:column;gap:16px;padding:16px}
+.modal .spnote{text-align:left}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:20px}
+.steps li{display:flex;flex-direction:column;gap:8px}
+.steps li+li{border-top:1px solid var(--panel2);padding-top:20px}
+.steps li>div{width:100%}
+.steps .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--mint);color:var(--mint-ink);
+  display:grid;place-items:center;font-size:.8rem;font-weight:700}
+.steps li>div{display:flex;flex-direction:column;gap:3px;min-width:0;font-size:.9rem}
+.steps li>div>span{color:var(--muted);font-size:.82rem;line-height:1.4}
+.vals{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.vals i{font-style:normal;font-weight:600;font-size:.8rem;padding:2px 8px;border-radius:7px;font-variant-numeric:tabular-nums}
+.vals .v100{background:#2D3B30;color:var(--mint)}
+.vals .v25{background:#332D1C;color:var(--amber)}
+.vals .v10{background:var(--panel2);color:var(--fg)}
+.demoboard{margin-top:8px}
+.demobtn{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:8px;font-weight:600;font-size:.95rem;border:2px solid #2E3A31;border-radius:12px;padding:9px;background:var(--mint);color:var(--mint-ink)}
+.demobtn::before{content:"↓";display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--mint-ink);color:var(--mint);font-size:.75rem;font-weight:700}
+.demoboard .slot{cursor:default}
+.dicetip{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--panel2);font-size:.82rem;color:var(--fg);line-height:1.4}
+.dicetip .inico{flex:none;width:22px;height:22px;padding:3px;border-radius:50%;background:var(--panel2);color:var(--fg)}
+.minitog{flex:none;position:relative;width:30px;height:17px;border-radius:9px;background:var(--mint)}
+.minitog::after{content:"";position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:var(--mint-ink)}
+.demonote{font-size:.72rem!important}
+.specials{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.sp{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;min-width:0;
+  background:var(--bg);border-radius:12px;padding:12px 6px}
+.sp i{font-style:normal;font-weight:700;font-size:1rem;min-width:44px;padding:6px 8px;border-radius:9px}
+.sp b{font-size:.85rem;font-weight:600}
+.sp span{font-size:.75rem;font-weight:700;color:var(--fg);line-height:1.35}
+.sb i{background:#3A1A1C;color:var(--red)}
+.sx i{background:#2B2140;color:var(--violet)}
+.ss i{background:#15283A;color:var(--sky);font-size:.85rem}
+.sq i{background:#3A1833;color:var(--pink);font-size:.85rem}
+.slot.portal{background:#3A1833} .slot.portal b{color:var(--pink);font-size:.72rem}
+.sw i{background:#3A2416;color:var(--orange);font-size:.85rem}
+.slot.rewind{background:#3A2416} .slot.rewind b{color:var(--orange);font-size:.68rem}
+.sh i{background:#143430;color:var(--teal);font-size:.85rem}
+.slot.half{background:#143430} .slot.half b{color:var(--teal);font-size:.85rem}
+.sf i{background:#2C3130;color:var(--fg);font-size:.85rem}
+.slot.freefall{background:#2C3130} .slot.freefall b{color:var(--fg);font-size:.78rem}
+.sa i{background:#1C2347;color:var(--blue);font-size:.85rem}
+.slot.aim{background:#1C2347} .slot.aim b{color:var(--blue);font-size:.78rem}
+[hidden]{display:none!important} /* hidden elements stay hidden even when a class sets display */
+.aimbar{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;flex-direction:column;gap:8px;padding-top:4px;pointer-events:none}
+.aimbar .row{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;pointer-events:auto}
+.aimbar button{font:inherit;font-size:.8rem;font-weight:700;border:0;border-radius:9px;min-height:34px;cursor:pointer;background:#1C2347;color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue),0 0 12px color-mix(in srgb,var(--blue) 40%,transparent);animation:aimPulse 1.2s ease-in-out infinite}
+.aimbar button:hover,.aimbar button:focus-visible{background:var(--blue);color:#0C1230;outline:none}
+.aimbar p{margin:0 auto;font-size:.8rem;font-weight:600;color:#0C1230;background:var(--blue);border-radius:999px;padding:4px 12px}
+@keyframes aimPulse{50%{box-shadow:inset 0 0 0 1px var(--blue),0 0 2px transparent}}
+@media (prefers-reduced-motion: reduce){.aimbar button{animation:none}}
+/* +1 is metallic gold: a shiny light-to-dark sheen, so it reads apart from the flat amber 25-point slots */
+.sb2 i,.slot.bonus{background:#2A2414}
+.sb2 i{font-size:.85rem}
+.slot.bonus b,.rb{background-image:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent}
+.slot.bonus b{font-size:.78rem}
+.drop.bonusbtn{background:var(--gold);color:#2A1E06;border-color:#5A4718}
+.drop.bonusbtn::before{content:"↓";background:#2A1E06;color:#F6D77A}
+.sm i{background:#222A33;color:var(--steel);font-size:.85rem}
+.slot.magnet{background:#222A33} .slot.magnet b{color:var(--steel);font-size:.62rem}
+.st i{background:#2E3418;color:var(--lime);font-size:.85rem}
+.slot.trip{background:#2E3418} .slot.trip b{color:var(--lime);font-size:.78rem}
+.spnote{margin:0;font-size:.78rem;color:var(--muted);text-align:center}
+.starts{border-top:0;padding-top:0}
+.starts .slot b{color:var(--muted);font-size:.8rem}
+.starts .slot.on{background:#2D3B30;box-shadow:inset 0 0 0 1px var(--mint)} .starts .slot.on b{color:var(--mint);font-size:.95rem}
+.nav{display:flex;align-items:center;gap:8px}
+.icon{width:38px;height:38px;border:0;border-radius:50%;background:var(--panel);color:var(--fg);cursor:pointer;display:grid;place-items:center;padding:0}
+.icon svg{width:20px;height:20px}
+.icon:disabled{opacity:.4;cursor:default}
+.modal{border:0;padding:0;background:var(--panel);color:var(--fg);border-radius:18px;width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow:auto}
+.modal::backdrop{background:rgba(0,0,0,.65)}
+.mhead{display:flex;justify-content:space-between;align-items:center;padding:16px;position:sticky;top:0;background:var(--panel);z-index:1;border-bottom:1px solid var(--panel2)}
+.mhead h2{margin:0;font-size:1.05rem;font-weight:600}
+.sumbtn{font:inherit;font-size:.85rem;font-weight:600;border:0;border-radius:10px;padding:10px;background:var(--panel2);color:var(--fg);cursor:pointer}
+.sumbtn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.sumtop{display:grid;grid-template-columns:repeat(3,1fr);background:var(--bg);border-radius:12px}
+.sumtop>div{position:relative;display:flex;flex-direction:column;gap:2px;padding:10px 12px;min-width:0}
+/* dividers only as tall as the label and number, not the full panel */
+.sumtop>div+div::before,.daystats>div+div::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:1px;background:var(--panel2)}
+.sumtop small,.sumpass>small{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sumtop strong{font-size:1.2rem;font-variant-numeric:tabular-nums}
+.sumdrop{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:12px;background:var(--bg)}
+.sumdrop header{display:flex;justify-content:space-between;align-items:baseline}
+.sumdrop header b{font-size:.95rem} .sumdrop header strong{font-size:1.1rem;font-variant-numeric:tabular-nums}
+.sumpass{display:flex;flex-direction:column;gap:6px}
+.sumpass>small b{color:var(--fg);font-weight:600}
+/* one tile per landing, in order, five to a row: level on top, result below, tinted like the slot it landed in */
+.evs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.ev{display:flex;flex-direction:column;gap:1px;min-width:0;padding:6px 6px 7px;border-radius:4px;background:color-mix(in srgb,var(--c) 14%,var(--panel));font-variant-numeric:tabular-nums}
+.ev i{font-style:normal;font-weight:500;color:var(--muted);font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev b{font-size:.88rem;font-weight:700;color:var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev b.word{font-size:.76rem;line-height:1.35}
+.sumnote{margin:0;font-size:.8rem;color:var(--muted)}
+.bprog{display:flex;flex-direction:column;gap:6px;font-size:.82rem;color:var(--muted)}
+.bbar{height:6px;border-radius:3px;background:var(--panel2);overflow:hidden}
+.bbar>div{height:100%;width:0;border-radius:3px;background:var(--mint);transition:width .4s}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
+.badge{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:18px;border-radius:12px;background:var(--bg);min-width:0}
+.badge .bicon{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;margin-bottom:4px;font-weight:800;font-size:1rem;background:var(--panel2);color:var(--muted)}
+.badge b{font-size:.88rem;font-weight:700;color:var(--muted)}
+.badge small{font-size:.75rem;line-height:1.35;color:var(--muted);opacity:.7}
+.badge .bpt{margin-top:4px;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--panel2);color:var(--muted);font-variant-numeric:tabular-nums}
+.badge:not(.on){filter:grayscale(1)}
+.badge:not(.on) .bicon{opacity:.5}
+.badge.on .bicon{background:var(--panel2);color:var(--c)}
+.badge.on b{color:var(--fg)} .badge.on small{color:var(--muted);opacity:1}
+.badge.on .bpt{background:color-mix(in srgb,var(--c) 18%,var(--panel));color:var(--c)}
+.mbadge{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--panel2);color:var(--c);font-style:normal;font-weight:800;font-size:.5rem;line-height:1;flex:none}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:20;display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--panel2);box-shadow:0 10px 30px rgba(0,0,0,.5);transform:translate(-50%,-150%);transition:transform .35s cubic-bezier(.2,.8,.2,1);pointer-events:none;white-space:nowrap}
+.toast.show{transform:translate(-50%,0)}
+.toast small{display:block;font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.toast b{font-size:.9rem}
+.tbadge{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;font-weight:800;font-size:.8rem;background:var(--panel2);color:var(--c)}
+.sumach{display:flex;flex-direction:column;gap:8px}
+.sumach>small{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+/* collected achievements scroll sideways */
+.achrow{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px;scrollbar-width:none}
+.achrow::-webkit-scrollbar{display:none}
+.achcard{flex:none;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;width:118px;padding:14px 10px;border-radius:12px;background:var(--bg)}
+.achcard .bicon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;margin-bottom:2px;font-weight:800;font-size:.9rem;background:var(--panel2);color:var(--c)}
+.achcard b{font-size:.82rem;font-weight:700}
+.achcard small{font-size:.7rem;color:var(--muted)}
+.achcard .bpt{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--c) 18%,var(--panel));color:var(--c)}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+.confirmrow{display:flex;justify-content:flex-end;gap:8px}
+.chip.danger{background:var(--red);color:#fff}
+.chip.plain{background:none}
+.leave .confirmrow{gap:12px;margin-top:4px}
+.leave .confirmrow .chip{font-size:.95rem;font-weight:500;padding:11px 18px;border-radius:12px}
+.chip:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+@media (max-width:600px){ .modal.small{height:fit-content;max-height:none;margin:auto 0 0;border-radius:20px 20px 0 0} }
+/* pop-ups focus their close button on open; show that focus as a lighter fill, never a mint ring */
+.modal .x:focus,.modal .x:focus-visible{outline:none}
+.modal .x:focus-visible{background:#3A3D3C}
+.x{width:32px;height:32px;border:0;border-radius:50%;background:var(--panel2);color:var(--fg);font-size:1.2rem;line-height:1;cursor:pointer}
+.lb{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.lb li{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;background:var(--bg);border-radius:12px;padding:10px 12px}
+.lb li.me{box-shadow:inset 0 0 0 1px var(--mint)}
+.lb .rk{font-family:var(--mono);font-size:.8rem;color:var(--muted);text-align:center}
+.lb li:nth-child(1) .rk{color:var(--amber);font-weight:700}
+.lb .nm{min-width:0;display:flex;flex-direction:column;gap:2px;font-size:.9rem;font-weight:500}
+.lb .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb .nm small{font-size:.72rem;color:var(--muted);font-weight:400}
+.lb .sc{font-weight:700;font-variant-numeric:tabular-nums}
+.lb li.me .sc{color:var(--mint)}
+.icon:focus-visible,.x:focus-visible,.slot:focus-visible,.drop:focus-visible,.chip:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.slot:disabled{cursor:default}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:linear-gradient(transparent,var(--bg) 22%);
+  padding-top:22px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.barin{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.tally{display:flex;justify-content:space-between;align-items:baseline}
+.daybar b .dayno{font-size:.85rem;font-weight:400;color:var(--muted)} /* same size and colour as the tally label */
+.tally .label{font-size:.85rem;color:var(--muted)}
+.tally b{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+.pickhint{display:none;font-size:.8rem;font-weight:600;color:var(--mint)}
+.level.needpick .pickhint{display:inline}
+.level.needpick .slot:not(:disabled){box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--mint) 55%,transparent);animation:pickPulse 1.6s ease-in-out infinite}
+@keyframes pickPulse{50%{box-shadow:inset 0 0 0 1px var(--mint),0 0 10px color-mix(in srgb,var(--mint) 35%,transparent)}}
+.drop.readyglow{animation:dropGlow 1.6s ease-in-out infinite}
+@keyframes dropGlow{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--mint) 30%,transparent),0 0 18px color-mix(in srgb,var(--mint) 45%,transparent)}}
+@media (prefers-reduced-motion: reduce){.level.needpick .slot:not(:disabled),.drop.readyglow{animation:none}}
+.droprow{display:flex;gap:10px;align-items:stretch}
+/* the small dice / clear / last-picks squares are replaced by the pick tray above Drop */
+.droprow #auto,.droprow #repeat{display:none!important}
+.picktray{display:flex;gap:8px;padding:16px;margin:0 0 10px;border-radius:12px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.picktray[hidden]{display:none}
+.picktray .tbtn{flex:1;min-width:0;height:36px;display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid rgba(255,255,255,.55);border-radius:7px;background:transparent;color:var(--fg);font:inherit;font-weight:700;font-size:.85rem;cursor:pointer;padding:0 10px;white-space:nowrap}
+.picktray .tbtn svg{width:17px;height:17px;flex:none}
+.picktray .tbtn .ti{display:grid;place-items:center}
+.picktray .tbtn:active:not(:disabled){transform:translateY(1px);background:rgba(255,255,255,.06)}
+.picktray .tbtn:disabled{opacity:.35;cursor:default}
+.picktray .tbtn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.droprow .drop{flex:1;min-width:0;height:56px;padding-block:0}
+.dicebtn{flex:none;width:56px;height:56px;display:grid;place-items:center;border:0;border-radius:16px;background:var(--panel2);color:var(--fg);cursor:pointer;padding:0}
+.dicebtn svg{width:26px;height:26px}
+.dicebtn[hidden]{display:none}
+.droprow #repeat{order:-1} /* last picks / re-roll sits left of Drop */
+.dicebtn:disabled{opacity:.4;cursor:default}
+.dicebtn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.drop{font:inherit;font-weight:600;font-size:1.15rem;border:0;border-radius:16px;padding:14px;
+  background:var(--mint);color:var(--mint-ink);cursor:pointer;display:flex;gap:10px;align-items:center;justify-content:center}
+.drop::before{content:"↓";display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;
+  background:var(--mint-ink);color:var(--mint);font-size:.85rem;font-weight:700}
+.drop.sumprac{width:100%;min-height:56px;flex:none}
+.drop.sumprac::before{display:none}
+.drop:disabled{opacity:.4;cursor:default}
+
+@media (max-width:600px){
+  .modal{width:100%;max-width:100%;height:100%;max-height:100%;height:100dvh;max-height:100dvh;margin:0;border-radius:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .modal[open]{animation:sheetUp .32s cubic-bezier(.2,.8,.2,1)}
+  .modal.closing{animation:sheetDown .22s ease-in forwards}
+  .modal.small{height:fit-content;max-height:none;margin:auto 0 0;border-radius:20px 20px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))} /* short confirm sheets hug their content */
+  .modal[open]::backdrop{animation:fadeIn .32s ease-out}
+  .mhead{padding-top:calc(22px + env(safe-area-inset-top,0px))}
+  .mhead::before{content:"";position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--panel2)}
+}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes sheetDown{to{transform:translateY(100%)}}
+@keyframes fadeIn{from{opacity:0}}
+@media (prefers-reduced-motion: reduce){.modal[open],.modal.closing,.modal[open]::backdrop{animation:none}}
+.daybar{display:flex;flex-direction:column;gap:10px;background:var(--panel);border-radius:14px;padding:12px 14px}
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}
+.daystats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--bg);border-radius:10px}
+.daystats>div{position:relative;display:flex;flex-direction:column;gap:2px;padding:9px 10px;min-width:0}
+.daystats small{white-space:nowrap;font-size:.66rem;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+.daystats strong{font-size:1.15rem;font-weight:700;font-variant-numeric:tabular-nums}
+.daybar b{font-size:.95rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.daybar b.num{font-size:.82rem;font-weight:500;color:var(--muted)} /* matches the Practice toggle label */
+.daybar b .tag{font-size:.68rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mint);background:#2D3B30;border-radius:999px;padding:2px 8px;line-height:1.4}
+.daysub{font-size:.82rem;color:var(--muted);line-height:1.35}
+.daysub.isready{color:var(--fg)}
+.barrow{display:flex;align-items:center;gap:10px}
+.barlabel{flex:none;font-size:.82rem;color:var(--muted)} /* "Drops" to the left of the bar, like the Practice toggle label */
+.barrow .pips{flex:1;min-width:0}
+.bballs{display:inline-flex;flex-wrap:wrap;gap:6px;flex:none}
+/* bonus balls and today's achievements sit in one left-aligned row under the progress bar */
+/* the row of bonus balls and achievement icons under the bar is switched off */
+.iconrow{display:none}
+.bball.waiting{animation:bbPulse 1.2s ease-in-out infinite}
+@keyframes bbPulse{50%{transform:scale(1.35);box-shadow:0 0 10px rgba(246,215,122,.9)}}
+@media (prefers-reduced-motion: reduce){.bball.waiting{animation:none}}
+.dayline:has(.daysub:empty){display:none}
+.bball{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFF1C2,#F6D77A 45%,#B8862B);box-shadow:0 0 6px rgba(246,215,122,.6)}
+.dayline{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.dayline .daysub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.daybar .chip{flex:none;background:var(--panel2)}
+.toggle{flex:none;display:flex;align-items:center;gap:8px;font:inherit;font-size:.82rem;font-weight:500;color:var(--muted);background:none;border:0;padding:4px 0;cursor:pointer}
+.toggle i{position:relative;width:36px;height:20px;border-radius:10px;background:var(--panel2);transition:background .2s}
+.toggle i::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#1C1E1E;transition:transform .2s}
+.toggle[aria-checked="true"]{color:var(--fg)}
+.toggle[aria-checked="true"] i{background:#FFFFFF}
+.toggle[aria-checked="true"] i::after{transform:translateX(16px)}
+.toggle:disabled{opacity:.4;cursor:default}
+.toggle:focus-visible{outline:2px solid var(--mint);outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){.toggle i,.toggle i::after{transition:none}}
+.pips{position:relative;width:100%;height:8px;border-radius:4px;background:var(--panel2);overflow:hidden}
+.pips .fill{position:absolute;inset:0 auto 0 0;border-radius:4px;transition:width .4s ease}
+.pips .ready{background:#3E4241}
+.pips .played{background:var(--mint)}
+.pips .tick{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--panel)}
+.intro{margin:0 0 20px;font-size:.88rem;line-height:1.5;color:var(--muted)}
+.intro b{color:var(--fg);font-weight:600}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--bg);border-radius:12px;padding:4px}
+.tabs button{font:inherit;font-size:.85rem;font-weight:600;border:0;border-radius:9px;padding:8px;background:transparent;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--panel2);color:var(--fg)}
+.tabs button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+/* pill labels: text centered both ways. line-height 1 with even padding centers the text; letter-spaced caps
+   get a touch more left padding because letter-spacing adds space after the last letter */
+.tag,.bpt,.res,.labtag{display:inline-flex;align-items:center;justify-content:center;line-height:1;vertical-align:middle}
+.daybar b .tag{padding:4px 8px 4px calc(8px + .04em)}
+.badge .bpt,.achcard .bpt{padding:4px 9px}
+.labtag{padding:4px 8px 4px calc(8px + .04em)}
+/* ===== Gambit design system (Dailycade): black ground, wide Archivo for titles and labels, glass circles,
+   3D main buttons, a purple glow on the home screen and a faint tube-TV overlay. Mint still means "you". ===== */
+:root{--bg:#000;--panel:#1a1a1a;--panel2:#262626;
+  --font-wide:"Archivo","Archivo Black",system-ui,sans-serif;
+  --glass:rgba(255,255,255,.06);--glass-edge:rgba(255,255,255,.08);--glass-edge-strong:rgba(255,255,255,.16);
+  --mint-edge:#4f9a5c;--white-edge:#9a9a9a;--disabled:#2a2a2a;--disabled-ink:#8a8a8a;--disabled-edge:#1a1a1a;--home-glow:#8a3df0}
+html,body{background:#000}
+/* header in a game: home circle on the left, glass circles on the right */
+.top{flex-wrap:nowrap;padding-bottom:0}
+.top h1{display:none}
+.top .icon{width:44px;height:44px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--glass-edge);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.top .icon svg{width:22px;height:22px}
+.top .icon:disabled{opacity:.35}
+#dayBtn{display:none!important} /* modes are picked on the home screen now */
+/* stats panel: a glass-edged tray with wide labels and numbers */
+.daybar{background:transparent;box-shadow:inset 0 0 0 1px var(--glass-edge);padding:16px;gap:14px}
+#dayTitle{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:18.4px;line-height:1.05;letter-spacing:.01em;align-items:baseline}
+#dayTitle .dayno{font-family:var(--body);font-stretch:100%;text-transform:none;letter-spacing:0;font-weight:400;font-size:.85rem;color:var(--muted)}
+.daystats{background:transparent;border-radius:0}
+.daystats>div{padding:2px 0 0;gap:7px}
+.daystats>div+div{padding-left:14px}
+.daystats>div+div::before{top:2px;bottom:0}
+.daystats small,.barlabel{font-family:var(--font-wide);font-stretch:125%;font-weight:900;letter-spacing:.08em;font-size:9px;text-transform:uppercase;color:var(--muted)}
+.daystats strong{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:20px;line-height:1}
+.pips{height:6px;border-radius:0}
+.pips .fill{border-radius:0}
+.pips .ready{background:#3a3a3a}
+.pips .tick{width:3px;margin-left:-1.5px;background:#000}
+/* boards: plain black, no dot grid; level names in the wide face */
+.board{background-image:none}
+.lhead b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:11.9px;letter-spacing:.08em;text-transform:uppercase}
+.pickhint{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+/* bottom bar */
+.bar{background:none} /* no dark fade: the boards stay visible behind the controls */
+.tally{text-shadow:0 1px 3px #000,0 0 8px #000}
+.tally b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:24px;line-height:1}
+.drop{border-radius:6px;font-size:16.8px;box-shadow:0 4px 0 var(--mint-edge);transition:transform .08s,box-shadow .08s}
+.droprow .drop{height:60px}
+.droprow{padding-bottom:4px}
+.drop::before{display:none!important} /* no arrows inside buttons */
+.drop:not(:disabled):active{transform:translateY(3px);box-shadow:0 1px 0 var(--mint-edge)}
+.drop:disabled{opacity:1;background:var(--disabled);color:var(--disabled-ink);box-shadow:0 4px 0 var(--disabled-edge)}
+.drop.bonusbtn{box-shadow:0 4px 0 #9c6e1e}
+.drop.white{background:#fff;color:#0b0b0b;box-shadow:0 4px 0 var(--white-edge)}
+.drop.white:not(:disabled):active{box-shadow:0 1px 0 var(--white-edge)}
+@keyframes dropGlow{0%,100%{box-shadow:0 4px 0 var(--mint-edge)}50%{box-shadow:0 4px 0 var(--mint-edge),0 0 0 4px rgba(157,235,168,.25),0 0 22px rgba(157,235,168,.4)}}
+.dicebtn{width:60px;height:60px;border-radius:6px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--glass-edge-strong);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.dicebtn svg{width:24px;height:24px}
+/* pages: black with a faint white line, wide titles, round close */
+.modal{background:#000;box-shadow:inset 0 0 0 1px var(--glass-edge)}
+.modal::backdrop{background:rgba(0,0,0,.72)}
+.mhead{background:#000;border-bottom:0;padding:16px 16px 0 24px}
+.mhead h2{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:18.4px;line-height:1.05;letter-spacing:.01em}
+.mhead .x{width:50px;height:50px;background:#1c1c1c;font-size:1.6rem}
+.mbtns{display:flex;gap:8px;align-items:center}
+.x.sharebtn{display:grid;place-items:center;padding:0}
+.x.sharebtn.copied{color:var(--mint)}
+.howbody{padding:20px 24px 24px;gap:24px}
+.modal.small .howbody{gap:20px}
+@media (max-width:600px){ .mhead{padding-top:calc(16px + env(safe-area-inset-top,0px))} .modal.small .mhead{padding-top:20px} }
+.intro{font-size:15px;line-height:1.45}
+.steps .n{border-radius:7px;font-family:var(--font-wide);font-stretch:125%;font-weight:900}
+.steps li+li{border-top-color:var(--panel2)}
+.eyebrow,.sumtop small,.sumpass>small,.bprog span{font-family:var(--font-wide);font-stretch:125%;font-weight:900;letter-spacing:.08em}
+.sumtop{background:transparent;box-shadow:inset 0 0 0 1px var(--glass-edge)}
+.sumtop strong{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:20px}
+.sumdrop{background:var(--panel)}
+.sumdrop header b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.08em}
+.sumdrop header strong{font-family:var(--font-wide);font-stretch:125%;font-weight:900}
+.drop.sumprac{height:60px;margin-bottom:4px}
+.sumprac+.sumprac{margin-top:-14px}
+.tabs{background:#141414;border-radius:8px}
+.tabs button{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.68rem;padding:11px 8px;border-radius:6px}
+.tabs button[aria-selected="true"]{background:#2a2a2a}
+.lb li{background:var(--panel)}
+/* toast: floating glass */
+.toast{z-index:45;border-radius:14px;background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px var(--glass-edge-strong),0 12px 32px rgba(0,0,0,.45)}
+.toast small{font-family:var(--font-wide);font-stretch:125%;font-weight:900;letter-spacing:.08em;font-size:.6rem}
+.toast b{font-family:var(--font-wide);font-stretch:125%;font-weight:900}
+.chip.danger{border-radius:6px}
+
+/* ---- home screen ---- */
+body.athome{overflow:hidden}
+.home{position:fixed;inset:0;z-index:40;overflow:hidden;display:flex;flex-direction:column;
+  background:#000;
+  padding:calc(env(safe-area-inset-top,0px) + 24px) max(24px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 24px) max(24px,env(safe-area-inset-left,0px))}
+.home>*{position:relative;z-index:1;width:100%;max-width:440px;margin-inline:auto}
+.home #homeCv{position:absolute;inset:0;width:100%;height:100%;max-width:none;z-index:0;opacity:.45;pointer-events:none}
+.hnav{display:flex;gap:8px}
+.hnav .icon,.hnav a{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;color:var(--fg);background:var(--glass);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:0;padding:0;cursor:pointer}
+.hnav svg{width:22px;height:22px}
+.hnav a svg{width:19px;height:24.7px}
+.hnav .icon:focus-visible,.hnav a:focus-visible,.hbtn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.hmain{margin-top:auto;display:flex;flex-direction:column}
+.hlogo{display:flex;align-items:center;margin:0;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;line-height:1;letter-spacing:.01em;color:var(--fg);
+  font-size:clamp(26px,calc((min(100vw,488px) - 48px - 40px) / 7.3),42.9px)}
+.hlogo{align-items:flex-end}
+.hlogo svg{flex:none;width:.62em;height:.62em;margin-left:.1em;margin-bottom:-.06em} /* the ball sits half below the word */
+.hlines{margin:60px 0;font-size:21px;line-height:28px;color:#fff}
+.hq{margin:0 0 14px;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:.9rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fg)}
+.hbtn{position:relative;width:100%;height:60px;margin-bottom:4px;border:0;border-radius:6px;font:inherit;font-weight:600;font-size:16.8px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:transform .08s,box-shadow .08s}
+.hbtn+.hbtn{margin-top:12px}
+.hbtn svg{position:absolute;left:18px;top:50%;margin-top:-11px;width:22px;height:22px}
+.hbtn.mint{background:var(--mint);color:var(--mint-ink);box-shadow:0 4px 0 var(--mint-edge)}
+.hbtn.mint:not(:disabled):active{transform:translateY(3px);box-shadow:0 1px 0 var(--mint-edge)}
+.hbtn.white{background:#fff;color:#0b0b0b;box-shadow:0 4px 0 var(--white-edge)}
+.hbtn.white:not(:disabled):active{transform:translateY(3px);box-shadow:0 1px 0 var(--white-edge)}
+.hbtn:disabled{background:var(--disabled);color:var(--disabled-ink);box-shadow:0 4px 0 var(--disabled-edge);cursor:default}
+.hbtn:disabled svg{display:none}
+/* the open Daily challenge: white with a slowly turning multicolour ring; its 3D edge is the ring, a shade darker */
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.hbtn.daily:not(:disabled){height:64px;margin-bottom:0;border:3px solid transparent;border-bottom-width:7px;box-shadow:none;
+  background:linear-gradient(#fff,#fff) padding-box,linear-gradient(to top,rgba(0,0,0,.32) 0 4px,transparent 4px) border-box,
+    conic-gradient(from var(--ang),var(--pink),var(--violet),var(--sky),var(--mint),var(--amber),var(--pink)) border-box;animation:dailyRing 3s linear infinite}
+.hbtn.daily:not(:disabled) svg{left:15px}
+.hbtn.daily:not(:disabled):active{transform:translateY(3px);height:61px;border-bottom-width:4px;margin-bottom:3px}
+@keyframes dailyRing{to{--ang:360deg}}
+.dsplit{display:flex;gap:0;margin:-6px 0 4px}
+.dsplit>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding:0 12px;border-left:1px solid rgba(255,255,255,.1)}
+.dsplit>div:first-child{padding-left:0;border-left:0}
+.dsplit i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.58rem;color:var(--muted)}
+.dsplit span{font-family:var(--font-mono);font-weight:600;font-size:.9rem;color:#fff;font-variant-numeric:tabular-nums}
+/* summary icon on the home screen: 2px ring, turning multicolour for the daily, brand green for single player */
+#homeSum{position:relative}
+#homeSum::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;pointer-events:none;
+  background:conic-gradient(from var(--ang),var(--pink),var(--violet),var(--sky),var(--mint),var(--amber),var(--pink));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  animation:dailyRing 3s linear infinite}
+#homeSum.solo::before{background:var(--mint);animation:none}
+@media (prefers-reduced-motion: reduce){#homeSum::before{animation:none}}
+/* ---- tube TV overlay over everything ---- */
+.crt{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden;opacity:.56;margin:0;padding:0;border:0;background:none;width:auto;height:auto;max-width:none;max-height:none;color:inherit}
+.crt:popover-open{display:block}
+@media (min-width:600px) and (min-aspect-ratio:4/5){.crt:popover-open{inset:0;width:var(--appw);height:var(--apph);margin:auto;border-radius:16px}} /* the overlay sits on the phone frame, not the grey around it */
+.crt::before{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(to bottom,rgba(0,0,0,.28) 0 1px,transparent 1px 3px),
+    repeating-linear-gradient(to right,rgba(255,0,60,.035) 0 1px,rgba(0,255,120,.03) 1px 2px,rgba(0,90,255,.035) 2px 3px);
+  animation:crtFlicker 4s steps(60) infinite}
+.crt::after{content:"";position:absolute;inset:0;background:radial-gradient(130% 110% at 50% 50%,transparent 58%,rgba(0,0,0,.55) 100%),linear-gradient(170deg,rgba(255,255,255,.06),transparent 30%);
+  box-shadow:inset 0 0 90px rgba(0,0,0,.6),inset 0 0 18px rgba(0,0,0,.8)}
+.crt-grain{position:absolute;inset:-50%;opacity:.12;mix-blend-mode:screen;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:crtGrain .5s steps(6) infinite}
+@keyframes crtGrain{0%{transform:translate(0,0)}20%{transform:translate(-8%,4%)}40%{transform:translate(5%,-6%)}60%{transform:translate(-4%,-3%)}80%{transform:translate(7%,5%)}100%{transform:translate(0,0)}}
+@keyframes crtFlicker{0%,100%{opacity:1}48%{opacity:.92}50%{opacity:1}74%{opacity:.96}}
+@media (prefers-reduced-motion: reduce){.crt::before,.crt-grain,.hbtn.daily{animation:none}}
+/* locked daily (timer): same shape as the active button, in greyscale, with its globe icon */
+.hbtn.daily:disabled{height:64px;margin-bottom:0;border:3px solid transparent;border-bottom-width:7px;box-shadow:none;color:#5c5c5c;padding:0 20px 0 48px;
+  background:linear-gradient(#e4e4e2,#e4e4e2) padding-box,linear-gradient(to top,rgba(0,0,0,.32) 0 4px,transparent 4px) border-box,
+    conic-gradient(from var(--ang),#f2f2f2,#8a8a8a,#c8c8c8,#5e5e5e,#b0b0b0,#f2f2f2) border-box;animation:dailyRing 6s linear infinite}
+.hbtn.daily:disabled svg{display:block;left:15px;opacity:.75}
+@media (prefers-reduced-motion: reduce){.hbtn.daily:disabled{animation:none}}
+/* ---- wide screens: the game sits in a phone-shaped frame in the middle, like Gambit. The transform makes every
+   fixed layer (home, bottom bar, toast, TV overlay) live inside the frame; the boards scroll inside #scroller. ---- */
+:root{--appw:100vw;--apph:100dvh}
+@media (min-width:600px) and (min-aspect-ratio:4/5){
+  :root{--apph:min(calc(100dvh - 48px),932px);--appw:calc(var(--apph) * 9 / 19.5)}
+  html{background:#2b2c2c!important;height:100%;overflow:hidden}
+  body{position:relative;width:var(--appw)!important;height:var(--apph)!important;margin:calc((100dvh - var(--apph)) / 2) auto 0!important;padding:0!important;
+    border-radius:16px;overflow:hidden;transform:translateZ(0);box-shadow:0 18px 50px rgba(0,0,0,.45),0 4px 12px rgba(0,0,0,.25)}
+  #scroller{position:absolute;inset:0;max-width:none;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 16px;scrollbar-width:none}
+  #scroller::-webkit-scrollbar{display:none}
+  /* pages fill the phone; short confirm sheets sit at its bottom */
+  .modal{width:var(--appw);max-width:none;height:var(--apph);max-height:none;margin:auto;border-radius:16px}
+  .modal.small{height:fit-content;margin:auto auto calc((100dvh - var(--apph)) / 2);border-radius:20px 20px 16px 16px}
+}
+.hlogo{font-size:clamp(26px,calc((min(var(--appw),488px) - 48px - 40px) / 7.3),42.9px)}
+/* no achievements circle in the headers: achievements open from the summary */
+#openBadges,.hnav [data-go="openBadges"]{display:none!important}
+/* ---- summary page (Gambit game-summary style): big score, a tick for every landing, stat rows ---- */
+.sumv2{container-type:inline-size;gap:28px}
+.sumv2 .ssub{margin:-16px 0 0;color:var(--muted);font-size:1rem}
+.sumv2 i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.62rem;color:var(--muted)}
+.sbig{display:flex;align-items:center;gap:16px;min-width:0}
+.sbig strong{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:clamp(2.2rem,15cqi,4rem);line-height:.9;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sbig span{display:flex;flex-direction:column;gap:4px;flex:none;white-space:nowrap}
+.sbig em{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.62rem;color:var(--mint)}
+.shit{display:flex;flex-direction:column;gap:12px}
+.sticks{display:flex;gap:2px;height:40px}
+.tickwrap{position:relative}
+.tickwrap .sticks{touch-action:pan-y;cursor:crosshair}
+.sticks span{transition:transform .12s ease}
+.sticks span.hot{transform:scale(1.9,1.25);position:relative;z-index:1;box-shadow:0 2px 8px rgba(0,0,0,.6)}
+@media (prefers-reduced-motion: reduce){.sticks span{transition:none}}
+.ticktip{position:absolute;bottom:calc(100% + 10px);transform:translateX(-50%);z-index:3;pointer-events:none;white-space:nowrap;
+  display:flex;flex-direction:column;gap:2px;padding:8px 11px;border-radius:9px;background:#151515;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 6px 18px rgba(0,0,0,.5)}
+.ticktip[hidden]{display:none}
+.ticktip b{font-size:.85rem;font-weight:700;color:var(--k)}
+.ticktip span{font-size:.72rem;color:var(--muted)}
+.sticks span{flex:1;min-width:1px;border-radius:1px;background:#1f1f1f}
+.sticks span.on{background:var(--k)}
+.modal[open] .sticks span.on{animation:tickIn .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes tickIn{from{transform:scaleY(.15);opacity:0}}
+.srate{display:flex;justify-content:space-between;align-items:baseline;gap:8px;color:var(--muted);font-size:.95rem}
+.srate b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:1.35rem;color:var(--fg);margin-left:2px}
+.slist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px}
+.slist li{display:flex;align-items:center;gap:16px}
+.slist li.link{cursor:pointer;border-radius:8px;margin:-6px;padding:6px}
+.slist li.link:hover{background:#111}
+.slist li.link:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.sic2{width:30px;height:30px;flex:none;border-radius:7px;box-shadow:inset 0 0 0 1.5px var(--c);color:var(--c);display:grid;place-items:center}
+.sic2 svg{width:16px;height:16px}
+.slist .sl{flex:1;font-size:1.05rem}
+.slist b{font-family:var(--font-mono);font-weight:700;font-size:1rem;color:var(--c);font-variant-numeric:tabular-nums}
+.slist li.link b::after{content:"\203A";font-family:var(--body);margin-left:8px;color:var(--muted)}
+.sumv2 .eyebrow{margin:0 0 -16px;color:var(--fg)}
+@media (prefers-reduced-motion: reduce){.modal[open] .sticks span.on{animation:none}}
+/* leaderboard, Gambit style: your score big with your rank, then plain rows with an outlined rank square */
+.lbv .sbig em{color:var(--amber)}
+.lbv .lb{gap:18px}
+.lbv .lb li{grid-template-columns:30px 1fr auto;gap:16px;background:none;border-radius:0;padding:0;box-shadow:none}
+.lbv .lb .rk{width:30px;height:30px;border-radius:7px;box-shadow:inset 0 0 0 1.5px var(--c,#3a3a3a);display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:.8rem;color:var(--c,var(--fg))}
+.lbv .lb .nm{font-size:1.05rem;gap:3px}
+.lbv .lb .nm small{font-size:.8rem}
+.lbv .lb .sc{font-family:var(--mono);font-weight:700;font-size:1rem}
+.lbv .lb li.me .nm span,.lbv .lb li.me .sc{color:var(--mint)}
+.lbv .spnote{text-align:left;font-size:.85rem;margin:0}
+
+/* How to play, Gambit style: numbered mint squares, then WATCH FOR with a round outlined icon per special */
+.howv{gap:28px}
+.hlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px}
+.hlist li{display:flex;align-items:center;gap:16px}
+.hlist .sl{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;font-size:1.05rem;color:var(--fg)}
+.hlist small{font-size:.85rem;color:var(--muted);line-height:1.35}
+.howv ol.hlist li{align-items:flex-start} /* numbers line up with the top of their text */
+.hn{width:30px;height:30px;flex:none;border-radius:7px;background:var(--mint);color:#000;display:grid;place-items:center;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:.85rem}
+.hwatch{display:flex;flex-direction:column;gap:16px}
+.hwatch .eyebrow{margin:0;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:11.9px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}
+.hwatch .wslot{width:54px;min-height:30px;padding:0;flex:none;cursor:default;pointer-events:none} /* the same rectangular slot as on the boards */
+.hwatch .wslot b{font-size:.7rem}
+.wic{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;color:var(--c);font-weight:800;font-size:.66rem;letter-spacing:-.02em;
+  background:color-mix(in srgb,var(--c) 16%,#000);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 75%,transparent)}
+.wic svg{width:15px;height:15px}
+
+/* game screen: no header row; the sound button sits in the stats panel, right of the title */
+.top{display:none!important} /* its buttons still exist for the home screen to call */
+.dayhead #mute{flex:none;width:36px;height:36px;margin:-6px -4px -6px 0;background:var(--glass);box-shadow:inset 0 0 0 1px var(--glass-edge)}
+.dayhead #mute svg{width:18px;height:18px}
+/* compact scoreboard, like Gambit's HUD: the score, a thin notched bar for the 3 drops, then BEST and RANK in small type;
+   sound in a glass circle on the right. The panel's boxes are flattened into one grid. */
+.daybar{display:grid;grid-template-columns:auto auto 1fr auto;grid-template-areas:"total total total mute" "bar bar bar mute" "best place . mute" "sum sum sum sum";
+  column-gap:16px;row-gap:9px;align-items:center;padding:4px 0 2px;background:none;box-shadow:none;border-radius:0}
+.daybar .dayhead,.daybar .daystats{display:contents}
+#dayTitle,.daybar .dayline,.daybar .iconrow,.barlabel{display:none!important}
+.daystats>div{padding:0!important}
+.daystats>div::before{display:none!important}
+.daystats>div:nth-child(1){grid-area:total}
+.daystats>div:nth-child(1) small{display:none}
+.daystats>div:nth-child(1) strong{font-size:20px}
+.daystats>div:nth-child(1){flex-direction:row;align-items:baseline;gap:12px}
+.hiscore{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+.hiscore i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:8.6px;color:var(--muted)}
+.hiscore b{font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:.04em;color:#8a8a8a;font-variant-numeric:tabular-nums}
+.daystats>div:nth-child(2){grid-area:best}
+.daystats>div:nth-child(3){grid-area:place}
+.daystats>div:nth-child(n+2){flex-direction:row;align-items:baseline;gap:8px}
+.daystats>div:nth-child(n+2) small{font-size:9px;letter-spacing:.08em;line-height:1;white-space:nowrap}
+.daystats>div:nth-child(n+2) strong{font-family:var(--mono);font-stretch:100%;font-weight:700;font-size:12px;letter-spacing:.04em;color:#8a8a8a;line-height:1;white-space:nowrap}
+.daybar .barrow{grid-area:bar;width:min(62%,230px)}
+.daybar .pips{height:3px}
+#score{display:none!important} /* the running score lives in the tray at the top */
+.bar{transition:transform .38s cubic-bezier(.4,0,.2,1)}
+body.dropping .bar{transform:translateY(calc(100% + 24px));pointer-events:none}
+body.dropping .barspace{height:16px} /* the controls are off screen, so the boards end close to the bottom */
+@media (prefers-reduced-motion: reduce){.bar{transition:none}}
+.daybar .barrow{width:auto;display:flex;align-items:flex-start;gap:10px}
+.pipcol{width:min(62vw,230px);display:flex;flex-direction:column;gap:5px}
+.pipcol .pips{flex:none}
+.daybar .barrow{width:100%}
+.daybar .pipcol{width:100%}
+.daybar .pips{display:flex;gap:4px;background:none;border-radius:0;overflow:visible}
+.daybar .pips .seg{flex:1;min-width:0;height:100%;background:var(--mint);transition:background .3s}
+.daybar .pips .seg.used{background:#3a3a3a}
+.daybar .pips .seg.bonus{background:var(--gold-solid)}
+.daybar .pips .seg.bonus.used{background:rgba(246,215,122,.35)}
+.pipnums span.bonus{color:rgba(246,215,122,.75)}
+.pipnums{display:grid;gap:4px}
+.pipnums span{font-family:var(--font-mono);font-size:10px;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.pipbonus{display:inline-flex;gap:4px;margin-top:-3px}
+.pipbonus[hidden]{display:none}
+.pipbonus .bball{width:9px;height:9px;box-shadow:0 0 4px rgba(246,215,122,.6)}
+#dayStats>div[hidden]{display:none!important}
+/* the score tray: a sticky glass panel at the top; the boards scroll behind it */
+#daybar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:6;padding:16px;border-radius:12px;
+  background:rgba(14,14,14,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.daybar .pips .tick{width:4px;margin-left:-2px}
+.dayhead #mute{grid-area:mute;align-self:start;width:44px;height:44px;margin:0;box-shadow:none!important}
+.dayhead #mute svg{width:20px;height:20px}
+.daybar #sumBtn{display:none!important}
+/* tighter tray: no empty rows below the bar (the summary button row is gone; single player has no stat row) */
+#daybar{grid-template-areas:"total total total mute" "bar bar bar mute" "place place place mute";padding-bottom:14px}
+#daybar.nostats{grid-template-areas:"total total total mute" "bar bar bar mute"}
+
+/* summary: achievement cards and the drop-by-drop list */
+.achgrid{display:flex;gap:10px;margin:2px -24px 0;padding:0 24px 4px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 24px;scrollbar-width:none;overscroll-behavior-x:contain}
+.achgrid::-webkit-scrollbar{display:none}
+.acard{flex:none;width:148px;scroll-snap-align:start;display:flex;flex-direction:column;gap:4px;min-width:0;padding:14px;border-radius:12px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--glass-edge)}
+.acard .atop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.acard .ai{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:.8rem;color:#000;background:var(--c)} /* inverted: a solid colour square with a black glyph */
+.acard .ap{font-family:var(--mono);font-weight:700;font-size:.85rem;color:var(--c)}
+.acard b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.04em;line-height:1.2;overflow-wrap:anywhere}
+.acard small{font-size:.8rem;color:var(--muted)}
+.dsec{display:flex;flex-direction:column}
+.sumv2 .eyebrow+.dsec{margin-top:-14px}
+.sumv2 .dsec+.dsec{margin-top:-28px} /* drops stack as one list of folds */
+.dsec summary{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--panel2);cursor:pointer;list-style:none}
+.dsec summary::-webkit-details-marker{display:none}
+.dsec summary b{flex:1}
+.dsec summary:focus-visible{outline:2px solid var(--mint);outline-offset:2px;border-radius:4px}
+.dsec .dchev{display:block;box-sizing:border-box;width:10px;height:10px;flex:none;margin:0 4px 4px 2px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
+.dsec[open] .dchev{transform:rotate(-135deg);margin-bottom:-4px}
+.dsec[open] summary{border-bottom-color:transparent}
+.dsec ul+p,.dsec[open]>ul:last-child{margin-bottom:6px}
+.dsec summary b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.08em}
+.dsec summary strong{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:20px;font-variant-numeric:tabular-nums}
+.dsec ul{list-style:none;margin:0;padding:0}
+.dsec li{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #161616}
+.dsec .lv{height:24px;border-radius:6px;background:#141414;display:grid;place-items:center;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.dsec .nm{font-size:.98rem;min-width:0}
+.dsec li.spc .nm{color:var(--c);font-weight:600}
+.dsec .val{font-family:var(--mono);font-weight:700;font-size:.95rem;color:var(--c);font-variant-numeric:tabular-nums}
+.dsec .dpass{margin:14px 0 2px;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-solid)}
+
+.daystats small{letter-spacing:.05em;font-size:8.6px}
+.daystats>div+div{padding-left:10px}
+.sumv2 .eyebrow,.sumv2 .sumach>small{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:11.9px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}
+
+
+.hlogo span{color:var(--fg);font-weight:900;text-transform:uppercase;letter-spacing:.01em} /* beats the old h1 span rule */
+.daystats>div{justify-content:space-between}
+.daystats small{white-space:normal;line-height:1.25}
+.toast{visibility:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),visibility 0s .35s}
+.toast.show{visibility:visible;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+
+
+@media (min-width:600px) and (min-aspect-ratio:4/5){.crt,.crt:popover-open{border-radius:16px;overflow:hidden;clip-path:inset(0 round 16px)}}
+</style>
+
+<div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
+<section class="home" id="home" aria-label="Dropface home">
+  <canvas id="homeCv" aria-hidden="true"></canvas>
+  <nav class="hnav" aria-label="Menu"><a href="index.html" aria-label="Back to Dailycade" title="Dailycade"><svg viewBox="0 0 53 69" aria-hidden="true" fill="currentColor"><path d="M4.03865 58.5444L28.7422 58.4145C32.5052 58.5538 35.6995 56.1602 36.9927 53.1536C37.5344 51.894 37.6625 50.7215 37.359 49.7708C37.3251 49.1516 37.1874 48.5274 36.9324 47.9231L32.7664 38.051L40.2475 38.07C50.5051 38.3367 55.1171 45.5211 51.5191 53.6912C48.1059 61.8232 37.5355 68.4919 27.3734 68.0026L0 67.9357L4.03865 58.5444Z"/><path d="M24.7505 47.5023L8.75173 47.5868L12.8741 38.0031L20.749 38.0218L24.7505 47.5023Z"/><path d="M16.5587 0.738192C8.75457 3.285 4.48766 11.6712 7.02349 19.4788C9.55916 27.2863 17.9392 31.5651 25.7505 29.0404C33.5774 26.5107 37.8665 18.1101 35.3257 10.2869C32.785 2.4635 24.3783 -1.8137 16.5587 0.738192Z"/></svg></a><button class="icon" data-go="openHow" aria-label="How to play" title="How to play"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.7"/><path d="M12 17h.01"/></svg></button><button class="icon" data-go="openLb" aria-label="Leaderboard" title="Leaderboard"></button><button class="icon" data-go="openBadges" aria-label="Achievements" title="Achievements"></button><button class="icon" id="homeSum" aria-label="See daily summary" title="Daily summary" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg></button></nav>
+  <div class="hmain">
+    <h1 class="hlogo" aria-label="Dropface"><span aria-hidden="true">Dropface</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.2" fill="var(--mint)" fill-opacity=".15" stroke="var(--mint)" stroke-opacity=".5" stroke-width="1.6"/><circle cx="12" cy="12" r="5.6" fill="var(--mint)"/></svg></h1>
+    <p class="hlines">Pick your slots.<br>Drop the ball.<br>Rise the leaderboard.</p>
+    <p class="hq">Solo or global?</p>
+    <button class="hbtn mint" id="hSolo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.8-3.9 3.8-6 7.5-6s6.7 2.1 7.5 6"/></svg><span>Single player</span></button>
+    <button class="hbtn white daily" id="hDaily"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span>Daily challenge</span></button>
+  </div>
+</section>
+<div class="wrap" id="scroller">
+  <div class="top">
+    <button class="icon" id="homeBtn" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg></button>
+    <h1>Dropface</h1>
+    <div class="nav">
+      <button class="icon" id="openHow" aria-label="How to play" title="How to play"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="16.8" r=".7" fill="currentColor"/></svg></button>
+      <button class="icon" id="openLb" aria-label="Leaderboard" title="Leaderboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 16v5M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v1.5A3.5 3.5 0 0 1 16.6 10M7 5H4v1.5A3.5 3.5 0 0 0 7.4 10"/></svg></button>
+      <button class="icon" id="openBadges" aria-label="Achievements" title="Achievements"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.3 2.9 8.1 7 9.5 4.1-1.4 7-5.2 7-9.5V6z"/><path d="m12 8.5 1.1 2.2 2.4.35-1.75 1.7.4 2.4L12 14l-2.15 1.15.4-2.4-1.75-1.7 2.4-.35z" fill="currentColor" stroke="none"/></svg></button>
+    </div>
+  </div>
+  <div class="daybar" id="daybar">
+    <div class="dayhead"><b id="dayTitle">Daily Game</b><button class="toggle" id="dayBtn" role="switch" aria-checked="false"><span>Practice</span><i aria-hidden="true"></i></button><button class="icon" id="mute" aria-label="Turn sound off"></button></div>
+    <div class="daystats" id="dayStats"><div><small>Daily Total</small><strong id="dayTotal">0</strong><span class="hiscore"><i>High score</i><b id="hiScore">—</b></span></div><div><small>All-time Drop</small><strong id="dayBest">—</strong></div><div><small>Leaderboard</small><strong id="dayPlace">—</strong></div></div>
+    <div class="dayline"><span class="daysub" id="daySub"></span></div>
+    <div class="barrow"><span class="barlabel" aria-hidden="true">Drops</span><div class="pipcol"><div class="pips" id="pips" role="img"></div><div class="pipnums" id="pipNums" aria-hidden="true"></div></div></div>
+    <div class="iconrow" id="iconRow"><span class="bballs" id="bballs" role="img" hidden></span><span class="bballs" id="achballs" role="img" hidden></span></div>
+    <button class="sumbtn" id="sumBtn" hidden>See daily summary</button>
+  </div>
+  <dialog class="modal" id="howto" aria-labelledby="howtoh">
+    <div class="mhead"><h2 id="howtoh">How to play</h2><button class="x" data-close aria-label="Close">×</button></div>
+    <div class="howbody howv">
+      <ol class="hlist"><li><span class="hn">1</span><span class="sl">Pick your slots<small>All 10 boards, top to bottom. Tap Random to pick for you.</small></span></li><li><span class="hn">2</span><span class="sl">Tap Drop<small>The ball starts from a hidden spot and falls through every board</small></span></li><li><span class="hn">3</span><span class="sl">Score where it lands<small>Your pick is 100, the slots beside it 25, the rest 10</small></span></li><li><span class="hn">4</span><span class="sl">Three drops a game<small>Your score is all three added up. The Daily challenge uses the same boards for everyone.</small></span></li></ol>
+      <div class="hwatch"><p class="eyebrow">Watch for</p><ul class="hlist"><li style="--c:var(--red)"><span class="slot bomb wslot" aria-hidden="true"><b>💣</b></span><span class="sl">Bomb<small>Explodes: score to 0, drop over</small></span></li><li style="--c:var(--violet)"><span class="slot x10 wslot" aria-hidden="true"><b>10x</b></span><span class="sl">10x<small>Score times 10</small></span></li><li style="--c:var(--sky)"><span class="slot split wslot" aria-hidden="true"><b>Split</b></span><span class="sl">Split<small>One ball becomes two</small></span></li><li style="--c:var(--pink)"><span class="slot portal wslot" aria-hidden="true"><b>Portal</b></span><span class="sl">Portal<small>Drop again from the top</small></span></li><li style="--c:var(--orange)"><span class="slot rewind wslot" aria-hidden="true"><b>Rewind</b></span><span class="sl">Rewind<small>Replay the same board</small></span></li><li style="--c:var(--lime)"><span class="slot trip wslot" aria-hidden="true"><b>Trip</b></span><span class="sl">Trip<small>Skip the next level</small></span></li><li style="--c:var(--teal)"><span class="slot half wslot" aria-hidden="true"><b>½</b></span><span class="sl">Half<small>Score cut in half</small></span></li><li style="--c:var(--fg)"><span class="slot freefall wslot" aria-hidden="true"><b>Void</b></span><span class="sl">Void<small>Drops straight through the next board</small></span></li><li style="--c:var(--blue)"><span class="slot aim wslot" aria-hidden="true"><b>Aim</b></span><span class="sl">Aim<small>You pick where the next drop starts</small></span></li><li style="--c:var(--gold-solid)"><span class="slot bonus wslot" aria-hidden="true"><b>+1</b></span><span class="sl">Bonus<small>Replay the board, your score keeps adding</small></span></li><li style="--c:var(--steel)"><span class="slot magnet wslot" aria-hidden="true"><b>Magnet</b></span><span class="sl">Magnet<small>Pulls the ball into your 100</small></span></li></ul></div>
+      <button class="drop sumprac white" data-close>Got it</button>
+    </div>
+  </dialog>
+  <dialog class="modal small leave" id="leaveModal" aria-labelledby="leaveh">
+    <div class="mhead"><h2 id="leaveh">Leave game?</h2><button class="x" data-close aria-label="Close">×</button></div>
+    <div class="howbody">
+      <p class="intro" style="margin:0">This single player game ends and its score is not kept.</p>
+      <div class="confirmrow"><button class="chip plain" data-close>Cancel</button><button class="chip danger" id="leaveGo">Leave game</button></div>
+    </div>
+  </dialog>
+  <dialog class="modal" id="sumModal" aria-labelledby="sumh">
+    <div class="mhead"><h2 id="sumh">Game Summary</h2><div class="mbtns"><button class="x sharebtn" id="sumShare" type="button" aria-label="Share results" title="Share results"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button><button class="x" data-close aria-label="Close">×</button></div></div>
+    <div class="howbody" id="sumBody"></div>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog class="modal" id="badgeModal" aria-labelledby="badgeh">
+    <div class="mhead"><h2 id="badgeh">Achievements</h2><button class="x" data-close aria-label="Close">×</button></div>
+    <div class="howbody">
+      <div class="bprog"><span id="badgeCount"></span><div class="bbar"><div id="badgeBar"></div></div></div>
+      <div class="badges" id="badgeGrid"></div>
+    </div>
+  </dialog>
+  <dialog class="modal" id="lbModal" aria-labelledby="lbh">
+    <div class="mhead"><h2 id="lbh">Leaderboard</h2><button class="x" data-close aria-label="Close">×</button></div>
+    <div class="howbody sumv2 lbv">
+      <p class="ssub" id="lbSub"></p>
+      <div class="sbig"><strong id="lbMine">—</strong><span><i>Your score</i><em id="lbRank" hidden></em></span></div>
+      <div class="tabs" role="tablist" aria-label="Leaderboard view"><button role="tab" id="tabToday" aria-selected="true">Today</button><button role="tab" id="tabAll" aria-selected="false">All time</button></div>
+      <ol class="lb" id="lbList"></ol>
+      <p class="spnote" id="lbNote">Loading scores…</p>
+    </div>
+  </dialog>
+  <div id="levels" style="display:flex;flex-direction:column;gap:18px;margin-top:6px"></div>
+  <div class="barspace" aria-hidden="true"></div>
+</div>
+
+<div class="bar"><div class="barin">
+  <div class="tally"><span class="label" id="status">0 of 10 picked</span><b id="score">0</b></div>
+  <div class="picktray" id="pickTray"><button type="button" class="tbtn" id="trayRand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg><span>Random</span></button><button type="button" class="tbtn" id="trayAlt"><span class="ti"></span><span class="tl">Clear picks</span></button></div>
+  <div class="droprow"><button class="drop" id="drop" disabled>Drop</button><button class="dicebtn" id="auto" aria-label="Auto-pick" title="Auto-pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3.5"/><g fill="currentColor" stroke="none"><circle cx="8.5" cy="8.5" r="1.4"/><circle cx="15.5" cy="8.5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8.5" cy="15.5" r="1.4"/><circle cx="15.5" cy="15.5" r="1.4"/></g></svg></button><button class="dicebtn" id="repeat" hidden aria-label="Use last picks" title="Use last picks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a8 8 0 0 1 14-5.3L20 8"/><path d="M20 3v5h-5"/><path d="M20 13a8 8 0 0 1-14 5.3L4 16"/><path d="M4 21v-5h5"/></svg></button></div>
+</div></div>
+
+<script src="dc-tune.js"></script>
+<script src="dc-initials.js"></script>
+<script>
+const LEVELS=10, ROWS=8, SLOTS=7, MAXBALLS=8;
+const DF_DEF={perDay:3,specials:10,pool:['bomb','x10','split','portal','rewind','trip','half','freefall','aim','bonus','magnet'],pick:100,near:25,other:10};
+const DF=Object.assign({},DF_DEF,{pool:DF_DEF.pool.slice()});
+const PREVIEW_VALS=window.DCTune?DCTune.preview('dropface'):null, PREVIEW=!!PREVIEW_VALS; // admin test mode
+const PTS=v=>v===100?DF.pick:v===25?DF.near:v===10?DF.other:v; // slot tiers stay 100/25/10 inside; points come from the tuning
+const SHAPES=[
+  ['circle','Round pins'],['square','Square pins'],['triangle','Triangle pins'],['diamond','Diamond pins'],
+  ['hex','Hexagon pins'],['star','Star pins'],['plus','Cross pins'],['ring','Ring pins'],
+  ['pent','Pentagon pins'],['bar','Bar pins']
+];
+const LABEL={bomb:'💣', x10:'10x', split:'Split', portal:'Portal', rewind:'Rewind', trip:'Trip', half:'½', freefall:'Void', aim:'Aim', bonus:'+1', magnet:'Magnet'};
+let splitUsed=false, portalUsed=false;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const $=id=>document.getElementById(id);
+// in the desktop phone frame the boards scroll inside #scroller; on phones the page itself scrolls
+const FRAMED=matchMedia('(min-width:600px) and (min-aspect-ratio:4/5)');
+const scrollTop=()=>FRAMED.matches?$('scroller').scrollTop:window.scrollY;
+const scrollToY=o=>{ const sc=FRAMED.matches?$('scroller'):window; if(sc.scrollTo) sc.scrollTo(o); };
+const viewH=()=>FRAMED.matches?$('scroller').clientHeight:innerHeight;
+const relTop=el=>el.getBoundingClientRect().top-(FRAMED.matches?$('scroller').getBoundingClientRect().top:0); // an element's top within the visible area
+const rnd=n=>Math.floor(Math.random()*n);
+
+// Daily Drop: the date seeds the boards, the starting slot and every bounce, so everyone plays the same drop
+function hashStr(str){ let h=1779033703^str.length; for(let i=0;i<str.length;i++){ h=Math.imul(h^str.charCodeAt(i),3432918353); h=h<<13|h>>>19; } h=Math.imul(h^h>>>16,2246822507); h=Math.imul(h^h>>>13,3266489909); return (h^h>>>16)>>>0; }
+function mulberry(a){ return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const seeded=key=>mulberry(hashStr(key));
+const pad=n=>String(n).padStart(2,'0');
+const NOW=new Date(), TODAY=`${NOW.getFullYear()}-${pad(NOW.getMonth()+1)}-${pad(NOW.getDate())}`;
+// puzzle number = days since the game's start date + 1. The start date lives in the shared store (config/game)
+// so a reset by the owner restarts the count at #1 for everyone; until it loads, the original launch date is used.
+let EPOCH='2026-11-09';
+function dayNo(){ const [y,m,d]=EPOCH.split('-').map(Number); return Math.max(1,Math.round((new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate())-new Date(y,m-1,d))/864e5)+1); }
+let rand=Math.random; const rr=n=>Math.floor(rand()*n);
+// all 3 of the day's drops unlock together at local midnight; unplayed drops expire when the day ends
+let PER_DAY=3;
+let mode='daily', day={used:0,total:0,scores:[],bonus:0,ach:[]};
+// all-time highest single Daily Drop (a drop's score includes its bonus drops); kept across days and devices
+let bestDrop=0; try{ bestDrop=Number(localStorage.getItem('dropface-bestdrop'))||0; }catch(e){}
+const noteBestDrop=v=>{ if(v>bestDrop){ bestDrop=v; try{ localStorage.setItem('dropface-bestdrop',String(v)); }catch(e){} } };
+try{ const v=JSON.parse(localStorage.getItem('dropface-day-'+TODAY)||'null'); if(v&&Number.isFinite(v.used)) day={used:v.used,total:Number(v.total)||0,scores:Array.isArray(v.scores)?v.scores:[],bonus:Number(v.bonus)||0,log:Array.isArray(v.log)?v.log:[],ach:Array.isArray(v.ach)?v.ach:[],...(v.pending?{pending:v.pending}:{})}; }catch(e){}
+day.scores.forEach(v=>noteBestDrop(Number(v)||0)); // drops saved before this change still count
+// the picks from the last drop, for the repeat button: Daily Drops remember them for the day, Practice only in memory
+const lastPicks={daily:null,practice:null};
+// how the current picks were filled (dice or last picks); the label drops it once any slot changes
+let pickSrc=null; const notePicks=how=>{ pickSrc={how,picks:picks.join()}; };
+try{ const v=JSON.parse(localStorage.getItem('dropface-lastpicks-'+TODAY)||'null'); if(Array.isArray(v)&&v.length===10) lastPicks.daily=v; }catch(e){}
+// Practice plays a round of 3 drops on one random board, just like a day. `day` is whichever mode is on screen;
+// the other mode's state waits in dailySaved / pracDay until you switch back.
+let dailySaved=null, pracDay=null, pracRound=0;
+// share of this round's landings that hit a 100-point slot (every pass, bonus replays included); a dash before any
+function hitPct(){ let hit=0,all=0; (day.log||[]).forEach(l=>((l&&l.passes)||[]).forEach(ps=>(ps.ev||[]).forEach(e=>{ all++; if(e.v===100) hit++; }))); return all?Math.round(hit/all*100)+'%':'\u2014'; }
+const newPracRound=()=>{ pracRound++; return {used:0,total:0,scores:[],bonus:0,ach:[],log:[],seed:'practice:'+Date.now()+':'+Math.random()}; };
+const dailyDay=()=>mode==='daily'?day:dailySaved;
+function setDaily(d){ if(mode==='daily') day=d; else dailySaved=d; }
+function useMode(m){ if(m===mode) return; if(mode==='daily'){ dailySaved=day; day=pracDay||(pracDay=newPracRound()); } else { pracDay=day; day=dailySaved; } mode=m; }
+const boardSeed=()=>seeded(mode==='daily'?TODAY+':boards':day.seed);
+const saveDay=()=>{ try{ localStorage.setItem('dropface-day-'+TODAY,JSON.stringify(dailyDay())); }catch(e){} };
+function earned(){ return PER_DAY; }
+const dayDrops=()=>PER_DAY;
+// a +1 bonus extends the drop it was won in (same board, score keeps adding), so it never uses up a daily drop
+const available=()=>Math.max(0,earned()-day.used);
+// one board layout per day (seeded by the date); each drop gets its own seeded start and bounces
+const dropKey=(n,part)=>`${TODAY}:d${n}:${part}`;
+const dailyLocked=()=>available()<=0&&!done&&!busy; // all of the day's (or practice round's) drops are played
+
+// one of each special, each on a random level and slot (split and trip never on the last level)
+let specials;
+function placeSpecials(r=Math.random){
+  const R=n=>Math.floor(r()*n);
+  specials=Array.from({length:LEVELS},()=>({}));
+  // each drop uses LEVELS (10) of the specials, chosen at random, one per board;
+  // the ones that need a board below them are placed first so they never land on the last board
+  const ALL=[['split',LEVELS-1],['trip',LEVELS-1],['freefall',LEVELS-1],['aim',LEVELS-1],['magnet',LEVELS-1],['bomb',LEVELS],['x10',LEVELS],['portal',LEVELS],['rewind',LEVELS],['half',LEVELS],['bonus',LEVELS]];
+  const pool=ALL.filter(([t])=>DF.pool.includes(t)); for(let n=pool.length-1;n>0;n--){ const j=R(n+1); [pool[n],pool[j]]=[pool[j],pool[n]]; }
+  pool.slice(0,Math.max(0,Math.min(LEVELS,DF.specials))).sort((a,b)=>a[1]-b[1]).forEach(([type,maxL])=>{
+    let i; do{ i=R(maxL); }while(Object.keys(specials[i]).length);
+    specials[i][R(SLOTS)]=type;
+  });
+}
+placeSpecials(seeded(TODAY+':boards'));
+
+let picks=Array(LEVELS).fill(null), results=Array.from({length:LEVELS},()=>[]), landed=Array.from({length:LEVELS},()=>[]);
+let score=0, busy=false, done=false, counting=false, startSlot=rnd(SLOTS);
+let W=0,H=0,gap=0,rowH=0,pegR=4,ballR=7,top0=26;
+let balls=[], ballLevel=-1, waiting=[];
+const L=[];
+
+for(let i=0;i<LEVELS;i++){
+  const sec=document.createElement('section'); sec.className='level';
+  sec.innerHTML=`<div class="lhead"><span><b>Level ${i+1}</b></span><span class="pickhint">Pick a slot <span aria-hidden="true">↓</span></span></div>
+    <div class="board">${i===0?'<div class="count" id="count" aria-live="assertive"></div>':''}<div class="count" id="flash${i}" aria-live="polite"></div><div class="aimbar" id="aim${i}" hidden><div class="row" role="group" aria-label="Choose where the ball drops on level ${i+1}">${Array.from({length:SLOTS},(_,k)=>`<button data-k="${k}" aria-label="Drop from slot ${k+1}">▼</button>`).join('')}</div><p>Pick where it drops</p></div><canvas aria-label="Level ${i+1} board"></canvas>
+    <div class="slots" role="group" aria-label="Level ${i+1} slot"></div></div>`;
+  $('levels').appendChild(sec);
+  const slotsEl=sec.querySelector('.slots'), slots=[];
+  for(let k=0;k<SLOTS;k++){
+    const b=document.createElement('button'); b.className='slot'; b.id=`s${i}_${k}`;
+    b.setAttribute('aria-label',`Level ${i+1}, slot ${k+1}`);
+    b.innerHTML='<b></b>';
+    b.onclick=()=>{ if(busy||done||dailyLocked()||specials[i][k]) return; picks[i]=k; render(); goNext(i); };
+    slotsEl.appendChild(b); slots.push(b);
+  }
+  const canvas=sec.querySelector('canvas');
+  L.push({sec,canvas,ctx:canvas.getContext('2d'),slots});
+}
+
+// after a pick, glide to the board directly below; the last board stays put
+const trayH=()=>{ const d=$('daybar'); return d?d.offsetHeight+8:0; }; // the sticky score tray covers this much of the top
+function goNext(i){
+  const n=i+1;
+  if(n>=LEVELS) return;
+  setTimeout(()=>{
+    const top=scrollTop()+relTop(L[n].sec)-12-trayH();
+    scrollToY({top:Math.max(0,top),behavior:reduce?'auto':'smooth'});
+  },220);
+}
+
+// specials never wear out: after a portal every one of them, the portal included, is still live
+const active=(i,k)=>specials[i][k];
+const value=(i,k)=> active(i,k) || (picks[i]===null?null : k===picks[i]?100 : Math.abs(k-picks[i])===1?25 : 10);
+const slotX=k=>(k+0.5)*gap;
+const rowXs=r=> r%2===0 ? Array.from({length:SLOTS},(_,k)=>slotX(k)) : Array.from({length:SLOTS-1},(_,k)=>(k+1)*gap);
+const pegY=r=>top0+r*rowH;
+
+function resize(){
+  W=L[0].canvas.parentElement.getBoundingClientRect().width; gap=W/SLOTS; rowH=Math.min(gap*0.62,34);
+  H=top0+rowH*(ROWS-1)+rowH*0.9+18;
+  pegR=Math.max(3.2,gap*0.07); ballR=Math.max(6,gap*0.1);
+  const d=devicePixelRatio||1;
+  L.forEach(l=>{ l.canvas.width=W*d; l.canvas.height=H*d; l.canvas.style.height=H+'px'; l.ctx.setTransform(d,0,0,d,0,0); });
+  drawAll();
+}
+
+function poly(ctx,x,y,r,n,rot){ ctx.beginPath(); for(let i=0;i<n;i++){const a=rot+i*2*Math.PI/n; ctx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a));} ctx.closePath(); }
+function peg(ctx,x,y,r,shape){
+  ctx.fillStyle=css('--peg'); ctx.strokeStyle=css('--peg');
+  switch(shape){
+    case 'circle': ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); break;
+    case 'square': ctx.fillRect(x-r*.9,y-r*.9,r*1.8,r*1.8); break;
+    case 'triangle': poly(ctx,x,y+r*.2,r*1.25,3,-Math.PI/2); ctx.fill(); break;
+    case 'diamond': poly(ctx,x,y,r*1.25,4,-Math.PI/2); ctx.fill(); break;
+    case 'hex': poly(ctx,x,y,r*1.1,6,0); ctx.fill(); break;
+    case 'pent': poly(ctx,x,y,r*1.15,5,-Math.PI/2); ctx.fill(); break;
+    case 'star': ctx.beginPath(); for(let i=0;i<10;i++){const rr=i%2?r*.55:r*1.35,a=-Math.PI/2+i*Math.PI/5; ctx.lineTo(x+rr*Math.cos(a),y+rr*Math.sin(a));} ctx.closePath(); ctx.fill(); break;
+    case 'plus': ctx.fillRect(x-r*1.2,y-r*.35,r*2.4,r*.7); ctx.fillRect(x-r*.35,y-r*1.2,r*.7,r*2.4); break;
+    case 'ring': ctx.lineWidth=r*.55; ctx.beginPath(); ctx.arc(x,y,r*.8,0,7); ctx.stroke(); break;
+    case 'bar': ctx.beginPath(); ctx.roundRect?ctx.roundRect(x-r*1.6,y-r*.45,r*3.2,r*.9,r*.45):ctx.rect(x-r*1.6,y-r*.45,r*3.2,r*.9); ctx.fill(); break;
+  }
+}
+const BINCOLOR={bomb:['--red',.4],x10:['--violet',.35],split:['--sky',.35],portal:['--pink',.35],rewind:['--orange',.35],trip:['--lime',.3],half:['--teal',.32],freefall:['--fg',.22],aim:['--blue',.32],bonus:['gold',.34],magnet:['--steel',.3],100:['--mint',.2],25:['--amber',.1]};
+
+function drawBall(ctx,b,color){
+  ctx.fillStyle=color; ctx.strokeStyle=color;
+  b.trail.forEach((p,j)=>{ ctx.globalAlpha=(j+1)/b.trail.length*.25; ctx.beginPath(); ctx.arc(p.x,p.y,ballR*.55,0,7); ctx.fill(); });
+  ctx.globalAlpha=.15; ctx.beginPath(); ctx.arc(b.x,b.y,ballR*2.1,0,7); ctx.fill();
+  ctx.globalAlpha=.35; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(b.x,b.y,ballR*2.1,0,7); ctx.stroke();
+  ctx.globalAlpha=1; ctx.beginPath(); ctx.arc(b.x,b.y,ballR*.75,0,7); ctx.fill();
+}
+
+function drawLevel(i){
+  const {ctx}=L[i]; ctx.clearRect(0,0,W,H);
+  const pinsGone=ballLevel===i&&balls.length&&balls.every(b=>b.free);
+  if(!pinsGone) for(let r=0;r<ROWS;r++) rowXs(r).forEach(x=>peg(ctx,x,pegY(r),pegR,'diamond'));
+  const binTop=H-18;
+  ctx.strokeStyle=css('--peg'); ctx.lineWidth=2; ctx.setLineDash([4,4]);
+  for(let k=1;k<SLOTS;k++){ ctx.beginPath(); ctx.moveTo(k*gap,binTop); ctx.lineTo(k*gap,H); ctx.stroke(); }
+  ctx.setLineDash([]);
+  for(let k=0;k<SLOTS;k++){ const c=BINCOLOR[value(i,k)]; if(!c) continue;
+    if(c[0]==='gold'){ const gr=ctx.createLinearGradient(k*gap,0,(k+1)*gap,0); ['#B8862B','#F6D77A','#FFF1C2','#E2B24C','#9C6E1E'].forEach((cc,n,a)=>gr.addColorStop(n/(a.length-1),cc)); ctx.fillStyle=gr; }
+    else ctx.fillStyle=css(c[0]);
+    ctx.globalAlpha=c[1]; ctx.fillRect(k*gap+2,binTop,gap-4,18); }
+  ctx.globalAlpha=1;
+  if(ballLevel===i) balls.filter(b=>b.mag).forEach(b=>{ const tx=slotX(b.k); ctx.save(); ctx.strokeStyle=css('--steel'); ctx.globalAlpha=.35; ctx.setLineDash([2,5]); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(tx,H-10); ctx.stroke(); ctx.restore(); });
+  // the main ball is gold during a bonus replay; a split's second ball stays blue
+  const mainBall=inBonus?'--gold-solid':'--mint';
+  if(ballLevel===i) balls.forEach(b=>drawBall(ctx,b,css(b.id?'--sky':mainBall)));
+  // a ball waiting for the others rests at the top of its next board inside a dashed ring
+  waiting.filter(w=>w.next===i).forEach(w=>{ const c=css(w.id?'--sky':mainBall); drawBall(ctx,{x:w.x,y:14,trail:[]},c);
+    ctx.save(); ctx.setLineDash([3,3]); ctx.strokeStyle=c; ctx.globalAlpha=.7; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(w.x,14,ballR*2.8,0,7); ctx.stroke(); ctx.restore(); });
+}
+const drawAll=()=>{ for(let i=0;i<LEVELS;i++) drawLevel(i); };
+
+function resultPill(list){
+  if(!list.length) return null;
+  const txt=list.map(o=>o.v==='bomb'?'💥 nuked':o.v==='x10'?'10x':o.v==='split'?'split!':'+'+PTS(o.v)).join(' · ');
+  const vs=list.map(o=>o.v);
+  const cls=vs.includes('bomb')?'pbomb':vs.includes('x10')?'px10':vs.includes('split')?'psplit':({100:'p100',25:'p10',10:'p1'})[Math.max(...vs)];
+  return {txt,cls};
+}
+
+const DICE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3.5"/><g fill="currentColor" stroke="none"><circle cx="8.5" cy="8.5" r="1.4"/><circle cx="15.5" cy="8.5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8.5" cy="15.5" r="1.4"/><circle cx="15.5" cy="15.5" r="1.4"/></g></svg>';
+const X_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+function render(){
+  const n=picks.filter(p=>p!==null).length;
+  L.forEach((l,i)=>{
+    l.slots.forEach((b,k)=>{
+      const v=value(i,k), sp=active(i,k);
+      b.className='slot'+(sp?' '+sp:v===100?' v100':v===25?' v10':v===10?' v1':'')+(landed[i].includes(k)?' land':'');
+      b.querySelector('b').textContent=sp?LABEL[sp]:v===null?'·':PTS(v);
+      b.disabled=busy||done||dailyLocked()||!!sp;
+    });
+  });
+  const locked=dailyLocked();
+  $('score').textContent=(locked?day.total:score).toLocaleString();
+  document.body.classList.toggle('dropping',busy||(done&&!bonusPending&&available()>0&&!locked)); // hidden while falling, and stays hidden until the next drop is set up (no 'Next drop' step) // the bottom controls slide away while the ball is falling
+  // the dice / clear button only shows while picking; during a drop, after one, or once the day is over it has nothing to do, so it hides and Drop takes the full width
+  $('auto').hidden=busy||done||locked; $('auto').disabled=busy||done||locked;
+  // one button: the dice auto-picks every slot; once any slot is picked it turns into a close icon that clears them
+  { const a=$('auto'), clear=n>0; if(a.dataset.mode!==(clear?'x':'dice')){ a.dataset.mode=clear?'x':'dice'; a.innerHTML=clear?X_ICON:DICE_ICON; }
+    a.setAttribute('aria-label',clear?'Clear picks':'Auto-pick'); a.title=clear?'Clear picks':'Auto-pick'; }
+  const drop=$('drop');
+  const bonusUp=done&&bonusPending>0;
+  drop.classList.toggle('bonusbtn',bonusUp);
+  const prac=mode==='practice';
+  if(done){ drop.disabled=!prac&&!bonusUp&&available()<=0; drop.textContent=bonusUp?'Play bonus drop':available()>0?'Next drop':prac?'Play again':`Next drop in ${untilTomorrow()}`;
+    $('status').textContent=bonusUp?'Bonus drop earned!':`Drop ${day.used} score`; }
+  else if(locked){ drop.disabled=!prac; drop.textContent=prac?'Play again':`Next drop in ${untilTomorrow()}`; $('status').textContent=prac?'Total':"Today's total"; }
+  else if(busy){ drop.disabled=true; drop.textContent=counting?'Get ready…':'Dropping…'; $('status').textContent=balls.length+waiting.length>1?`${balls.length+waiting.length} balls in play`:'Score'; }
+  else { drop.disabled=n<LEVELS; drop.textContent=n<LEVELS?`Pick ${LEVELS-n} more`:'Drop'; $('status').textContent=`${n} of 10 picked`+(pickSrc&&pickSrc.picks===picks.join()?` – ${pickSrc.how}`:''); }
+  renderDay();
+  { const rp=$('repeat'), lp=lastPicks[mode], anyPick=picks.some(p=>p!==null), same=!!lp&&lp.every((p,i)=>picks[i]===fitPick(i,p));
+    // third button: "use last picks" when it would change something; otherwise (boards already set) a dice that re-rolls every pick
+    const dice=anyPick&&(!lp||same); rp.hidden=busy||done||dailyLocked()||(!lp&&!anyPick); rp.disabled=false;
+    if(rp.dataset.mode!==(dice?'dice':'repeat')){ rp.dataset.mode=dice?'dice':'repeat'; if(!rp.dataset.rpicon) rp.dataset.rpicon=rp.innerHTML; rp.innerHTML=dice?DICE_ICON:rp.dataset.rpicon; }
+    rp.setAttribute('aria-label',dice?'Re-roll picks':'Use last picks'); rp.title=dice?'Re-roll picks':'Use last picks'; }
+  { // pick tray: Random, and Clear picks (once anything is picked) or Last picks (when the boards are empty)
+    const tr=$('pickTray'), off=busy||done||dailyLocked(), anyPick=picks.some(p=>p!==null), lp=lastPicks[mode];
+    tr.hidden=off; const alt=$('trayAlt'), clear=anyPick||!lp, m=clear?'clear':'last';
+    if(alt.dataset.mode!==m){ alt.dataset.mode=m; alt.querySelector('.ti').innerHTML=clear?TRAY_X:TRAY_LAST; alt.querySelector('.tl').textContent=clear?'Clear picks':'Last picks'; }
+    alt.disabled=clear&&!anyPick; }
+  guide();
+  drawAll();
+  ghostSync();
+  $('homeBtn').disabled=busy||counting;
+  if(!$('home').hidden) renderHome();
+}
+
+const FLASH={bomb:['<span style="font-size:4.2rem">💣</span>','--red'],x10:['10X','--violet'],split:['SPLIT','--sky'],portal:['PORTAL','--pink'],rewind:['REWIND','--orange'],trip:['TRIP','--lime'],half:['½','--teal'],freefall:['VOID','--fg'],aim:['AIM','--blue'],bonus:['+1 DROP','gold'],magnet:['MAGNET','--steel']};
+const wordHTML=(t,c)=>c==='gold'?`<span class="go rb" style="color:transparent;text-shadow:none;filter:drop-shadow(0 0 14px rgba(246,215,122,.45))">${t}</span>`:`<span class="go" style="color:var(${c});text-shadow:0 0 28px color-mix(in srgb,var(${c}) 55%,transparent)">${t}</span>`;
+const flashHTML=type=>wordHTML(...FLASH[type]);
+function flashText(i,t,c){ const el=$('flash'+i); if(!el) return; el.innerHTML=wordHTML(t,c); clearTimeout(el._t); el._t=setTimeout(()=>{ el.innerHTML=''; },900); }
+const flash=(i,type)=>flashText(i,...FLASH[type]);
+// sound: small synthesized effects. Audio starts on the Drop tap, since browsers block it before a tap
+let actx=null, muted=false;
+// sound always starts on; muting lasts for the current game only
+function ac(){ if(muted) return null; try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){ return null; } return actx; }
+function tone(freq,dur,{type='sine',vol=.15,at=0,slide=0,pan=0}={}){
+  const a=ac(); if(!a) return;
+  const t=a.currentTime+at, o=a.createOscillator(), g=a.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,t); if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(40,freq*slide),t+dur);
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+.008); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g);
+  if(pan&&a.createStereoPanner){ const p=a.createStereoPanner(); p.pan.setValueAtTime(0,t); p.pan.linearRampToValueAtTime(pan,t+dur); g.connect(p); p.connect(a.destination); }
+  else g.connect(a.destination);
+  o.start(t); o.stop(t+dur+.03);
+}
+function noise(dur,{vol=.3,freq=600,type='lowpass'}={}){
+  const a=ac(); if(!a) return;
+  const b=a.createBuffer(1,Math.floor(a.sampleRate*dur),a.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+  const n=a.createBufferSource(), f=a.createBiquadFilter(), g=a.createGain();
+  n.buffer=b; f.type=type; f.frequency.value=freq; g.gain.value=vol;
+  n.connect(f); f.connect(g); g.connect(a.destination); n.start();
+}
+let lastTick=0;
+const SFX={
+  peg(row){ const now=performance.now(); if(now-lastTick<35) return; lastTick=now; tone(700+row*45+Math.random()*60,.06,{type:'triangle',vol:.07}); },
+  count(){ tone(440,.12,{vol:.12}); },
+  go(){ tone(880,.2,{vol:.14}); },
+  land(v){ if(v===100){ tone(988,.18,{vol:.14}); tone(1319,.3,{vol:.12,at:.08}); } else if(v===25) tone(784,.2,{vol:.12}); else tone(330,.12,{type:'triangle',vol:.1}); },
+  bomb(){ noise(.6,{vol:.45,freq:450}); tone(120,.5,{type:'sawtooth',vol:.1,slide:.4}); },
+  x10(){ [523,659,784,1047].forEach((f,i)=>tone(f,.16,{vol:.12,at:i*.07})); },
+  // one note that snaps and pulls apart: a pitch rising to the right and one falling to the left
+  split(){ noise(.05,{vol:.25,freq:2500,type:'highpass'}); tone(740,.12,{vol:.12}); tone(740,.45,{vol:.11,at:.06,slide:1.9,pan:.9}); tone(740,.45,{vol:.11,at:.06,slide:.5,pan:-.9}); },
+  portal(){ tone(200,.7,{vol:.14,slide:6}); },
+  half(){ tone(660,.14,{type:'triangle',vol:.12}); tone(330,.3,{type:'triangle',vol:.12,at:.13}); }, // a note that drops an octave: halved
+  freefall(){ noise(.55,{vol:.18,freq:1400}); tone(520,.5,{vol:.1,slide:.45}); }, // a falling whoosh
+  aim(){ tone(880,.08,{vol:.12}); tone(1320,.18,{vol:.1,at:.07}); },
+  aimPick(){ tone(1046,.12,{type:'triangle',vol:.12}); },
+  magnet(){ tone(110,.6,{type:'sawtooth',vol:.06,slide:2.2}); tone(220,.6,{vol:.08,slide:2.2}); }, // a rising hum
+  bonus(){ [784,988,1175,1568].forEach((f,i)=>tone(f,.22,{type:'triangle',vol:.1,at:i*.06})); }, // a sparkly run
+  trip(){ tone(600,.35,{type:'square',vol:.05,slide:.35}); },
+  rewind(){ tone(1200,.45,{vol:.12,slide:.25}); },
+};
+const SPK_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 9a3.5 3.5 0 0 1 0 6M19 6.5a7 7 0 0 1 0 11"/></svg>';
+const SPK_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>';
+function renderMute(){ const b=$('mute'); b.innerHTML=muted?SPK_OFF:SPK_ON; b.setAttribute('aria-label',muted?'Turn sound on':'Turn sound off'); b.title=muted?'Sound off':'Sound on'; }
+$('mute').onclick=()=>{ muted=!muted; try{ localStorage.setItem('dropface-muted',muted?'1':'0'); }catch(e){} renderMute(); if(!muted) SFX.go(); };
+renderMute();
+// free fall: straight down the same column into the slot right below, no pins to bounce off
+function fallPath(x){
+  const k=Math.max(0,Math.min(SLOTS-1,Math.floor(x/gap))), pts=[{x,y:-ballR*2}];
+  for(let r=0;r<ROWS;r++) pts.push({x,y:pegY(r)-pegR-ballR});
+  pts.push({x:slotX(k),y:H-ballR-2,bin:true}); pts.push({x:slotX(k),y:H+ballR*2});
+  return {pts,k};
+}
+// shows the drop-point buttons over the top of a board and resolves with the slot the player taps
+// the bomb's explosion: a flash, a shock ring and shards flying out from where the ball was, drawn over board i
+function explode(i,x,y){
+  const sec=L[i].sec; sec.classList.remove('boom'); void sec.offsetWidth; sec.classList.add('boom'); setTimeout(()=>sec.classList.remove('boom'),500);
+  const cols=[css('--red'),css('--amber'),css('--orange'),css('--fg')];
+  const bits=Array.from({length:34},(_,n)=>{ const a=Math.random()*Math.PI*2, v=(1.5+Math.random()*4.5)*(reduce?.4:1); return {x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-1.5,r:1.5+Math.random()*3,c:cols[n%cols.length]}; });
+  const t0=performance.now(), dur=reduce?350:900, ctx=L[i].ctx;
+  (function frame(now){ const t=Math.min(1,(now-t0)/dur);
+    drawLevel(i);
+    ctx.save();
+    ctx.globalAlpha=Math.max(0,.55-t*1.4); ctx.fillStyle=css('--amber'); ctx.beginPath(); ctx.arc(x,y,ballR*(2+t*6),0,7); ctx.fill();              // flash
+    ctx.globalAlpha=Math.max(0,1-t*1.6); ctx.strokeStyle=css('--red'); ctx.lineWidth=3*(1-t)+.5; ctx.beginPath(); ctx.arc(x,y,ballR*(1.5+t*12),0,7); ctx.stroke(); // shock ring
+    bits.forEach(b=>{ b.x+=b.vx; b.y+=b.vy; b.vy+=.18; b.vx*=.985; ctx.globalAlpha=Math.max(0,1-t); ctx.fillStyle=b.c; ctx.beginPath(); ctx.arc(b.x,b.y,b.r*(1-t*.6),0,7); ctx.fill(); });
+    ctx.restore();
+    if(t<1) requestAnimationFrame(frame); else drawLevel(i);
+  })(t0);
+}
+function chooseAim(level){
+  return new Promise(res=>{
+    const bar=$('aim'+level); bar.hidden=false;
+    const top=scrollTop()+relTop(L[level].sec)-90-trayH();
+    scrollToY({top:Math.max(0,top),behavior:reduce?'auto':'smooth'});
+    bar.querySelectorAll('button').forEach(b=>b.onclick=()=>{ bar.hidden=true; res(+b.dataset.k); });
+    setTimeout(()=>{ const f=bar.querySelector('button'); try{ f&&f.focus({preventScroll:true}); }catch(e){} },400);
+  });
+}
+// magnet: the ball ignores the pins and glides in a smooth curve down into the target slot (the player's 100)
+function magnetPath(x,target){
+  const tx=slotX(target??Math.floor(x/gap)), pts=[{x,y:-ballR*2}];
+  for(let r=0;r<ROWS;r++){ const u=(r+1)/(ROWS+1), e=1-Math.pow(1-u,2.2); pts.push({x:x+(tx-x)*e,y:pegY(r)-pegR-ballR}); }
+  pts.push({x:tx,y:H-ballR-2,bin:true}); pts.push({x:tx,y:H+ballR*2});
+  return {pts,k:Math.round(tx/gap-.5)};
+}
+// rewind: retrace the path it just fell (bin back up through every pin it hit to the top), then a fresh random fall from that same entry point
+function rewindPath(t){
+  const up=t.back.slice(0,-1).reverse().map(q=>({x:q.x,y:q.y,peg:!!q.peg})); // bin, pins in reverse, top; no landing flags on the way up
+  up.unshift({x:t.back[t.back.length-1].x,y:t.back[t.back.length-1].y});     // start from below the board, where it just fell out
+  const down=pathFor(t.x,t.id);
+  return {pts:[...up,...down.pts.slice(1)],k:down.k};
+}
+function pathFor(x){
+  const half=gap/2, pts=[{x,y:-ballR*2}];
+  for(let r=0;r<ROWS;r++){
+    pts.push({x,y:pegY(r)-pegR-ballR,peg:true});
+    let dir=rand()<.5?-1:1;
+    if(x+dir*half<half*.99) dir=1; if(x+dir*half>W-half*.99) dir=-1;
+    x+=dir*half;
+  }
+  const k=Math.max(0,Math.min(SLOTS-1,Math.floor(x/gap)));
+  pts.push({x:slotX(k),y:H-ballR-2,bin:true});
+  pts.push({x:slotX(k),y:H+ballR*2});
+  return {pts,k};
+}
+
+function follow(i){
+  const r=L[i].canvas.getBoundingClientRect(), fr=FRAMED.matches?$('scroller').getBoundingClientRect().top:0;
+  const y=balls.length?balls.reduce((s,b)=>s+b.y,0)/balls.length:0;
+  const target=scrollTop()+r.top-fr+y-viewH()*0.38;
+  scrollToY({top:Math.max(0,reduce?target:scrollTop()+(target-scrollTop())*0.12)});
+}
+
+function run(){
+  busy=true; if(!inBonus) badgeStart(); startedAt=carry; score=carry; carry=0; runLog=[]; results=results.map(()=>[]); landed=landed.map(()=>[]);
+  const seg=reduce?50:135;
+  // every ball is a token: where it starts and which board it enters next. The balls with the lowest
+  // "next" board play it together; any ball sent elsewhere by a special waits at the top of its next
+  // board until the others catch up, then they carry on together.
+  let tokens=[{id:0,x:slotX(startSlot),next:0}], nextId=1, i=0, p=0, t0=performance.now();
+  waiting=[];
+  const startLevel=()=>{
+    i=Math.min(...tokens.map(t=>t.next));
+    const act=tokens.filter(t=>t.next===i); waiting=tokens.filter(t=>t.next!==i);
+    landed[i]=[]; // a board can be played more than once; show only this pass
+    ballLevel=i; balls=act.map(t=>({...(t.back?rewindPath(t):t.free?fallPath(t.x):t.mag?magnetPath(t.x,picks[i]):pathFor(t.x,t.id)),id:t.id,free:!!t.free,mag:!!t.mag,x:t.x,y:-ballR*2,trail:[]}));
+    // balls on one board step together, so a shorter path (one that isn't rewinding) waits at the top until the others catch up
+    const len=Math.max(...balls.map(b=>b.pts.length));
+    balls.forEach(b=>{ while(b.pts.length<len) b.pts.unshift({x:b.pts[0].x,y:b.pts[0].y}); });
+    p=0;
+  };
+  startLevel(); render();
+  function step(now){
+    const t=Math.max(0,Math.min(1,(now-t0)/seg));
+    balls.forEach(b=>{
+      const a=b.pts[p], c=b.pts[p+1], hop=a.peg?rowH*.35:0;
+      b.x=a.x+(c.x-a.x)*t; b.y=a.y+(c.y-a.y)*t*t-hop*4*t*(1-t);
+      b.trail.push({x:b.x,y:b.y}); if(b.trail.length>9) b.trail.shift();
+    });
+    drawLevel(i); follow(i);
+    if(t>=1){
+      p++; t0=now;
+      if(balls[0].pts[p]?.peg) SFX.peg(p-1);
+      if(balls[0].pts[p].bin){ // the balls on this board land at the same moment; tally in order
+        let lost=0, gained=0, halved=0;
+        balls.forEach(b=>{
+          const v=value(i,b.k), before=score; landed[i].push(b.k); results[i].push({v});
+          if(v==='bonus') earnBonus();
+          if(v==='bomb'){ lost+=score; score=0; } else if(v==='half'){ const cut=score-Math.floor(score/2); halved+=cut; score-=cut; } else if(v==='x10'){ gained+=score*9; score*=10; } else if(typeof v==='number') score+=PTS(v);
+          runLog.push({lv:i,v,d:score-before});
+          badgeLand(i,v);
+        });
+        const hit=['bomb','half','x10','split','rewind','trip','freefall','aim','bonus','magnet'].find(t=>balls.some(b=>value(i,b.k)===t));
+        if(hit) SFX[hit](); else if(!balls.some(b=>value(i,b.k)==='portal')){ const nums=balls.map(b=>value(i,b.k)).filter(v=>typeof v==='number'); if(nums.length) SFX.land(Math.max(...nums)); }
+        if(hit==='bomb') flashText(i,'−'+lost.toLocaleString(),'--red'); // show what the bomb wiped out
+        else if(hit==='half') flashText(i,'−'+halved.toLocaleString(),'--teal'); // show what the halving took
+        else if(hit==='x10') flashText(i,'+'+gained.toLocaleString(),'--violet'); // show what the multiplier added
+        else if(hit==='bonus'){ const nb=balls.filter(b=>value(i,b.k)==='bonus').length; flashText(i,`+${nb} DROP${nb>1?'S':''}`,'gold'); } // one per ball that landed on +1
+        else if(hit) flash(i,hit);
+        else if(!balls.some(b=>value(i,b.k)==='portal')){ // plain points: show what this board paid
+          const nums=balls.map(b=>value(i,b.k)).filter(v=>typeof v==='number');
+          const pts=nums.reduce((a,v)=>a+PTS(v),0), best=Math.max(0,...nums);
+          if(pts) flashText(i,'+'+pts,best===100?'--mint':best===25?'--amber':'--fg');
+        }
+        render();
+        // bomb: the ball that hit it explodes and the drop ends here, every ball included (the score is already 0)
+        const boomB=balls.find(b=>value(i,b.k)==='bomb');
+        if(boomB){ const bx=boomB.x, by=boomB.y; busy=false; done=true; balls=[]; waiting=[]; ballLevel=-1; explode(i,bx,by); finishGame(score); return; }
+      }
+      if(p>=balls[0].pts.length-1){
+        balls.forEach(b=>b.trail=[]); ballLevel=-1; drawLevel(i);
+        // each ball that just landed moves on by itself; balls already waiting keep waiting
+        let warp=false, tripped=false;
+        const moved=[];
+        balls.forEach(b=>{
+          const v=value(i,b.k);
+          if(v==='portal'){ moved.push({id:b.id,x:slotX(rr(SLOTS)),next:0}); warp=true; }       // back to the top board
+          else if(v==='rewind'){ const fell=b.pts.slice(-(ROWS+3)); moved.push({id:b.id,x:fell[0].x,next:i,back:fell}); } // climb back up its last fall only (top, 8 pins, bin, exit), then fall again from where it entered
+          else if(v==='trip'){ moved.push({id:b.id,x:slotX(b.k),next:i+2}); tripped=true; } // jump over the next board
+          else if(v==='freefall') moved.push({id:b.id,x:slotX(b.k),next:i+1,free:true});
+          else if(v==='aim') moved.push({id:b.id,x:slotX(b.k),next:i+1,aim:true});
+          else if(v==='magnet') moved.push({id:b.id,x:slotX(b.k),next:i+1,mag:true});            // next board: pulled straight into the player's pick           // the player chooses where it enters the next board         // the next board's pins vanish for this ball           // the player chooses where it enters the next board         // the next board's pins vanish for this ball
+          else {
+            moved.push({id:b.id,x:slotX(b.k),next:i+1});
+            if(v==='split'&&waiting.length+moved.length<MAXBALLS) moved.push({id:nextId++,x:slotX(b.k),next:i+1});
+          }
+        });
+        tokens=[...waiting,...moved];
+        if(tripped&&i+1<LEVELS&&!tokens.some(t=>t.next===i+1)) flashText(i+1,'SKIPPED','--muted');
+        tokens=tokens.filter(t=>t.next<LEVELS); // a trip past the last board finishes that ball
+        // aim: only the ball(s) that landed on Aim get the choice; if both balls did, both drop from the one slot picked.
+        // A ball that didn't land on Aim keeps falling from wherever it landed.
+        const aimTs=tokens.filter(t=>t.aim);
+        if(aimTs.length){
+          aimTs.forEach(t=>t.aim=false); balls=[]; waiting=tokens.slice(); ballLevel=-1; render();
+          chooseAim(aimTs[0].next).then(k=>{ aimTs.forEach(t=>t.x=slotX(k)); bRun.aimed=aimTs[0].next; waiting=[]; SFX.aimPick(); startLevel(); render(); t0=performance.now(); requestAnimationFrame(step); });
+          return;
+        }
+        if(!tokens.length){ busy=false; done=true; balls=[]; waiting=[]; finishGame(score); return; }
+        if(warp&&Math.min(...tokens.map(t=>t.next))===0){ // portal: scroll back up before the ball drops again
+          balls=[]; waiting=tokens.filter(t=>t.next!==0); render();
+          scrollToY({top:0,behavior:reduce?'auto':'smooth'});
+          SFX.portal(); const el=$('count'); el.innerHTML=flashHTML('portal');
+          setTimeout(()=>{ el.innerHTML=''; startLevel(); render(); t0=performance.now(); requestAnimationFrame(step); },reduce?400:1300);
+          return;
+        }
+        startLevel(); render();
+      }
+    }
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// guide a new player: the first board still missing a pick glows with "Pick a slot", and Drop glows once every board is picked
+function guide(){
+  const first=busy||done||dailyLocked()?-1:picks.findIndex(p=>p===null);
+  L.forEach((l,i)=>l.sec.classList.toggle('needpick',i===first));
+  $('drop').classList.toggle('readyglow',!busy&&!done&&!dailyLocked()&&first===-1);
+}
+let inBonus=false; // true from pressing Play bonus drop until that replay is over
+function resetBoards(){ inBonus=false; bonusPending=0; bonusOf=null; carry=0; bonusSeq=0; done=false; picks.fill(null); results=results.map(()=>[]); landed=landed.map(()=>[]); score=0; ballLevel=-1; balls=[]; waiting=[]; }
+// the next drop starts with the boards set to the last drop's picks (Drop ready); X clears them, the dice re-rolls
+function keepLastPicks(){ try{ const lp=lastPicks[mode]; if(!lp||busy||done||dailyLocked()) return; picks=lp.map((p,i)=>fitPick(i,p)); notePicks('Last picks'); }catch(e){} }
+function startPractice(){ useMode('practice'); resetBoards(); if(!restorePending()){ placeSpecials(boardSeed()); keepLastPicks(); } render(); scrollToY({top:0,behavior:reduce?'auto':'smooth'}); }
+function newPractice(){ if(mode!=='practice') useMode('practice'); day=pracDay=newPracRound(); lastPicks.practice=null; startPractice(); }
+function startDaily(){ if(PREVIEW){ newPractice(); return; } useMode('daily'); resetBoards(); if(!restorePending()){ placeSpecials(boardSeed()); keepLastPicks(); } render(); scrollToY({top:0,behavior:reduce?'auto':'smooth'}); }
+// +1: in a Daily Drop it adds an extra drop to today (playable straight away); in practice it's just for show
+let bonusPending=0; // bonus drops won this drop, waiting to replay the same board
+let bonusOf=null;   // index of the daily drop a bonus replay is extending
+let carry=0;        // score a bonus replay starts from
+let bonusSeq=0;     // how many bonus replays this drop has had (gives each its own seeded bounces)
+// a bonus won but not played yet is saved with the day, so a reload or a trip to practice doesn't lose it
+function restorePending(){
+  const pd=day.pending; if(!pd) return false;
+  placeSpecials(boardSeed()); picks=pd.picks.slice();
+  bonusPending=pd.count; bonusOf=pd.n; bonusSeq=pd.seq||0; score=day.scores[pd.n]||0; done=true; return true;
+}
+// in a Daily Drop the bonus is a real extra drop for today; in practice it just offers another practice round
+function earnBonus(){ bonusPending++; day.bonus++; }
+let runLog=[], startedAt=0; // this pass's landings, and the score it started from (non-zero on a bonus replay)
+// best game total on this device, kept apart for the daily and single player (like Gambit)
+const hiScore={daily:0,practice:0}; try{ hiScore.daily=+localStorage.getItem('dropface-hiscore-daily')||0; hiScore.practice=+localStorage.getItem('dropface-hiscore-practice')||0; localStorage.removeItem('dropface-hiscore'); }catch(e){}
+function finishGame(s){
+  try{ localStorage.setItem('dropface-lastsum',mode); }catch(e){}
+  setTimeout(saveHi,0);
+  // once the drop has played out, glide back up to the top of the boards
+  // then set up the next drop on its own (picks kept, Drop ready, tray back) when there is one to play
+  // bonus earned: back to the top with "Play bonus drop" ready; more drops left: the next drop is set up;
+  // the very last drop of the round stays where it ended (the summary opens there)
+  setTimeout(()=>{ if(busy||!done) return;
+    if(bonusPending>0) scrollToY({top:0,behavior:reduce?'auto':'smooth'});
+    else if(available()>0){ mode==='daily'?startDaily():startPractice(); }
+    else if(muted){ muted=false; try{ localStorage.setItem('dropface-muted','0'); }catch(e){} renderMute(); } },reduce?200:500); // game over: sound back on
+  const daily=mode==='daily';
+  const scores=day.scores.slice(); let n;
+  if(bonusOf===null){ n=scores.length; scores.push(s); } else { n=bonusOf; scores[n]=s; } // a bonus replay replaces its drop's score with the running total
+  const log=(day.log||[]).slice(); log[n]={passes:[...((log[n]&&log[n].passes)||[]),{from:startedAt,to:s,ev:runLog}]};
+  if(daily){ noteBestDrop(s); badgeFinish(s); } // s is the drop's running score, so bonus drops count toward it; achievements may add to today's total
+  day={used:scores.length,total:0,scores,bonus:day.bonus,log,ach:day.ach||[],seed:day.seed};
+  day.total=scores.reduce((a,v)=>a+v,0)+achPts(); // drop scores plus today's achievement bonuses
+  if(bonusPending>0){ day.pending={n,picks:picks.slice(),count:bonusPending,seq:bonusSeq}; bonusOf=n; } else bonusOf=null;
+  if(daily){ saveDay(); postScore(s); }
+  if(day.used>=PER_DAY&&!day.pending) setTimeout(()=>{ if(!busy) openSummary(); },1400);
+  render();
+}
+$('drop').onclick=()=>{
+  if(busy) return;
+  // bonus drop: replay this exact board (same specials, same picks) straight into the countdown
+  if(done&&bonusPending>0){ inBonus=true; bonusPending--; bonusSeq++; carry=score; delete day.pending; if(mode==='daily') saveDay(); done=false; results=results.map(()=>[]); landed=landed.map(()=>[]); ballLevel=-1; balls=[]; waiting=[]; render(); countdown(); return; }
+  // day finished: the button only counts down to the next game, so a tap does nothing
+  if(available()<=0&&(done||dailyLocked())&&!bonusPending){ if(mode==='practice') newPractice(); return; } // practice: start a fresh round
+  if(done||dailyLocked()){ mode==='daily'?startDaily():startPractice(); return; }
+  if(picks.every(p=>p!==null)){ inBonus=false; countdown(); }
+};
+
+// the strip under the title: which mode you're in, today's result, and the switch between them
+function untilTomorrow(){ const d=new Date(), secs=Math.ceil((new Date(d.getFullYear(),d.getMonth(),d.getDate()+1)-d)/1000); const t=Math.max(1,secs), h=Math.floor(t/3600), m=Math.floor(t%3600/60), s=t%60; return h?`${h}h ${m}m`:`${Math.max(1,m+(s>0?1:0))}m`; }
+// tick the "Next drop in" countdown every second without redrawing the boards
+setInterval(()=>{ const d=$('drop'); if(!busy&&d.textContent.startsWith('Next drop in')) d.textContent=`Next drop in ${untilTomorrow()}`; },1000);
+
+// your place on today's leaderboard, e.g. " You're #3 of 12."; empty when the board can't be read
+// your place on today's leaderboard as "#3 of 12"; a dash when there's nothing to rank or the board can't be read
+function todayPlace(){
+  if(lbState!=='ok'||!day.used) return '—';
+  let i=todayBoard.findIndex(r=>r.id===myId);
+  const rank=i>=0?i+1:todayBoard.filter(r=>(Number(r.dayScore)||0)>day.total).length+1;
+  const total=Math.max(todayBoard.length+(i>=0?0:1),rank);
+  return `#${rank} of ${total>=50?'50+':total}`;
+}
+function renderDay(){
+  const bar=$('daybar'), btn=$('dayBtn');
+  bar.classList.toggle('practice',mode==='practice'); bar.classList.remove('ready');
+  // Practice Mode is open until the first Drop of the day; once the daily game has started it stays locked
+  // until that game is finished (every drop played, no bonus drop waiting)
+  const dd=dailyDay(), dayDone=dd.used>=PER_DAY&&!dd.pending&&!(mode==='daily'&&bonusPending>0);
+  const started=dd.used>0||(mode==='daily'&&(busy||done||bonusPending>0)), locked=mode==='daily'&&started&&!dayDone;
+  btn.disabled=busy||locked; btn.setAttribute('aria-checked',String(mode==='practice'));
+  btn.title=locked?'Finish today\'s game to unlock Practice Mode':''; btn.setAttribute('aria-label',locked?'Practice Mode, unlocks when today\'s game is finished':'Practice Mode');
+  const prac=mode==='practice';
+  const labels=prac?['Total','Best Drop','+100 Hit Rate']:['Daily Total','All-time Drop','Leaderboard'];
+  $('dayStats').querySelectorAll('small').forEach((el,k)=>{ el.textContent=labels[k]; });
+  const a=available();
+  const title=$('dayTitle');
+  if(prac){ title.textContent='Single player'; title.classList.remove('num'); }
+  else { title.textContent='Daily challenge'; title.classList.remove('num'); const no=document.createElement('span'); no.className='dayno'; no.textContent=`No. ${dayNo()}`; title.appendChild(no); } // the puzzle number, styled like the tally label
+  $('dayTotal').textContent=liveTotal().toLocaleString();
+  { const hs=Math.max(hiScore[mode==='practice'?'practice':'daily'],day.total); $('hiScore').textContent=hs?hs.toLocaleString():'\u2014'; }
+  if(prac){ const b=Math.max(0,...day.scores.map(Number)); $('dayBest').textContent=b?b.toLocaleString():'\u2014'; $('dayPlace').textContent=hitPct(); }
+  else { $('dayPlace').textContent=todayPlace(); $('dayBest').textContent=bestDrop?bestDrop.toLocaleString():'\u2014'; }
+  const bonusReady=done&&bonusPending>0;
+  // no text line above the bar in either mode
+  $('daySub').textContent='';
+  // one small gold ball after the bar for every bonus drop won; a bonus waiting to be played pulses
+  const bb=$('bballs'); bb.hidden=!day.bonus; bb.textContent='';
+  for(let n=0;n<day.bonus;n++){ const d=document.createElement('i'); d.className='bball'+(bonusReady&&n>=day.bonus-bonusPending?' waiting':''); bb.appendChild(d); }
+  bb.setAttribute('aria-label',`${day.bonus} bonus drop${day.bonus===1?'':'s'}`+(bonusReady?', one ready to play':''));
+  const ab=$('achballs'), todays=prac?[]:(day.ach||[]).map(x=>badge(x.id)).filter(Boolean); ab.hidden=!todays.length; ab.textContent='';
+  todays.forEach(b=>ab.appendChild(miniBadge(b))); ab.setAttribute('aria-label',`Achievements today: ${todays.map(b=>b.name).join(', ')}`);
+  bar.classList.toggle('ready',a>0);
+  $('sumBtn').textContent=prac?'See summary':'See daily summary';
+  $('sumBtn').hidden=!(day.used>=PER_DAY&&!bonusReady&&!day.pending);
+  $('daySub').classList.toggle('isready',!prac&&(a>0||bonusReady));
+  // one bar for the day: solid = drops played, glowing = ready to play; bonus drops don't add blocks
+  // one dash per drop (mint = still to play, dark = played) plus a gold dash per bonus drop won; each played dash has its score under it
+  const p=$('pips'), N=PER_DAY, log=day.log||[], segs=[];
+  for(let k=0;k<N;k++){ const ps=(log[k]&&log[k].passes)||[]; const v=ps.length?ps[0].to:day.scores[k]; segs.push({bonus:false,v:k<day.used?v:null}); }
+  for(let k=0;k<N;k++){ const ps=(log[k]&&log[k].passes)||[]; for(let j=1;j<ps.length;j++) segs.push({bonus:true,v:ps[j].to-ps[j].from}); }
+  for(let k=segs.length-N;k<day.bonus;k++) segs.push({bonus:true,v:null}); // won, not played yet
+  p.textContent=''; segs.forEach(sg=>{ const d=document.createElement('i'); d.className='seg'+(sg.bonus?' bonus':'')+(sg.v!=null?' used':''); p.appendChild(d); });
+  const left=Math.max(0,N-Math.min(N,day.used));
+  p.setAttribute('aria-label',`${left} of ${N} drops left`+(day.bonus?`, ${day.bonus} bonus drop${day.bonus===1?'':'s'}`:'')+(day.scores.length?`. Drop scores: ${segs.filter(x=>x.v!=null).map(x=>x.v).join(', ')}`:''));
+  { const nums=$('pipNums'); nums.style.gridTemplateColumns=`repeat(${segs.length},1fr)`; nums.textContent='';
+    segs.forEach(sg=>{ const s=document.createElement('span'); if(sg.bonus) s.className='bonus'; s.textContent=sg.v==null?'':Number(sg.v).toLocaleString(); nums.appendChild(s); }); }
+  // single player: no hit-rate stat in the tray
+  { const cells=$('dayStats').children; if(cells[1]) cells[1].hidden=true; if(cells[2]) cells[2].hidden=true; bar.classList.add('nostats'); } // no best-drop or leaderboard stat in the tray
+}
+// leaving a practice round that's under way asks first; a round not started yet, or already finished, just switches
+const pracUnderway=()=>mode==='practice'&&((day.used>0&&day.used<PER_DAY)||!!day.pending||(done&&bonusPending>0));
+$('dayBtn').onclick=()=>{ if(busy||$('dayBtn').disabled) return; if(mode==='practice'){ if(pracUnderway()){ $('leaveModal').showModal(); return; } startDaily(); } else startPractice(); };
+$('leaveGo').onclick=()=>{ closeModal($('leaveModal')); startDaily(); pracDay=null; lastPicks.practice=null; showHome(); }; // the round is thrown away; the next practice starts fresh
+// at midnight a page left open reloads into the new day's drops (it waits if a drop is mid-fall)
+setInterval(()=>{ if(busy) return; if(new Date().getDate()!==NOW.getDate()){ location.reload(); return; } render(); },30000);
+
+// how long to wait before "3": roughly the time the smooth scroll back to the top needs
+const waitTop=()=>reduce?100:Math.min(1400,650+scrollTop()*0.12);
+// scroll back to the top board, count 3-2-1, then release the ball
+function countdown(){
+  document.querySelectorAll('dialog[open]').forEach(d=>d.close());
+  ac();
+  if(!inBonus){ lastPicks[mode]=picks.slice(); if(mode==='daily') try{ localStorage.setItem('dropface-lastpicks-'+TODAY,JSON.stringify(picks)); }catch(e){} }
+  // the start is revealed only once Drop is pressed, so picks can't be aimed at it
+  const key=bonusOf!==null&&bonusSeq>0?`${bonusOf}b${bonusSeq}`:day.used; // each bonus replay gets its own seeded start and bounces
+  if(mode==='daily'){ startSlot=Math.floor(seeded(dropKey(key,'start'))()*SLOTS); rand=seeded(dropKey(key,'bounces')); }
+  else { startSlot=rnd(SLOTS); rand=Math.random; }
+  busy=true; counting=true; score=carry; results=results.map(()=>[]); landed=landed.map(()=>[]); render();
+  scrollToY({top:0,behavior:reduce?'auto':'smooth'});
+  const el=$('count'), beat=reduce?600:850;
+  const show=(t,cls)=>{ el.innerHTML=`<span class="${cls||''}${inBonus?' goldc':''}">${t}</span>`; }; // bonus replays count down in gold
+  const seq=['3','2','1'];
+  let n=0;
+  setTimeout(function tick(){
+    if(n<seq.length){ show(seq[n++]); SFX.count(); setTimeout(tick,beat); return; }
+    show('DROP','go'); SFX.go();
+    setTimeout(()=>{ el.innerHTML=''; },beat);
+    counting=false; run();
+  },waitTop());
+}
+// repeat: put back the last drop's picks; the player still presses Drop (a level whose slot now holds a special is left to pick)
+// a last pick that now sits under a special (new Practice or Lab board) moves to the nearest open slot, left first
+const fitPick=(i,p)=>{ for(let d=0;d<SLOTS;d++) for(const k of [p-d,p+d]) if(k>=0&&k<SLOTS&&!specials[i][k]) return k; return null; };
+const TRAY_X='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const TRAY_LAST='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a8 8 0 0 1 14-5.3L20 8"/><path d="M20 3v5h-5"/><path d="M20 13a8 8 0 0 1-14 5.3L4 16"/><path d="M4 21v-5h5"/></svg>';
+$('trayRand').onclick=()=>{ if(busy||done||dailyLocked()) return; rollPicks(); };
+$('trayAlt').onclick=()=>{ if(busy||done||dailyLocked()) return;
+  if($('trayAlt').dataset.mode==='last'){ const lp=lastPicks[mode]; if(!lp) return; picks=lp.map((p,i)=>fitPick(i,p)); notePicks('Last picks'); render(); return; }
+  picks.fill(null); render(); };
+$('repeat').onclick=()=>{ if($('repeat').dataset.mode==='dice'){ if(busy||done||dailyLocked()) return; rollPicks(); return; } const lp=lastPicks[mode]; if(busy||done||dailyLocked()||!lp) return; picks=lp.map((p,i)=>fitPick(i,p)); notePicks('Last picks'); render(); };
+$('auto').onclick=()=>{ if(busy||done||dailyLocked()) return;
+  if(picks.some(p=>p!==null)){ picks.fill(null); render(); return; } // showing the close icon: clear every pick
+  rollPicks(); };
+function rollPicks(){
+  picks=picks.map((_,i)=>{
+    const free=[...Array(SLOTS).keys()].filter(k=>!specials[i][k]);
+    const mid=free.filter(k=>k>=2&&k<=4);
+    const pool=mid.length?mid:free; return pool[rnd(pool.length)]; });
+  notePicks('Random picks'); render(); }
+// modals
+// on phones the pop-ups are bottom sheets: slide down before closing
+const sheetMQ=matchMedia('(max-width:600px)');
+function closeModal(d){
+  if(!d.open) return;
+  if(!sheetMQ.matches||reduce){ d.close(); return; }
+  d.classList.add('closing');
+  d.addEventListener('animationend',()=>{ d.classList.remove('closing'); d.close(); },{once:true});
+}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeModal(b.closest('dialog')));
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{ if(e.target===d) closeModal(d); }));
+// How to play, step 1: the bottom of a real board (bins and slot buttons) with the game's own colors
+const DEMO=[10,10,25,100,25,10,10];
+function drawDemo(){
+  const c=$('demoCanvas'), w=c.parentElement.getBoundingClientRect().width; if(!w) return;
+  const g=w/SLOTS, rh=Math.min(g*0.62,34), pr=Math.max(3.2,g*0.07), h=18, d=devicePixelRatio||1;
+  c.width=w*d; c.height=h*d; c.style.height=h+'px';
+  const x=c.getContext('2d'); x.setTransform(d,0,0,d,0,0); x.clearRect(0,0,w,h);
+  const bt=h-18; x.strokeStyle=css('--peg'); x.lineWidth=2; x.setLineDash([4,4]);
+  for(let k=1;k<SLOTS;k++){ x.beginPath(); x.moveTo(k*g,bt); x.lineTo(k*g,h); x.stroke(); }
+  x.setLineDash([]);
+  DEMO.forEach((v,k)=>{ const b=BINCOLOR[v]; if(!b) return; x.fillStyle=css(b[0]); x.globalAlpha=b[1]; x.fillRect(k*g+2,bt,g-4,18); });
+  x.globalAlpha=1;
+}
+
+// How to play, step 2: a short board where a ball drops from a hidden spot, bounces down the pins and lands; it loops while the pop-up is open
+let demoRun=0;
+function playDropDemo(){
+  const my=++demoRun, c=$('demoDrop'); if(!c) return;
+  const ROWSD=4, ctx2=c.getContext('2d');
+  let w,g,rh,pr,br,top,h,path,k0,p,t0,hold=0,lit=-1;
+  const size=()=>{ w=c.parentElement.getBoundingClientRect().width; g=w/SLOTS; rh=Math.min(g*0.62,30); pr=Math.max(3,g*0.07); br=Math.max(5,g*0.1); top=22; h=top+rh*(ROWSD-1)+rh*0.9+18;
+    const d=devicePixelRatio||1; c.width=w*d; c.height=h*d; c.style.height=h+'px'; ctx2.setTransform(d,0,0,d,0,0); };
+  const newPath=()=>{ let x=(rnd(SLOTS)+.5)*g; const half=g/2, pts=[{x,y:-br*2}];
+    for(let r=0;r<ROWSD;r++){ pts.push({x,y:top+r*rh-pr-br,peg:true}); let dir=Math.random()<.5?-1:1; if(x+dir*half<half*.99) dir=1; if(x+dir*half>w-half*.99) dir=-1; x+=dir*half; }
+    k0=Math.max(0,Math.min(SLOTS-1,Math.floor(x/g))); pts.push({x:(k0+.5)*g,y:h-br-2,bin:true}); path=pts; p=0; t0=performance.now(); lit=-1; };
+  const ball={x:0,y:0,trail:[]};
+  size(); newPath();
+  function frame(now){
+    if(my!==demoRun||!$('howto').open) return;
+    if(Math.abs(c.parentElement.getBoundingClientRect().width-w)>1){ size(); newPath(); }
+    ctx2.clearRect(0,0,w,h);
+    for(let r=0;r<ROWSD;r++){ const xs=r%2===0?Array.from({length:SLOTS},(_,k)=>(k+.5)*g):Array.from({length:SLOTS-1},(_,k)=>(k+1)*g); xs.forEach(px=>peg(ctx2,px,top+r*rh,pr,'diamond')); }
+    const bt=h-18; ctx2.strokeStyle=css('--peg'); ctx2.lineWidth=2; ctx2.setLineDash([4,4]);
+    for(let k=1;k<SLOTS;k++){ ctx2.beginPath(); ctx2.moveTo(k*g,bt); ctx2.lineTo(k*g,h); ctx2.stroke(); }
+    ctx2.setLineDash([]);
+    if(lit>=0){ ctx2.fillStyle=css('--mint'); ctx2.globalAlpha=.25; ctx2.fillRect(lit*g+2,bt,g-4,18); ctx2.globalAlpha=1; }
+    if(hold){ if(now-hold>900){ hold=0; ball.trail=[]; newPath(); } }
+    else {
+      const seg=reduce?400:170, t=Math.min(1,(now-t0)/seg), a=path[p], b=path[p+1], hop=a.peg?rh*.35:0;
+      ball.x=a.x+(b.x-a.x)*t; ball.y=a.y+(b.y-a.y)*t*t-hop*4*t*(1-t);
+      ball.trail.push({x:ball.x,y:ball.y}); if(ball.trail.length>8) ball.trail.shift();
+      if(t>=1){ p++; t0=now; if(path[p].bin){ lit=k0; hold=now; } }
+    }
+    drawBall(ctx2,ball,css('--mint'));
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+$('openHow').onclick=()=>{ $('howto').showModal(); };
+
+$('openLb').onclick=()=>{ $('lbModal').showModal(); renderLb(); };
+
+// leaderboard: everyone reads scores/, each player writes only scores/<their id>
+let db=null, user=null, myId=null, board=[], todayBoard=[], lbState='loading', canPost=true, lbTab='today';
+(async()=>{
+  try{ if(window.claude?.use) [db,user]=await Promise.all([claude.use('db'),claude.use('user')]); }catch(e){}
+  if(!db){ lbState='off'; renderLb(); return; }
+  DCTune.guard('dropface',db,'Dropface');
+  if(!PREVIEW) db.doc('dropface_config/tune').onSnapshot(sn=>applyDF(DCTune.pick(sn.exists?sn.data():null)),()=>{});
+  try{ myId=user?await user.id():null; }catch(e){}
+  db.doc('dropface_config/game').onSnapshot(sn=>{ if(sn.exists&&sn.data().at) applyReset(sn.data().at); const e=sn.exists?sn.data().epoch:null; if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)&&e!==EPOCH){ EPOCH=e; if(!busy) renderDay(); } },()=>{});
+  db.collection('dropface_scores').orderBy('best','desc').limit(50).onSnapshot(
+    s=>{ board=s.docs.map(d=>({id:d.id,...d.data()})).filter(r=>(Number(r.best)||0)>0); lbState='ok'; renderLb(); },
+    ()=>{ lbState='off'; renderLb(); });
+  db.collection('dropface_scores').where('day','==',TODAY).orderBy('dayScore','desc').limit(50).onSnapshot(
+    s=>{ todayBoard=s.docs.map(d=>({id:d.id,...d.data()})); renderLb(); if(!busy) renderDay(); }, ()=>{});
+  // already played today on another device? lock the Daily Drop here too
+  if(myId){ try{ const sn=await db.doc('dropface_scores/'+myId).get(), d=sn.exists?sn.data():null;
+    if(d&&d.ach&&typeof d.ach==='object'){ earnedB={...d.ach,...earnedB}; if(Array.isArray(d.achSeen)) seenSpecials=[...new Set([...seenSpecials,...d.achSeen])]; saveBadges(); }
+    if(d) noteBestDrop(Math.max(Number(d.bestDrop)||0,...(Array.isArray(d.dropScores)?d.dropScores.map(Number):[0])));
+    const used=Number(d?.dropsUsed)||0;
+    if(d&&d.day===TODAY&&used>dailyDay().used&&!busy){ setDaily({used,total:Number(d.dayScore)||0,scores:Array.isArray(d.dropScores)?d.dropScores:[],bonus:Number(d.bonusDrops)||0,log:Array.isArray(d.dropLog)?d.dropLog:(dailyDay().log||[]),ach:Array.isArray(d.dayAch)?d.dayAch:(dailyDay().ach||[])}); saveDay(); if(mode==='daily'&&!done) startDaily(); else render(); }
+  }catch(e){} }
+})();
+function setTab(t){ lbTab=t; $('tabToday').setAttribute('aria-selected',String(t==='today')); $('tabAll').setAttribute('aria-selected',String(t==='all')); renderLb(); }
+$('tabToday').onclick=()=>setTab('today'); $('tabAll').onclick=()=>setTab('all');
+
+async function renderLb(){
+  const list=$('lbList'), note=$('lbNote');
+  if(lbState!=='ok'){ list.innerHTML=''; note.textContent=lbState==='off'?"The leaderboard isn't available in this view.":'Loading scores…'; return; }
+  const today=lbTab==='today', rows=today?todayBoard:board;
+  let names={};
+  try{ if(user&&rows.length) names=(await user.profiles(rows.map(r=>r.id)))||{}; }catch(e){}
+  list.innerHTML='';
+  // your score and rank, big, above the tabs
+  const mi=rows.findIndex(r=>r.id===myId), mine=today?(mi>=0?Number(rows[mi].dayScore)||0:dailyDay().total):(mi>=0?Number(rows[mi].best)||0:0);
+  $('lbSub').textContent=today?`Daily challenge No. ${dayNo()}`:'All time';
+  $('lbMine').textContent=mine?mine.toLocaleString():'\u2014';
+  const rk0=$('lbRank'); rk0.hidden=mi<0; rk0.textContent=mi>=0?`Rank #${mi+1}`:'';
+  rows.forEach((r,i)=>{
+    const best=Number(today?r.dayScore:r.best)||0, games=Number(r.games)||1, me=r.id===myId;
+    const li=document.createElement('li'); if(me) li.className='me';
+    const rk=document.createElement('span'); rk.className='rk'; rk.textContent=i+1; if(i<3) li.style.setProperty('--c',['var(--amber)','var(--steel)','var(--orange)'][i]);
+    const nm=document.createElement('div'); nm.className='nm';
+    const n=document.createElement('span'); n.textContent=r.ini||names[r.id]?.name||'Player';
+    const g=document.createElement('small'); const du=Number(r.dropsUsed)||1; g.textContent=(me?'You \u00b7 ':'')+(today?`${du} of ${PER_DAY} drops`:`${games} day${games===1?'':'s'} played`);
+    nm.append(n,g);
+    const sc=document.createElement('span'); sc.className='sc'; sc.textContent=best.toLocaleString();
+    li.append(rk,nm,sc); list.appendChild(li);
+  });
+  note.textContent=!rows.length?(today?'No scores yet today. Finish a daily game to post yours.':'No scores yet. Finish a daily game to post yours.')
+    :!myId?'Sign in to post your own score.'
+    :!canPost?"You have view-only access, so your scores aren't posted."
+    :(today?"Today's Daily challenge totals.":"Each player's best daily total.")+' Single player games are not posted.';
+}
+
+async function postScore(s){
+  if(!db||!myId||!canPost||PREVIEW) return;
+  try{
+    const ref=db.doc('dropface_scores/'+myId), snap=await ref.get(), prev=snap.exists?snap.data():{};
+    const prevBest=Number(prev.best)||0;
+    const newDay=prev.day!==TODAY;
+    await ref.set({best:Math.max(prevBest,day.total), games:(Number(prev.games)||0)+(newDay?1:0), last:s, at:Date.now(), day:TODAY, dayScore:day.total, dropsUsed:day.used, dropScores:day.scores, dropLog:day.log, bestDrop:Math.max(Number(prev.bestDrop)||0,bestDrop), bonusDrops:day.bonus, dayAch:day.ach||[], ach:earnedB, achSeen:seenSpecials, dayNo:dayNo(), ini:(window.DCIni&&DCIni.get())||prev.ini||''});
+    if(day.total>prevBest && day.total>0 && done) $('status').textContent=`Drop ${day.used} score · new best day!`;
+  }catch(e){ if(e?.code==='invalid_argument') canPost=false; renderLb(); }
+}
+
+// ---------- achievements: lifetime challenges, earned in Daily Drops only ----------
+// Each one unlocks once ever. When it unlocks its bonus points are added to that day's Daily Total,
+// a banner drops in, and a small copy of its icon joins the bonus balls next to the progress bar.
+// pts scale with difficulty (roughly how rare it is per drop).
+const BADGES=[
+  {id:'first',   pts:100,  name:'First Drop',    desc:'Finish a drop',                          c:'--mint',   g:'1'},
+  {id:'century', pts:100,  name:'Bullseye',      desc:'Land in your 100',                       c:'--mint',   g:'100'},
+  {id:'streak',  pts:1000, name:'Hot Streak',    desc:'Hit your 100 on 3 levels in a row',      c:'--orange', g:'×3'},
+  {id:'k2',      pts:1500, name:'High Roller',   desc:'Score 2,000 in one drop',                c:'--amber',  g:'2K'},
+  {id:'k10',     pts:4000, name:'Big Leagues',   desc:'Score 10,000 in one drop',               c:'--violet', g:'10K'},
+  {id:'x10',     pts:500,  name:'Multiplied',    desc:'Hit a 10x',                              c:'--violet', g:'10x'},
+  {id:'bomb',    pts:250,  name:'Kaboom',        desc:'Hit a bomb',                             c:'--red',    g:'!'},
+  {id:'survivor',pts:2500, name:'Survivor',      desc:'Hit a bomb and still finish with 1,000+',c:'--red',    g:'1K'},
+  {id:'split',   pts:500,  name:'Double Trouble',desc:'Split the ball',                         c:'--sky',    g:'2'},
+  {id:'portal',  pts:500,  name:'Wormhole',      desc:'Go through a portal',                    c:'--pink',   g:'○'},
+  {id:'aim',     pts:1500, name:'Sharpshooter',  desc:'Aim, then land in your 100',             c:'--blue',   g:'◎'},
+  {id:'bonus',   pts:750,  name:'Encore',        desc:'Earn a bonus drop',                      c:'--gold-solid',g:'+1'},
+  {id:'clean',   pts:750,  name:'Clean Run',     desc:'Finish a drop without hitting a special',c:'--fg',     g:'—'},
+  {id:'all',     pts:5000, name:'Collector',     desc:'Hit every special at least once',        c:'--gold-solid',g:'★'},
+];
+const ALL_SPECIALS=['bomb','x10','split','portal','rewind','trip','half','freefall','aim','bonus','magnet'];
+const badge=id=>BADGES.find(b=>b.id===id);
+let earnedB={}, seenSpecials=[];
+try{ earnedB=JSON.parse(localStorage.getItem('dropface-badges')||'{}')||{}; seenSpecials=JSON.parse(localStorage.getItem('dropface-seen')||'[]')||[]; }catch(e){}
+const saveBadges=()=>{ try{ localStorage.setItem('dropface-badges',JSON.stringify(earnedB)); localStorage.setItem('dropface-seen',JSON.stringify(seenSpecials)); }catch(e){} };
+const achPts=()=>(day.ach||[]).reduce((a,x)=>a+(badge(x.id)?.pts||0),0);
+let bRun={};
+function badgeStart(){ bRun={bomb:false,specials:0,lastHundred:-9,streak:0,aimed:-1}; }
+badgeStart();
+function award(id){
+  if(mode!=='daily'||earnedB[id]) return; // only Daily Drops count, and each achievement is earned once
+  earnedB[id]=Date.now(); saveBadges();
+  const n=bonusOf!==null?bonusOf:day.used; // which of today's drops it happened in
+  day.ach=[...(day.ach||[]),{id,n}]; saveDay();
+  toast(badge(id)); renderDay();
+}
+function badgeLand(i,v){
+  if(typeof v==='string'){ bRun.specials++;
+    if(mode==='daily'&&!seenSpecials.includes(v)){ seenSpecials.push(v); saveBadges(); }
+    if(['bomb','x10','split','portal','bonus'].includes(v)) award(v);
+    if(v==='bomb') bRun.bomb=true;
+    if(ALL_SPECIALS.every(t=>seenSpecials.includes(t))) award('all'); }
+  if(v===100){ award('century'); bRun.streak=bRun.lastHundred===i-1?bRun.streak+1:1; bRun.lastHundred=i; if(bRun.streak>=3) award('streak'); if(bRun.aimed===i) award('aim'); }
+  if(score>=2000) award('k2'); if(score>=10000) award('k10');
+}
+function badgeFinish(s){ award('first'); if(bRun.bomb&&s>=1000) award('survivor'); if(!bRun.specials) award('clean'); }
+// a small icon for an achievement: used beside the progress bar and in the summary
+function miniBadge(b,cls){ const m=document.createElement('i'); m.className=cls||'mbadge'; m.style.setProperty('--c',`var(${b.c})`); m.textContent=b.g; m.title=`${b.name} · +${b.pts.toLocaleString()} pts`; return m; }
+let toastT=0;
+function toast(b){
+  const t=$('toast'); t.innerHTML=''; const dot=document.createElement('span'); dot.className='tbadge'; dot.style.setProperty('--c',`var(${b.c})`); dot.textContent=b.g;
+  const tx=document.createElement('span'); const sm=document.createElement('small'); sm.textContent=`Achievement · +${b.pts.toLocaleString()} pts`; const nm=document.createElement('b'); nm.textContent=b.name; tx.append(sm,nm);
+  t.append(dot,tx); t.classList.remove('show'); void t.offsetWidth; t.classList.add('show'); SFX.bonus&&SFX.bonus();
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3200);
+}
+function renderBadges(){
+  const grid=$('badgeGrid'); grid.innerHTML='';
+  const n=BADGES.filter(b=>earnedB[b.id]).length; $('badgeCount').textContent=`${n} of ${BADGES.length} earned`;
+  $('badgeBar').style.width=(n/BADGES.length*100)+'%';
+  BADGES.forEach(b=>{
+    const on=!!earnedB[b.id], card=document.createElement('div'); card.className='badge'+(on?' on':''); card.style.setProperty('--c',`var(${b.c})`);
+    const ic=document.createElement('span'); ic.className='bicon'; ic.textContent=b.g; ic.setAttribute('aria-hidden','true');
+    const nm=document.createElement('b'); nm.textContent=b.name;
+    const ds=document.createElement('small'); ds.textContent=b.desc;
+    const pt=document.createElement('span'); pt.className='bpt'; pt.textContent=`+${b.pts.toLocaleString()} pts`;
+    if(on) card.title='Earned '+new Date(earnedB[b.id]).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+    card.setAttribute('aria-label',`${b.name}: ${b.desc}. ${on?'Earned':'Not earned yet'}. ${b.pts} points`);
+    card.append(ic,nm,ds,pt); grid.appendChild(card);
+  });
+}
+$('openBadges').onclick=()=>{ renderBadges(); $('badgeModal').showModal(); };
+// today's summary: every drop, every pass (bonus replays included), and what each landing did
+const EVC={100:'--mint',25:'--amber',10:'--muted',bomb:'--red',half:'--teal',x10:'--violet',split:'--sky',portal:'--pink',rewind:'--orange',trip:'--lime',freefall:'--fg',aim:'--blue',magnet:'--steel',bonus:'--gold-solid'};
+const EVN={bomb:'Bomb',half:'½',x10:'10x',split:'Split',portal:'Portal',rewind:'Rewind',trip:'Trip',freefall:'Void',aim:'Aim',magnet:'Magnet',bonus:'+1'};
+function evText(e){ const sign=e.d>0?'+':e.d<0?'\u2212':''; const amt=e.d?sign+Math.abs(e.d).toLocaleString():''; return typeof e.v==='number'?amt:(EVN[e.v]||e.v)+(amt?' '+amt:''); }
+// summary icons: 2px line icons drawn in each row's colour
+const SICONS={
+  drop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="15" r="5"/><path d="M12 3v4"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg>',
+  rank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M12 13v4M9 20h6"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.3 2.9 8.1 7 9.5 4.1-1.4 7-5.2 7-9.5V6z"/></svg>'};
+let sumShareText='';
+async function copyText(t){ try{ await navigator.clipboard.writeText(t); return true; }catch(e){}
+  try{ const ta=document.createElement('textarea'); ta.value=t; ta.style.cssText='position:fixed;opacity:0;top:0;left:0'; document.body.appendChild(ta); ta.select(); const ok=document.execCommand('copy'); ta.remove(); return ok; }catch(e){ return false; } }
+$('sumShare').onclick=async()=>{ const b=$('sumShare'); if(!sumShareText) return;
+  let done=false; try{ if(navigator.share){ await navigator.share({text:sumShareText}); done=true; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  if(!done) done=await copyText(sumShareText);
+  if(done){ const old=b.innerHTML; b.classList.add('copied'); b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>'; b.setAttribute('aria-label','Copied');
+    setTimeout(()=>{ b.innerHTML=old; b.classList.remove('copied'); b.setAttribute('aria-label','Share results'); },1600); } };
+function openSummary(){
+  const body=$('sumBody'); body.innerHTML=''; body.classList.add('sumv2');
+  const prac=mode==='practice', pb=Math.max(0,...day.scores.map(Number));
+  const el=(t,c,txt)=>{ const e=document.createElement(t); if(c) e.className=c; if(txt!=null) e.textContent=txt; return e; };
+  $('sumh').textContent=prac?'Game Summary':'Daily Summary';
+  body.appendChild(el('p','ssub',prac?'Single player':`Daily challenge No. ${dayNo()}`));
+  // the total, big, with NEW BEST DROP when today's best drop is your all-time best
+  const big=el('div','sbig'), lab=el('span'); big.appendChild(el('strong',null,day.total.toLocaleString()));
+  lab.appendChild(el('i',null,prac?'Total':'Daily total')); if(!prac&&pb>0&&pb>=bestDrop) lab.appendChild(el('em',null,'New best drop'));
+  big.appendChild(lab); body.appendChild(big);
+  // each drop's score, quietly, under the total
+  if(day.scores.length){ const ds=el('div','dsplit'); day.scores.forEach((v,n)=>{ const c=el('div'); c.append(el('i',null,`Drop ${n+1}`),el('span',null,Number(v).toLocaleString())); ds.appendChild(c); }); body.appendChild(ds); }
+  // a tick for every landing, in what it scored: mint 100, amber 25, a special's own colour; 10s stay dark
+  const evs=[]; (day.log||[]).forEach((l,n)=>((l&&l.passes)||[]).forEach(ps=>(ps.ev||[]).forEach(e=>evs.push(Object.assign({},e,{dn:n})))));
+  const shit=el('div','shit'), ticks=el('div','sticks'); ticks.setAttribute('aria-hidden','true');
+  evs.forEach((e,i)=>{ const sp=el('span',e.v===10?'':'on'); sp.style.setProperty('--k',`var(${EVC[e.v]||'--muted'})`); sp.style.animationDelay=(i*10)+'ms'; ticks.appendChild(sp); });
+  if(!evs.length) for(let i=0;i<30;i++) ticks.appendChild(el('span'));
+  const hits=evs.filter(e=>e.v===100).length, rate=el('div','srate'), rs=el('span');
+  rate.appendChild(el('i',null,'+100 hit rate')); rs.append(`${evs.length} landing${evs.length===1?'':'s'} · `); rs.appendChild(el('b',null,evs.length?Math.round(hits/evs.length*100)+'%':'—')); rate.appendChild(rs);
+  // challenge text, worded like Gambit's
+  sumShareText=`I scored ${day.total.toLocaleString()} on Dropface${prac?'':` Daily challenge No. ${dayNo()}`}. Can you beat it?\n${location.origin}/dropface.html`;
+  // hover a tick (or slide a finger along them) to see what each landing was
+  if(evs.length){ const tw=el('div','tickwrap'), tip=el('div','ticktip'); tip.hidden=true; tw.append(tip,ticks); ticks.removeAttribute('aria-hidden'); ticks.setAttribute('role','img');
+    ticks.setAttribute('aria-label',`${evs.length} landings`);
+    const spans=[...ticks.children]; let cur=-1;
+    const show=x=>{ const r=ticks.getBoundingClientRect(); let i=Math.floor((x-r.left)/r.width*spans.length); i=Math.max(0,Math.min(spans.length-1,i));
+      if(i!==cur){ if(cur>=0) spans[cur].classList.remove('hot'); cur=i; spans[i].classList.add('hot');
+        const e=evs[i], amt=e.d?(e.d>0?'+':'−')+Math.abs(e.d).toLocaleString():'';
+        tip.innerHTML=''; tip.style.setProperty('--k',`var(${EVC[e.v]||'--muted'})`);
+        tip.append(el('b',null,where(e)),el('span',null,`Drop ${e.dn+1} · Level ${e.lv+1}${amt?' · '+amt:''}`)); }
+      tip.hidden=false; const sr=spans[i].getBoundingClientRect(), wr=tw.getBoundingClientRect();
+      const half=tip.offsetWidth/2, cx=sr.left+sr.width/2-wr.left; tip.style.left=Math.max(half,Math.min(wr.width-half,cx))+'px'; };
+    const hide=()=>{ tip.hidden=true; if(cur>=0) spans[cur].classList.remove('hot'); cur=-1; };
+    ticks.addEventListener('pointerdown',e=>{ try{ ticks.setPointerCapture(e.pointerId); }catch(_){} show(e.clientX); });
+    ticks.addEventListener('pointermove',e=>show(e.clientX));
+    ticks.addEventListener('pointerup',e=>{ if(e.pointerType!=='mouse') hide(); });
+    ticks.addEventListener('pointercancel',hide); ticks.addEventListener('pointerleave',e=>{ if(e.pointerType==='mouse') hide(); });
+    shit.append(tw,rate); } else shit.append(ticks,rate);
+  body.appendChild(shit);
+  // stat rows
+  const todays=(day.ach||[]).map(x=>({...x,b:badge(x.id)})).filter(x=>x.b);
+  const rows=[];
+  if(prac) rows.push(['star','Best drop',pb?pb.toLocaleString():'—','--amber']);
+  else { rows.push(['star','All-time drop',bestDrop?bestDrop.toLocaleString():'—','--amber']); rows.push(['rank','Leaderboard',todayPlace(),'--pink']); }
+  rows.push(['spark','Specials hit',String(evs.filter(e=>typeof e.v!=='number').length),'--violet']);
+  if(day.bonus) rows.push(['plus','Bonus drops',String(day.bonus),'--gold-solid']);
+  if(!prac) rows.push(['shield','Achievements',todays.length?`+${achPts().toLocaleString()}`:'0','--sky',()=>$('openBadges').click()]);
+  const ul=el('ul','slist');
+  rows.forEach(([ic,l,v,c,fn])=>{ const li=el('li'); li.style.setProperty('--c',`var(${c})`); const sq=el('span','sic2'); sq.innerHTML=SICONS[ic]; sq.setAttribute('aria-hidden','true');
+    li.append(sq,el('span','sl',l),el('b',null,v));
+    if(fn){ li.classList.add('link'); li.tabIndex=0; li.setAttribute('role','button'); li.setAttribute('aria-label',`${l}: ${v}. See all achievements`); li.onclick=fn; li.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fn(); } }; }
+    ul.appendChild(li); });
+  body.appendChild(ul);
+  // today's achievements as cards in a row that scrolls sideways
+  if(todays.length){
+    body.appendChild(el('p','eyebrow',`Achievements today · +${achPts().toLocaleString()} pts`));
+    const grid=el('div','achgrid');
+    todays.forEach(({b,n})=>{ const c=el('div','acard'); c.style.setProperty('--c',`var(${b.c})`);
+      const top=el('div','atop'); const ic=el('span','ai',b.g); ic.setAttribute('aria-hidden','true'); top.append(ic,el('span','ap',`+${b.pts.toLocaleString()}`));
+      c.append(top,el('b',null,b.name),el('small',null,`Drop ${n+1}`)); grid.appendChild(c); });
+    body.appendChild(grid);
+  }
+  // drop by drop: one list per drop, a row for every landing
+  const where=e=>typeof e.v==='number'?(e.v===100?'Your pick':e.v===25?'Next to your pick':'Other slot'):(EVN[e.v]||e.v);
+  // daily: leaderboard initials sit right above Challenge a friend
+  if(!prac&&!PREVIEW&&db&&myId&&canPost&&window.DCIni) body.appendChild(DCIni.block(async v=>{ const ref=db.doc('dropface_scores/'+myId), sn=await ref.get(); await ref.set(Object.assign({},sn.exists?sn.data():{},{ini:v})); }));
+  if(mode==='daily'){} // daily summary: no Play single player button
+  else if(day.used>=PER_DAY&&!day.pending){ const pb2=el('button','drop sumprac','Play again'); pb2.id='sumAgain';
+    pb2.onclick=()=>{ sumSkipHome=true; closeModal($('sumModal')); if(!busy) newPractice(); }; body.appendChild(pb2); }
+  // no share icon in the corner: daily gets a white Challenge a friend button (share sheet, or copy), single player a white Challenge a friend
+  $('sumShare').hidden=true;
+  // Challenge a friend (daily and single player): the share sheet, or copy where there isn't one
+  { const sb=el('button','drop sumprac white','Challenge a friend'); sb.id=prac?'sumChallenge':'sumShareBtn';
+    sb.onclick=async()=>{ if(!sumShareText) return; let ok=false; try{ if(navigator.share){ await navigator.share({text:sumShareText}); ok=true; } }catch(e){ if(e&&e.name==='AbortError') return; }
+      if(!ok){ ok=await copyText(sumShareText); sb.textContent=ok?'Link copied':'Copy failed'; clearTimeout(sb._t); sb._t=setTimeout(()=>{ sb.textContent='Challenge a friend'; },2000); } }; body.appendChild(sb); }
+  $('sumModal').showModal();
+}
+// closing the Game Summary once the game is over (all 3 drops played, no bonus drop waiting) goes back to the home screen;
+// its Play buttons go straight into the next game instead
+let sumSkipHome=false;
+$('sumModal').addEventListener('close',()=>{ if(sumSkipHome){ sumSkipHome=false; return; } if(!$('home').hidden||busy) return;
+  if(day.used>=PER_DAY&&!day.pending&&!bonusPending){ if(mode==='practice') startDaily(); showHome(); } });
+$('sumBtn').onclick=()=>{ if(!busy) openSummary(); };
+// an owner reset (config/game.at changes) also wipes this device's All-time Drop, achievements and today's drops
+function applyReset(at){ let seen=null; try{ seen=localStorage.getItem('dropface-resetat'); localStorage.setItem('dropface-resetat',String(at)); }catch(e){}
+  if(seen===null||seen===String(at)) return;
+  bestDrop=0; setDaily({used:0,total:0,scores:[],bonus:0,ach:[]}); lastPicks.daily=null; earnedB={}; seenSpecials=[]; saveBadges(); try{ renderBadges(); }catch(e){} 
+  try{ localStorage.removeItem('dropface-bestdrop'); localStorage.removeItem('dropface-day-'+TODAY); localStorage.removeItem('dropface-lastpicks-'+TODAY); }catch(e){}
+  if(!busy&&mode==='daily') startDaily(); else render(); }
+
+// ---- Idle ball: while today's game hasn't started (until the first Drop) and after the day's drops are all
+// played, a faint ball keeps falling through the boards, top to bottom and round again. It is only decoration:
+// it never scores, never uses the day's seeded bounces, makes no sound and doesn't move the page.
+const GHOST={on:false,lv:0,pts:null,p:0,t0:0,x:0,y:0,trail:[],raf:0};
+const ghostWanted=()=>!reduce&&mode==='daily'&&!busy&&!counting&&((day.used===0&&!done)||(available()<=0&&!bonusPending&&!day.pending));
+function ghostPath(x){ const half=gap/2, pts=[{x,y:-ballR*2}];
+  for(let r=0;r<ROWS;r++){ pts.push({x,y:pegY(r)-pegR-ballR,peg:true}); let d=Math.random()<.5?-1:1; if(x+d*half<half*.99) d=1; if(x+d*half>W-half*.99) d=-1; x+=d*half; }
+  const k=Math.max(0,Math.min(SLOTS-1,Math.floor(x/gap))); pts.push({x:slotX(k),y:H-ballR-2}); pts.push({x:slotX(k),y:H+ballR*2}); return pts; }
+function ghostSync(){ const want=ghostWanted(); if(want===GHOST.on) return; GHOST.on=want;
+  if(want){ GHOST.lv=0; GHOST.pts=ghostPath(slotX(Math.floor(Math.random()*SLOTS))); GHOST.p=0; GHOST.t0=performance.now(); GHOST.trail=[]; GHOST.raf=requestAnimationFrame(ghostTick); }
+  else { cancelAnimationFrame(GHOST.raf); const lv=GHOST.lv; GHOST.trail=[]; drawLevel(lv); } }
+function ghostTick(now){ if(!GHOST.on) return; const seg=135;
+  let t=(now-GHOST.t0)/seg;
+  while(t>=1){ GHOST.p++; GHOST.t0+=seg; t-=1;
+    if(GHOST.p>=GHOST.pts.length-1){ const prev=GHOST.lv, end=GHOST.pts[GHOST.pts.length-1];
+      GHOST.lv=(prev+1)%LEVELS; GHOST.pts=ghostPath(GHOST.lv===0?slotX(Math.floor(Math.random()*SLOTS)):end.x); GHOST.p=0; GHOST.trail=[]; drawLevel(prev); } }
+  const a=GHOST.pts[GHOST.p], c=GHOST.pts[GHOST.p+1], hop=a.peg?rowH*.35:0;
+  GHOST.x=a.x+(c.x-a.x)*t; GHOST.y=a.y+(c.y-a.y)*t*t-hop*4*t*(1-t);
+  GHOST.trail.push({x:GHOST.x,y:GHOST.y}); if(GHOST.trail.length>9) GHOST.trail.shift();
+  drawLevel(GHOST.lv); GHOST.raf=requestAnimationFrame(ghostTick); }
+// draw the idle ball on top of whichever board it is in, at about half strength
+const _drawLevelPlain=drawLevel;
+drawLevel=function(i){ _drawLevelPlain(i); if(GHOST.on&&GHOST.lv===i&&GHOST.pts){ const ctx=L[i].ctx; ctx.save(); ctx.globalAlpha=1; drawBall(ctx,{x:GHOST.x,y:GHOST.y,trail:GHOST.trail},css('--mint')+'80'); ctx.restore(); } };
+
+// ---- Home screen: pick Single player or the Daily challenge ----
+// Daily challenge: today's 3 drops, the same boards for everyone. Single player: rounds of 3 drops on random boards.
+function dailyState(){ const dd=dailyDay(), done3=dd.used>=PER_DAY&&!dd.pending&&!(mode==='daily'&&bonusPending>0);
+  const started=dd.used>0||(mode==='daily'&&(done||bonusPending>0)); return {dd,finished:done3,started}; }
+function renderHome(){ const st=dailyState(), d=$('hDaily'), s=$('hSolo');
+  d.disabled=st.finished; d.querySelector('span').textContent=st.finished?`Next daily game in ${untilTomorrow()}`:st.started?'Continue daily challenge':'Daily challenge';
+  d.setAttribute('aria-label',st.finished?`Daily challenge done. Next daily game in ${untilTomorrow()}`:`Daily challenge No. ${dayNo()}`);
+  s.disabled=false; s.querySelector('span').textContent='Single player'; // Single player never waits for the daily challenge
+  // the summary icon shows once today's daily has been played (turning multicolour ring); never for single player
+  { const pd=mode==='practice'?day:pracDay, pracUsed=!!(pd&&pd.used>0), dailyUsed=st.dd.used>0; let last=null; try{ last=localStorage.getItem('dropface-lastsum'); }catch(e){}
+    const which=dailyUsed?'daily':null, hs=$('homeSum'); // the header icon is for today's daily only; it goes away when the daily resets
+    hs.hidden=!which; hs.dataset.which=which||''; hs.classList.toggle('solo',which==='practice');
+    hs.setAttribute('aria-label',which==='practice'?'See game summary':'See daily summary'); hs.title=which==='practice'?'Game summary':'Daily summary'; } }
+function showHome(){ $('home').hidden=false; document.body.classList.add('athome'); renderHome(); homeAnimStart(); }
+function hideHome(){ $('home').hidden=true; document.body.classList.remove('athome'); homeAnimStop(); scrollToY({top:0}); render(); }
+function playSolo(){ if(busy) return; if(pracDay&&pracDay.used>=PER_DAY&&!pracDay.pending) newPractice(); else startPractice(); hideHome(); }
+$('hSolo').onclick=()=>{ if(!$('hSolo').disabled) playSolo(); };
+$('hDaily').onclick=()=>{ if($('hDaily').disabled||busy) return; if(mode!=='daily') startDaily(); hideHome(); };
+$('homeSum').onclick=()=>{ const w=$('homeSum').dataset.which; if(w==='practice'){ if(mode!=='practice') useMode('practice'); } else if(mode!=='daily') startDaily(); openSummary(); };
+// every header button gives the same soft click (muting still silences it)
+addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('.hnav button,.hnav a')) tone(880,.05,{vol:.12}); },true); // on window, so it runs before the Dailycade link hands off to the TV switch-off
+document.querySelectorAll('.hnav [data-go]').forEach(b=>{ const src=$(b.dataset.go); if(!b.innerHTML.trim()&&src) b.innerHTML=src.innerHTML; b.onclick=()=>src&&src.click(); });
+$('homeBtn').onclick=()=>{ if(busy||counting) return; if(mode==='practice'){ if(pracUnderway()){ $('leaveModal').showModal(); return; } startDaily(); } showHome(); };
+setInterval(()=>{ if(!$('home').hidden) renderHome(); },1000);
+// a faint ball keeps falling through rows of pegs behind the home screen
+const HA={raf:0,pts:null,p:0,t0:0};
+function homeAnimStop(){ cancelAnimationFrame(HA.raf); HA.raf=0; }
+function homeAnimStart(){ homeAnimStop(); const cv=$('homeCv'), d=devicePixelRatio||1, w=cv.clientWidth||innerWidth, h=cv.clientHeight||innerHeight;
+  cv.width=w*d; cv.height=h*d; const x=cv.getContext('2d'); x.setTransform(d,0,0,d,0,0);
+  const cols=7, g=Math.min(w-32,440)/cols, left=(w-g*cols)/2, rh=Math.min(g*.62,40), rows=Math.ceil(h/rh)+1, pr=Math.max(3,g*.07), br=Math.max(5,g*.09);
+  const pegX=(r,k)=>left+(r%2?(k+1)*g:(k+.5)*g);
+  const path=()=>{ let px=left+(Math.floor(Math.random()*cols)+.5)*g; const pts=[{x:px,y:-br*3}];
+    for(let r=0;r<rows;r++){ pts.push({x:px,y:20+r*rh-pr-br,peg:true}); let s=Math.random()<.5?-1:1; if(px+s*g/2<left+g*.49) s=1; if(px+s*g/2>left+g*cols-g*.49) s=-1; px+=s*g/2; }
+    pts.push({x:px,y:h+br*3}); return pts; };
+  const pegs=()=>{ x.clearRect(0,0,w,h); x.fillStyle='#2e2e2e'; for(let r=0;r<rows;r++){ const n=r%2?cols-1:cols; for(let k=0;k<n;k++){ const px=pegX(r,k), py=20+r*rh; x.beginPath(); x.moveTo(px,py-pr*1.25); x.lineTo(px+pr*1.25,py); x.lineTo(px,py+pr*1.25); x.lineTo(px-pr*1.25,py); x.fill(); } } };
+  pegs(); if(reduce) return;
+  HA.pts=path(); HA.p=0; HA.t0=performance.now(); const trail=[], mint=css('--mint');
+  const tick=now=>{ const seg=135; let t=(now-HA.t0)/seg;
+    while(t>=1){ HA.p++; HA.t0+=seg; t-=1; if(HA.p>=HA.pts.length-1){ HA.pts=path(); HA.p=0; trail.length=0; } }
+    const a=HA.pts[HA.p], c=HA.pts[HA.p+1], hop=a.peg?rh*.35:0, bx=a.x+(c.x-a.x)*t, by=a.y+(c.y-a.y)*t*t-hop*4*t*(1-t);
+    trail.push({x:bx,y:by}); if(trail.length>9) trail.shift();
+    pegs(); trail.forEach((q,i)=>{ x.globalAlpha=(i+1)/trail.length*.25; x.fillStyle=mint; x.beginPath(); x.arc(q.x,q.y,br*(.4+.6*(i+1)/trail.length),0,7); x.fill(); });
+    x.globalAlpha=.25; x.beginPath(); x.arc(bx,by,br*2.1,0,7); x.fill(); x.globalAlpha=1; x.beginPath(); x.arc(bx,by,br,0,7); x.fill();
+    HA.raf=requestAnimationFrame(tick); };
+  HA.raf=requestAnimationFrame(tick); }
+addEventListener('resize',()=>{ if(!$('home').hidden) homeAnimStart(); });
+// the tube-TV overlay is a popover so it can sit in the top layer, above open pages; it is raised again each time a page opens
+function raiseCrt(){ const c=$('crt'); if(!c||!c.showPopover) return; try{ if(c.matches(':popover-open')) c.hidePopover(); c.showPopover(); }catch(e){} }
+if(window.HTMLDialogElement&&HTMLDialogElement.prototype.showModal){ const sm=HTMLDialogElement.prototype.showModal; HTMLDialogElement.prototype.showModal=function(){ sm.call(this); raiseCrt(); }; }
+raiseCrt();
+addEventListener('resize',resize);
+document.fonts&&document.fonts.ready.then(resize);
+resize();
+if(!(mode==='daily'&&restorePending())) render(); else render(); // pick up an unplayed bonus drop after a reload
+showHome(); // every visit opens on the home screen
+// the score at the top counts up live while the ball falls
+function saveHi(){ const m=mode==='practice'?'practice':'daily'; if(day.total>hiScore[m]){ hiScore[m]=day.total; try{ localStorage.setItem('dropface-hiscore-'+m,String(day.total)); }catch(e){} } }
+function liveTotal(){ return busy&&!counting?day.total+(score-startedAt):day.total; } // the day's total plus whatever the falling ball has scored so far
+setInterval(()=>{ if(busy) $('dayTotal').textContent=liveTotal().toLocaleString(); },80);
+{const bar=document.querySelector('.bar');const fit=()=>{if(bar.offsetHeight)document.documentElement.style.setProperty('--barh',bar.offsetHeight+'px')};try{new ResizeObserver(fit).observe(bar)}catch(e){}fit();addEventListener('resize',fit)}
+/* ---------- live tuning (from the admin page) ---------- */
+function applyDF(v){
+  const before=JSON.stringify(DF);
+  Object.assign(DF,DF_DEF,{pool:DF_DEF.pool.slice()},v||{});
+  PER_DAY=Math.max(1,Math.round(DF.perDay));
+  if(JSON.stringify(DF)===before) return;
+  if(!busy){ if(!restorePending()) placeSpecials(boardSeed()); }
+  try{ render(); if(!$('home').hidden) renderHome(); }catch(e){}
+}
+if(PREVIEW){
+  applyDF(PREVIEW_VALS); newPractice(); hideHome();
+  const bar=document.createElement('div'); bar.className='pvbar'; bar.setAttribute('role','toolbar'); bar.setAttribute('aria-label','Test mode');
+  bar.innerHTML='<b>Test</b><button type="button" data-a="new">New round</button><button type="button" data-a="admin">← Admin</button>';
+  bar.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.a==='new'){ if(!busy){ newPractice(); hideHome(); } } else location.href='admin.html'; });
+  document.body.appendChild(bar);
+  const st=document.createElement('style');
+  st.textContent='.pvbar{position:fixed;z-index:70;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 8px);display:flex;gap:3px;white-space:nowrap;align-items:center;padding:3px;border-radius:12px;background:rgba(255,214,0,.96);color:#000;font:600 11px/1 Inter,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.4)}'
+   +'.pvbar b{padding:0 6px;font-weight:700}.pvbar button{font:inherit;border:0;border-radius:8px;padding:5px 7px;background:rgba(0,0,0,.1);color:#000;cursor:pointer}';
+  document.head.appendChild(st);
+}
+</script>
+
+</body></html>

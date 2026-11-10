@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin · Dailycade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--ink:#0d0d0d;--muted:#707070;--line:#e6e6e3;--soft:#f4f4f2;--sans:"Plus Jakarta Sans",-apple-system,system-ui,sans-serif;
+  --gambit:#9de6a3;--dropface:#b48cff;--amber:#b7791f;--red:#c0392b}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px}
+header{border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:12px;height:68px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;color:var(--ink);text-decoration:none}
+.logo svg{height:22px;width:auto;fill:currentColor;transform:translateY(1px)}
+.tag{font-size:12px;font-weight:600;background:var(--ink);color:#fff;border-radius:999px;padding:3px 9px}
+header .back{margin-left:auto;color:var(--muted);text-decoration:none;font-size:14px}
+header .back:hover{color:var(--ink)}
+h1{font-size:34px;letter-spacing:-.02em;margin:32px 0 6px;font-weight:700}
+.sub{color:var(--muted);margin:0 0 22px}
+.tabs{display:flex;gap:6px;margin-bottom:22px}
+.tabs button{border:0;background:var(--soft);border-radius:999px;padding:9px 16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tabs button i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:#fff}
+.card{background:var(--soft);border-radius:20px;padding:22px;margin-bottom:16px}
+.card h2{font-size:17px;margin:0 0 14px;font-weight:700;display:flex;align-items:center;gap:10px}
+.card h2 .note{margin-left:auto;font-size:13px;font-weight:500;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.stat span{display:block;font-size:13px;color:var(--muted)}
+.stat b{font-size:28px;font-weight:500;letter-spacing:-.01em}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.status{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.status li{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;background:#fff}
+.pill.live{background:#d9f5dc;color:#17602a}
+.pill.sched{background:#fdecc8;color:#7a4d00}
+.btn{border:0;border-radius:11px;padding:10px 16px;font-weight:600;cursor:pointer;background:var(--ink);color:#fff;display:inline-flex;align-items:center;gap:8px}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.small{padding:6px 11px;font-size:13px;border-radius:9px}
+.btn.danger{background:#fff;color:var(--red);box-shadow:inset 0 0 0 1px #f0c9c4}
+.grp{margin-top:6px}
+.grp+.grp{margin-top:22px}
+.grp h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:700}
+.tune{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px}
+.knob{background:#fff;border-radius:14px;padding:12px 14px}
+.knob .top{display:flex;align-items:baseline;gap:8px}
+.knob label{font-weight:600;font-size:14px;flex:1}
+.knob output{font-variant-numeric:tabular-nums;font-weight:700}
+.knob.changed output{color:var(--amber)}
+.knob .meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:2px;min-height:22px}
+.knob .meta button{margin-left:auto;border:0;background:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 0;text-decoration:underline}
+.knob input[type=range]{width:100%;accent-color:var(--ink);margin:8px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:0;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;box-shadow:none}
+.hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+.dock{position:sticky;bottom:0;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);margin-top:24px;z-index:5}
+.dock .wrap{max-width:1120px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.dock .count{font-size:14px;color:var(--muted);margin-right:auto}
+.when{display:flex;align-items:center;gap:6px;background:var(--soft);border-radius:12px;padding:4px}
+.when label{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600}
+.when input[type=radio]{accent-color:var(--ink);margin:0}
+.when input[type=date]{border:0;background:#fff;border-radius:8px;padding:4px 6px;font-size:13px}
+.msg{font-size:14px;margin:12px 0 0;min-height:20px}
+.msg.ok{color:#17602a}.msg.err{color:var(--red)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:grid;place-items:center;z-index:20;padding:20px}
+.modal .box{background:#fff;border-radius:20px;padding:24px;max-width:420px;width:100%}
+.modal h3{margin:0 0 8px;font-size:18px}
+.modal p{margin:0 0 18px;color:var(--muted)}
+.modal .row{justify-content:flex-end}
+.login{display:grid;gap:12px;max-width:420px}.login input{border:1px solid #d9d9d9;border-radius:11px;padding:11px 14px;background:#fff}.login p{margin:0;color:var(--muted);font-size:14px}.whoami{font-size:13px;color:var(--muted);margin:-8px 0 16px}.whoami button{border:0;background:none;padding:0;text-decoration:underline;color:inherit;cursor:pointer}
+body.locked main>*:not(h1):not(.sub):not(#loginCard):not(#offline){display:none!important}
+.offline{background:#fff4e5;color:#7a4d00;border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:14px}
+footer{height:20px}
+@media (max-width:640px){.tune{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr);gap:8px}.stat b{font-size:22px}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="index.html" aria-label="Dailycade home"><svg viewBox="0 0 53 69" aria-hidden="true"><path d="M4.03865 58.5444L28.7422 58.4145C32.5052 58.5538 35.6995 56.1602 36.9927 53.1536C37.5344 51.894 37.6625 50.7215 37.359 49.7708C37.3251 49.1516 37.1874 48.5274 36.9324 47.9231L32.7664 38.051L40.2475 38.07C50.5051 38.3367 55.1171 45.5211 51.5191 53.6912C48.1059 61.8232 37.5355 68.4919 27.3734 68.0026L0 67.9357L4.03865 58.5444Z"/><path d="M24.7505 47.5023L8.75173 47.5868L12.8741 38.0031L20.749 38.0218L24.7505 47.5023Z"/><path d="M16.5587 0.738192C8.75457 3.285 4.48766 11.6712 7.02349 19.4788C9.55916 27.2863 17.9392 31.5651 25.7505 29.0404C33.5774 26.5107 37.8665 18.1101 35.3257 10.2869C32.785 2.4635 24.3783 -1.8137 16.5587 0.738192Z"/></svg>Dailycade</a>
+  <span class="tag">Admin</span>
+  <a class="back" href="index.html">Back to site</a>
+</div></header>
+
+<main class="wrap">
+  <h1>Game tuning</h1>
+  <p class="sub">Change how each game plays. Publish right away or schedule it for a day. Only you can publish.</p>
+  <div class="offline" id="offline" hidden>Can't reach the game database right now. Check your connection and reload.</div>
+  <section class="card login" id="loginCard" hidden>
+    <h2 style="margin:0">Sign in</h2>
+    <p id="loginMsg">Admin only. Enter your email and we'll send you a sign-in link.</p>
+    <form id="loginForm" style="display:flex;gap:8px;flex-wrap:wrap"><input type="email" id="loginEmail" required placeholder="you@example.com" autocomplete="email" style="flex:1;min-width:200px"><button class="btn" type="submit" id="loginGo">Email me a link</button></form>
+  </section>
+  <p class="whoami" id="whoami" hidden></p>
+  <div class="tabs" role="tablist" id="tabs"></div>
+
+  <section class="card" aria-labelledby="todayH">
+    <h2 id="todayH">Today <span class="note" id="todayNote"></span></h2>
+    <div class="stats">
+      <div class="stat"><span>Game</span><b id="sDay">–</b></div>
+      <div class="stat"><span>Players</span><b id="sPlayers">–</b></div>
+      <div class="stat"><span>Top score</span><b id="sTop">–</b></div>
+    </div>
+    <div class="row" style="margin-top:16px"><button class="btn danger small" id="resetBtn" type="button">Reset today's daily</button>
+      <span class="hint" style="margin:0">Lets everyone play today's game again and clears today's scores. All-time bests stay.</span></div>
+    <div class="row" style="margin-top:12px"><button class="btn danger small" id="wipeBtn" type="button">Reset all data</button>
+      <span class="hint" style="margin:0">Starts the game over from scratch: deletes every score and best, and today becomes Game No. 1. The new day starts at 12am in each player's time zone.</span></div>
+  </section>
+
+  <section class="card" aria-labelledby="siteH">
+    <h2 id="siteH">On the site</h2>
+    <div class="row"><span class="pill" id="visPill"></span><span id="visTxt"></span><button class="btn ghost small" id="visBtn" type="button" style="margin-left:auto"></button></div>
+  </section>
+
+  <section class="card" aria-labelledby="liveH">
+    <h2 id="liveH">Published settings</h2>
+    <ul class="status" id="status"></ul>
+  </section>
+
+  <section class="card" aria-labelledby="tuneH">
+    <h2 id="tuneH">Tuning <span class="note">Changes stay a draft until you publish</span></h2>
+    <div id="knobs"></div>
+  </section>
+  <p class="msg" id="msg" role="status" aria-live="polite"></p>
+</main>
+
+<div class="dock"><div class="wrap">
+  <span class="count" id="count">No changes</span>
+  <button class="btn ghost small" id="defaultsBtn" type="button">Revert to defaults</button>
+  <button class="btn ghost small" id="testBtn" type="button">Test these settings</button>
+  <div class="when" role="radiogroup" aria-label="When to publish">
+    <label><input type="radio" name="when" value="now" checked> Right away</label>
+    <label><input type="radio" name="when" value="date"> On <input type="date" id="whenDate" aria-label="Start date"></label>
+  </div>
+  <button class="btn" id="publishBtn" type="button">Publish</button>
+</div></div>
+<footer></footer>
+
+<div class="modal" id="wipe" hidden role="dialog" aria-modal="true" aria-labelledby="wT">
+  <div class="box"><h3 id="wT"></h3><p id="wB"></p>
+    <label for="wIn" style="display:block;font-size:13px;font-weight:600;margin:0 0 6px">Type <b id="wWord"></b> to confirm</label>
+    <input id="wIn" autocomplete="off" spellcheck="false" style="width:100%;border:0;border-radius:10px;padding:10px 12px;background:var(--soft);font-weight:600;margin-bottom:18px">
+    <div class="row"><button class="btn ghost" id="wNo" type="button">Cancel</button><button class="btn" id="wYes" type="button" style="background:var(--red)" disabled>Delete everything</button></div></div>
+</div>
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mT">
+  <div class="box"><h3 id="mT"></h3><p id="mB"></p>
+    <div class="row"><button class="btn ghost" id="mNo" type="button">Cancel</button><button class="btn" id="mYes" type="button">Confirm</button></div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="dc-db.js"></script>
+<script src="dc-tune.js"></script>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const fmtN=n=>Number(n).toLocaleString('en-US');
+const mmss=v=>Math.floor(v/60)+':'+String(v%60).padStart(2,'0');
+const pct=v=>Math.round(v*100)+'%';
+const today=DCTune.today;
+const addDays=(iso,n)=>{const [y,m,d]=iso.split('-').map(Number);const t=new Date(y,m-1,d+n);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
+const nice=iso=>{const [y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})};
+const when=ms=>new Date(ms).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+
+/* ---------- what each game exposes (defaults match the games) ---------- */
+const GPU=[['split','Split'],['firework','Firework'],['magnet','Magnet'],['slow','Slow'],['pierce','Pierce'],['freeze','Freeze'],['shield','Shield'],['electric','Electric'],['gunner','Gunner'],['rewind','Rewind'],['clone','Clone'],['blackhole','Black Hole'],['force','Force Field'],['telekinesis','Telekinesis'],['tap','Tap'],['missile','Missile']];
+const SPECIALS=[['bomb','Bomb'],['x10','10x'],['split','Split'],['portal','Portal'],['rewind','Rewind'],['trip','Trip'],['half','Half'],['freefall','Void'],['aim','Aim'],['bonus','+1 drop'],['magnet','Magnet']];
+const GAMES={
+  gambit:{name:'Gambit',color:'var(--gambit)',
+    defaults:{pool:GPU.map(p=>p[0]),lives:6,lifeCount:3,step:90,inc:.2,cap:4.5,fall:1,spawn:1,dur:1,refall:25,fw:95,flushHp:10,bombCost:2,bombAt:180,flushAt:55,splitFall:.55},
+    groups:[
+      ['Health',[['lives','Hit points per life',1,15,1,v=>v],['lifeCount','Lives',1,6,1,v=>v],['bombCost','Bomb damage',0,5,1,v=>v+' HP']]],
+      ['Speed',[['step','Speed-up every',15,240,5,v=>v+'s'],['inc','Each speed-up adds',.05,1,.05,v=>'+'+(+v).toFixed(2)+'x'],['cap','Top speed',1.5,8,.1,v=>(+v).toFixed(1)+'x'],
+        ['fall','Fall speed',.4,2.5,.05,pct],['spawn','Targets per second',.25,3,.05,pct],['splitFall','Split pieces fall at',.2,1,.05,pct]]],
+      ['Power-ups',[['pool','Power-ups players can pick from',null],['dur','Power-up length',.5,3,.1,pct],['refall','Used power-up returns after',0,120,5,v=>v+'s'],['fw','Firework blast size',40,200,5,v=>v+'px']]],
+      ['Events',[['bombAt','First bomb at',0,600,5,mmss],['flushAt','First Royal Flush at',0,300,5,mmss],['flushHp','Royal Flush hits to clear',1,20,1,v=>v]]],
+    ]},
+  dropface:{name:'Dropface',color:'var(--dropface)',
+    defaults:{perDay:3,specials:10,pool:SPECIALS.map(s=>s[0]),pick:100,near:25,other:10},
+    groups:[
+      ['Drops',[['perDay','Drops per day',1,6,1,v=>v]]],
+      ['Points',[['pick','Your pick',10,500,5,v=>v],['near','Next to your pick',0,200,5,v=>v],['other','Other slots',0,100,1,v=>v]]],
+      ['Specials',[['specials','Specials per drop',0,10,1,v=>v],['pool','Specials that can appear',null]]],
+    ]},
+};
+
+/* ---------- state ---------- */
+let db=null, game='gambit', doc=null, draft=null, unsub=[], scoresRows=[], epochs={gambit:'2026-11-09',dropface:'2026-11-09'};
+const G=()=>GAMES[game];
+const clone=o=>JSON.parse(JSON.stringify(o));
+const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const full=v=>Object.assign(clone(G().defaults),v||{});
+
+function msg(t,kind){const m=$('msg');m.textContent=t||'';m.className='msg'+(kind?' '+kind:'')}
+function ask(title,body,yes){return new Promise(res=>{$('mT').textContent=title;$('mB').textContent=body;$('mYes').textContent=yes;$('modal').hidden=false;$('mYes').focus();
+  const done=v=>{$('modal').hidden=true;$('mYes').onclick=$('mNo').onclick=null;res(v)};$('mYes').onclick=()=>done(true);$('mNo').onclick=()=>done(false)})}
+
+/* ---------- tabs ---------- */
+function paintTabs(){const t=$('tabs');t.replaceChildren();
+  for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game));
+    b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{if(k!==game){game=k;try{localStorage.setItem('dc.admin.tab',k)}catch(e){}load()}};t.append(b)}}
+
+/* ---------- knobs ---------- */
+function paintKnobs(){const box=$('knobs');box.replaceChildren();const def=G().defaults;
+  for(const [title,items] of G().groups){
+    const grp=document.createElement('div');grp.className='grp';grp.innerHTML='<h3></h3>';grp.querySelector('h3').textContent=title;
+    const grid=document.createElement('div');grid.className='tune';
+    for(const [k,label,min,max,st,f] of items){
+      if(k==='pool'){ // toggles
+        const wrap=document.createElement('div');wrap.className='knob'+(same([...draft.pool].sort(),[...def.pool].sort())?'':' changed');wrap.style.gridColumn='1/-1';
+        wrap.innerHTML='<div class="top"><label></label><output></output></div><div class="chips" style="margin-top:10px"></div>';
+        wrap.querySelector('label').textContent=label;wrap.querySelector('output').textContent=draft.pool.length+' of '+(game==='gambit'?GPU:SPECIALS).length;
+        const ch=wrap.querySelector('.chips'), OPTS=game==='gambit'?GPU:SPECIALS;
+        for(const [id,nm] of OPTS){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=nm;b.setAttribute('aria-pressed',String(draft.pool.includes(id)));
+          b.onclick=()=>{if(draft.pool.includes(id)&&draft.pool.length<=1){msg('Keep at least one switched on.','err');return}draft.pool=draft.pool.includes(id)?draft.pool.filter(x=>x!==id):[...draft.pool,id];paintKnobs();paintCount()};ch.append(b)}
+        const hint=document.createElement('p');hint.className='hint';hint.textContent=game==='gambit'?(draft.pool.length<5?'Fewer than 5 on: players get a smaller hand ('+draft.pool.length+' slots).':'Players pick a hand of 5 from these before each game.'):'Each drop places up to "Specials per drop" of these, one per board.';wrap.append(hint);
+        grid.append(wrap);continue}
+      const id='k_'+k, el=document.createElement('div');el.className='knob'+(draft[k]!==def[k]?' changed':'');
+      el.innerHTML=`<div class="top"><label for="${id}"></label><output for="${id}"></output></div><input type="range" id="${id}" min="${min}" max="${max}" step="${st}"><div class="meta"><span></span><button type="button">Reset</button></div>`;
+      el.querySelector('label').textContent=label;
+      const out=el.querySelector('output'), inp=el.querySelector('input'), meta=el.querySelector('.meta span'), rb=el.querySelector('.meta button');
+      const show=()=>{out.textContent=f(draft[k]);const ch=draft[k]!==def[k];el.classList.toggle('changed',ch);meta.textContent='Default '+f(def[k]);rb.hidden=!ch};
+      inp.value=draft[k];
+      inp.addEventListener('input',()=>{draft[k]=+inp.value;show();paintCount()});
+      rb.onclick=()=>{draft[k]=def[k];inp.value=def[k];show();paintCount()};
+      show();grid.append(el)}
+    grp.append(grid);box.append(grp)}}
+
+const norm=v=>Array.isArray(v)?[...v].sort():v;
+const base=()=>full(doc&&doc.next?doc.next.values:doc&&doc.live);
+function paintCount(){const b=base(),n=Object.keys(draft).filter(k=>!same(norm(draft[k]),norm(b[k]))).length,d=Object.keys(draft).filter(k=>!same(norm(draft[k]),norm(G().defaults[k]))).length;
+  $('count').textContent=(n?n+' unpublished change'+(n>1?'s':''):'No unpublished changes')+' · '+(d?d+' off default':'all default');}
+
+/* ---------- published status ---------- */
+function paintStatus(){const ul=$('status');ul.replaceChildren();const def=G().defaults;
+  const li=(pill,cls,text,btn)=>{const l=document.createElement('li');const p=document.createElement('span');p.className='pill '+cls;p.textContent=pill;l.append(p,document.createTextNode(text));if(btn)l.append(btn);ul.append(l)};
+  const diff=v=>{const f=full(v);const n=Object.keys(f).filter(k=>!same(norm(f[k]),norm(def[k]))).length;return n?n+' setting'+(n>1?'s':'')+' changed from default':'default settings'};
+  li('Live now','live',' '+(doc&&doc.live?diff(doc.live)+(doc.liveAt?' · published '+when(doc.liveAt):''):'Default settings'));
+  if(doc&&doc.next){const c=document.createElement('button');c.className='btn ghost small';c.type='button';c.textContent='Cancel schedule';
+    c.onclick=async()=>{if(!await ask('Cancel the scheduled change?','The live settings stay as they are.','Cancel schedule'))return;await save(Object.assign({},doc,{next:null}),'Schedule cancelled.')};
+    li('Scheduled','sched',' Starts '+nice(doc.next.from)+' · '+diff(doc.next.values)+' ',c)}
+}
+
+/* ---------- today ---------- */
+const dayFrom=ep=>{const [y,m,d]=ep.split('-').map(Number);const n=new Date();return Math.max(1,Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-new Date(y,m-1,d))/864e5)+1)};
+function gambitDay(){return dayFrom(epochs.gambit)}
+function dropDay(){return dayFrom(epochs.dropface)}
+function paintToday(){
+  const isG=game==='gambit', rows=scoresRows.filter(r=>isG?r.day===gambitDay():r.day===today()), key=isG?'dayBest':'dayScore';
+  $('sDay').textContent='No. '+(isG?gambitDay():dropDay());
+  $('sPlayers').textContent=fmtN(rows.length);
+  const top=Math.max(0,...rows.map(r=>Number(r[key])||0));$('sTop').textContent=top?fmtN(top):'–';
+  $('todayNote').textContent=nice(today());
+}
+
+/* ---------- database ---------- */
+const P=()=>({tune:game+'_config/tune',reset:game+'_config/game',scores:game+'_scores'});
+async function save(next,ok){try{await db.doc(P().tune).set(next);msg(ok,'ok')}catch(e){msg("Couldn't save. Only the site owner can publish settings.",'err')}}
+
+function load(){
+  unsub.forEach(u=>{try{u()}catch(e){}});unsub=[];doc=null;scoresRows=[];
+  paintTabs();paintVis();
+  draft=clone(G().defaults);paintKnobs();paintStatus();paintToday();paintCount();msg('');
+  if(!db)return;
+  let first=true;
+  unsub.push(db.doc(P().tune).onSnapshot(sn=>{doc=sn.exists?sn.data():null;
+    // a scheduled change whose day has come becomes the live settings
+    if(doc&&doc.next&&doc.next.from<=today()){const promoted={live:doc.next.values,liveAt:Date.now(),next:null};db.doc(P().tune).set(promoted).catch(()=>{});doc=promoted}
+    if(first){first=false;draft=base();paintKnobs()}
+    paintStatus();paintCount()},()=>{}));
+  unsub.push(db.collection(P().scores).onSnapshot(s=>{scoresRows=s.docs.map(d=>Object.assign({id:d.id},d.data()));paintToday()},()=>{}));
+  {const g=game;unsub.push(db.doc(g+'_config/game').onSnapshot(sn=>{const e=sn.exists&&sn.data().epoch;if(typeof e==='string')epochs[g]=e;paintToday()},()=>{}))}
+}
+
+/* ---------- show or hide a game on the site ---------- */
+let hiddenList=[];
+function paintVis(){const off=hiddenList.includes(game),g=G().name;
+  $('visPill').textContent=off?'Hidden':'Live';$('visPill').className='pill '+(off?'sched':'live');
+  $('visTxt').textContent=off?' '+g+' is off the homepage, and its page shows "taking a break". Scores and settings are kept.':' '+g+' is on the homepage and playable.';
+  $('visBtn').textContent=off?'Put back on the site':'Hide from the site'}
+$('visBtn').onclick=async()=>{
+  if(!db){msg("Can't reach the game database here.",'err');return}
+  const off=hiddenList.includes(game),g=G().name;
+  if(!await ask(off?'Put '+g+' back?':'Hide '+g+'?',off?g+' comes back on the homepage and is playable again.':g+' comes off the homepage and its page shows a "taking a break" notice. Scores, settings and the daily count are kept, so you can put it back any time.',off?'Put back':'Hide'))return;
+  const next=off?hiddenList.filter(x=>x!==game):[...hiddenList,game];
+  try{await db.doc('site_config/home').set({hidden:next,updatedAt:Date.now()});msg(g+(off?' is back on the site.':' is hidden from the site.'),'ok')}
+  catch(e){msg("Couldn't save. Only the site owner can do this.",'err')}};
+
+/* ---------- actions ---------- */
+$('defaultsBtn').onclick=()=>{draft=clone(G().defaults);paintKnobs();paintCount();msg('Draft set back to the default settings. Publish to make it live.')};
+$('testBtn').onclick=()=>{try{window.name='dcpreview:'+JSON.stringify({game,values:draft})}catch(e){}location.href=game+'.html#preview'};
+const dateIn=$('whenDate');dateIn.min=addDays(today(),1);dateIn.value=addDays(today(),1);
+dateIn.addEventListener('focus',()=>{document.querySelector('input[name=when][value=date]').checked=true});
+$('publishBtn').onclick=async()=>{
+  if(!db){msg("Can't reach the game database here.",'err');return}
+  const mode=document.querySelector('input[name=when]:checked').value, g=G().name;
+  if(mode==='now'){
+    if(!await ask('Publish to '+g+' now?','Players get these settings at the start of their next game. Anyone who already played today played on the old settings.','Publish now'))return;
+    await save({live:clone(draft),liveAt:Date.now(),next:doc&&doc.next||null},g+' settings are live.');
+  }else{
+    const from=dateIn.value;if(!from||from<=today()){msg('Pick a date after today, or choose "Right away".','err');return}
+    if(!await ask('Schedule for '+nice(from)+'?',g+' switches to these settings when that day starts, in each player\'s time zone. Until then the live settings stay.','Schedule'))return;
+    await save({live:doc&&doc.live||null,liveAt:doc&&doc.liveAt||null,next:{values:clone(draft),from}},g+' settings scheduled for '+nice(from)+'.');
+  }
+};
+$('resetBtn').onclick=async()=>{
+  if(!db){msg("Can't reach the game database here.",'err');return}
+  const g=G().name;
+  if(!await ask("Reset today's "+g+' daily?',"Everyone can play today's game again, and today's scores come off the board. All-time bests stay.",'Reset'))return;
+  try{
+    const isG=game==='gambit', now=Date.now();
+    for(const r of scoresRows){
+      const ch=isG?{playedDay:0,playedAt:0}:{};
+      if(isG?r.day===gambitDay():r.day===today()) Object.assign(ch,isG?{day:0,dayBest:0,dayTime:0}:{day:'',dayScore:0,dropsUsed:0,dropScores:[],dropLog:[],bonusDrops:0,dayAch:[]});
+      if(Object.keys(ch).length)await db.doc(P().scores+'/'+r.id).update(ch);
+    }
+    const ref=db.doc(P().reset), sn=await ref.get();
+    await ref.set(Object.assign({},sn.exists?sn.data():{},{at:now}));
+    msg(g+"'s daily is reset. Players get a fresh game the next time they open it.",'ok');
+  }catch(e){msg("Couldn't reset. Only the site owner can do this.",'err')}
+};
+$('wipeBtn').onclick=async()=>{
+  if(!db){msg("Can't reach the game database here.",'err');return}
+  const g=G().name, word=g.toUpperCase(), n=scoresRows.length;
+  $('wT').textContent='Reset all '+g+' data?';
+  $('wB').textContent='This permanently deletes '+(n===1?'1 player\'s':n+' players\'')+' scores, all-time bests and leaderboard entries, clears everyone\'s saved progress, and restarts the count so today is '+g+' No. 1. Your tuning settings are kept. This can\'t be undone.';
+  $('wWord').textContent=word;$('wIn').value='';$('wYes').disabled=true;$('wipe').hidden=false;$('wIn').focus();
+  const ok=await new Promise(res=>{$('wIn').oninput=()=>{$('wYes').disabled=$('wIn').value.trim().toUpperCase()!==word};
+    $('wYes').onclick=()=>res(true);$('wNo').onclick=()=>res(false);$('wIn').onkeydown=e=>{if(e.key==='Enter'&&!$('wYes').disabled)res(true)}});
+  $('wipe').hidden=true;if(!ok)return;
+  msg('Resetting '+g+'…');
+  try{
+    for(const r of scoresRows)await db.doc(P().scores+'/'+r.id).delete();
+    const ref=db.doc(P().reset), sn=await ref.get();
+    await ref.set(Object.assign({},sn.exists?sn.data():{},{epoch:today(),at:Date.now(),wipedAt:Date.now()}));
+    msg(g+' is reset. Today is '+g+' No. 1 and every leaderboard is empty.','ok');
+  }catch(e){msg("Couldn't finish the reset. Only the site owner can do this. Try again to clear what's left.",'err')}
+};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidden)$('mNo').click();else if(!$('wipe').hidden)$('wNo').click()}});
+
+try{const t=localStorage.getItem('dc.admin.tab');if(GAMES[t])game=t}catch(e){}
+load();
+(async()=>{
+  // admin login: only an email on the admin list can change settings (the database enforces it too)
+  const sb=window.DCSB;
+  if(!sb){$('offline').hidden=false;return}
+  const lock=on=>{document.body.classList.toggle('locked',on);$('loginCard').hidden=!on};
+  $('loginForm').onsubmit=async e=>{e.preventDefault();const em=$('loginEmail').value.trim();if(!em)return;$('loginGo').disabled=true;
+    const {error}=await sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.origin+'/admin.html'}});
+    $('loginGo').disabled=false;$('loginMsg').textContent=error?('Could not send the link: '+error.message):'Check your email for the sign-in link, then open it on this device.'};
+  let ok=false;
+  try{const {data:{session}}=await sb.auth.getSession();
+    if(session&&!session.user.is_anonymous){const r=await sb.rpc('is_admin');ok=r.data===true;
+      const w=$('whoami');w.hidden=false;w.innerHTML='';w.append('Signed in as '+session.user.email+(ok?'':' (not an admin)')+' · ');
+      const so=document.createElement('button');so.textContent='Sign out';so.onclick=async()=>{await sb.auth.signOut();location.reload()};w.append(so)}}catch(e){}
+  lock(!ok);
+  if(!ok)return;
+  try{if(window.claude&&window.claude.use)db=await window.claude.use('db')}catch(e){}
+  if(!db){$('offline').hidden=false;return}
+  try{db.doc('site_config/home').onSnapshot(sn=>{hiddenList=sn.exists&&Array.isArray(sn.data().hidden)?sn.data().hidden:[];paintVis()},()=>{})}catch(e){}
+  load();
+})();
+})();
+</script>
+</body>
+</html>
