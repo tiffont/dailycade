@@ -556,7 +556,8 @@ body.is-playing .mutebtn{display:none} /* sound settings live in the home header
 .toast small{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:.6rem;letter-spacing:.08em;color:var(--mint)}
 .toast b{display:block;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:1.15rem;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums} /* the page itself takes focus on open, so no button looks pressed */
 #over.sumv{background:var(--bg);width:min(440px,calc(var(--appw) - 32px));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-.shead{display:flex;align-items:center;gap:8px;padding:16px 16px 0 24px} /* page title on the left, buttons on the right */
+.shead{display:flex;align-items:center;gap:8px;padding:16px 16px 0 24px}
+.shead{position:sticky;top:0;z-index:2;background:var(--bg);padding-bottom:10px} /* modal headers stay put while the page scrolls under them */ /* page title on the left, buttons on the right */
 .shead h2{flex:1;min-width:0;margin:0;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:1.15rem;line-height:1.05;letter-spacing:.01em;white-space:nowrap}
 .sbtn{flex:none;width:50px;height:50px;border:0;border-radius:50%;background:#1c1c1c;color:var(--fg);display:grid;place-items:center;cursor:pointer;padding:0;position:relative}
 .sbtn svg{width:22px;height:22px}
