@@ -113,8 +113,11 @@ h1 .modetag{font-family:var(--font-body);font-size:.7rem;font-weight:600;letter-
 .pausebox b{font-size:1.4rem;font-weight:700}
 .pausebox .drop,.pausebox .sumbtn{flex:none;width:100%}
 .pausebox{gap:10px!important}
+.pausebox .pnote{color:var(--muted);font-size:.8rem;text-align:center;line-height:1.4;margin-top:4px}
+.paused[hidden]{display:none}
+.app.ispaused .dock{visibility:hidden} /* nothing to tap behind the pause card */
 .drop.noarrow::before{display:none}
-.paused{position:absolute;inset:0;z-index:4;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 60%,transparent);font-weight:600;font-size:1rem;color:var(--fg)}
+.paused{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);font-weight:600;font-size:1rem;color:var(--fg)}
 
 /* power-up slots (Dropface slot chips) */
 .slots{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
@@ -679,6 +682,8 @@ body.is-playing .mutebtn{display:none} /* sound settings live in the home header
 .app.hudmini.playing .mhud{padding:4px;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0}
 .mhud .mcol{display:flex;flex-direction:column;gap:4px;width:min(62%,220px)}
 .app.hudmini.playing .mhud .mutebtn{display:grid;position:static;flex:none;margin-left:auto;pointer-events:auto;box-shadow:none}
+.app.hudmini.playing .mhud .pausebtn[hidden]{display:none}
+.app.hudmini.playing .mhud .pausebtn:not([hidden])+.mutebtn{margin-left:8px}
 .mhud i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.56rem;color:var(--muted)}
 .mrow{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
 .msc{display:flex;flex-direction:column;gap:4px}
@@ -759,7 +764,7 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
     <button class="chip" id="idleHelp">How to play</button>
   </div>
   <div class="count" id="count" aria-live="polite"></div>
-  <div class="paused" id="paused" hidden><div class="pausebox"><b>Paused</b><button class="drop noarrow" id="resumeBtn">Resume</button><button class="sumbtn sec bigsum" id="exitBtn">Exit</button></div></div>
+  <div class="paused" id="paused" hidden><div class="pausebox"><b>Paused</b><button class="drop noarrow" id="resumeBtn">Resume</button><button class="sumbtn sec bigsum" id="exitBtn">Quit</button><small class="pnote" id="pauseNote">Quitting ends the game. You won't keep this score.</small></div></div>
 </div>
 <div class="scrim t"></div><div class="scrim b"></div>
 
@@ -803,6 +808,7 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
     <div class="mrow mid"><div class="mhp" id="mHp"></div><div class="mlives" id="mLives"></div></div>
     <div class="mrow"><div class="mbest"><i>High score</i><b id="mBest">0</b></div></div>
     </div>
+    <button class="mutebtn pausebtn" id="hudPause" aria-label="Pause" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg></button>
     <button class="mutebtn" id="muteBtn" aria-label="Mute sound" aria-pressed="false"><svg class="son" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/></svg><svg class="soff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
   </div>
 
@@ -1645,6 +1651,9 @@ function setBar(){
     ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5.5v13l10-6.5z"/></svg>'
     :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6v12M15 6v12"/></svg>';
   $('#paused').hidden=m!=='pause'||!!S.wild;
+  { const hp=$('#hudPause'); hp.hidden=!(practice&&m==='play'); }
+  app.classList.toggle('ispaused',m==='pause');
+  $('#exitBtn').hidden=!practice; $('#pauseNote').hidden=!practice;
   if(app.classList.contains('playing')!==playing){app.classList.toggle('playing',playing); measureDock(); if(playing)try{window.scrollTo({top:0,behavior:'instant'})}catch(e){window.scrollTo(0,0)}}
   const lk=dailyLocked();
   goBtn.disabled=lk;
@@ -1677,8 +1686,14 @@ function start(){
   if(COLLECT){S.bank={};for(const k of PU_KEYS)S.bank[k]=BANK_MAX} // start with the chosen hand filled
   setBar(); updateHUD();
 }
-function pause(){} // no pausing: a run plays straight through
-function resume(){if(S.mode==='pause'){S.mode='play';setBar()}}
+// pause: single player any time; the daily only pauses itself when the page goes to the background (board hidden, so it's a break, not an edge)
+function pause(auto){
+  if(S.mode!=='play'||S.wild)return;
+  if(!practice&&!auto)return;
+  S.mode='pause'; drags.clear(); drag=null; gun=null; if(grab){for(const c of grab.cs)c.held=false; grab=null}
+  setBar();
+}
+function resume(){ if(S.mode!=='pause')return; S.mode='count'; S.countN=3; S.count=0; flash('3'); SFX.count(); setBar(); } // a 3-2-1 before play picks up again
 function endRun(){ // leave a run without a result (mode switch)
   if(S.wild)closeWildBar();
   S.mode='idle'; drag=null; S.ambT=.4; for(const o of S.objs)o.amb=true;
@@ -2543,7 +2558,10 @@ $('#slots').addEventListener('click',e=>{
 });
 $('#pauseBtn').addEventListener('click',()=>{SFX.click(); S.mode==='pause'?resume():pause()});
 $('#resumeBtn').addEventListener('click',()=>{SFX.click(); resume()});
-$('#exitBtn').addEventListener('click',()=>{SFX.click(); if(S.mode==='pause'){endRun();setBar();updateHUD()}}); // leave the game, back to the start screen
+$('#exitBtn').addEventListener('click',()=>{SFX.click(); if(S.mode==='pause'&&practice){endRun();setBar();updateHUD()}}); // quit: the run is thrown away (no score, no high score), back to the start screen
+$('#hudPause').addEventListener('click',()=>{SFX.ensure();SFX.click();pause(false)});
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden')pause(true) }); // app or tab sent to the background: pause (daily too)
+addEventListener('pagehide',()=>pause(true));
 function switchMode(){
   practice=!practice;
   if(S.mode!=='idle')endRun();

@@ -640,6 +640,19 @@ body.dropping .barspace{height:16px} /* the controls are off screen, so the boar
 /* tighter tray: no empty rows below the bar (the summary button row is gone; single player has no stat row) */
 #daybar{grid-template-areas:"total total total mute" "bar bar bar mute" "place place place mute";padding-bottom:14px}
 #daybar.nostats{grid-template-areas:"total total total mute" "bar bar bar mute"}
+/* single player: a pause button left of the sound button */
+.dayhead #dpause{grid-area:pause;align-self:start;width:44px;height:44px;margin:0 8px 0 0;box-shadow:none!important}
+.dayhead #dpause[hidden]{display:none}
+#daybar.withpause{grid-template-columns:auto auto 1fr auto auto;grid-template-areas:"total total total pause mute" "bar bar bar pause mute"}
+/* pause card: covers the boards; Resume, and in single player Quit (no score) */
+.dpaused{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg)}
+.dpaused[hidden]{display:none}
+.dpbox{display:flex;flex-direction:column;align-items:stretch;gap:10px;width:min(260px,70vw);text-align:center}
+.dpbox b{font-size:1.4rem;font-weight:700;margin-bottom:4px}
+.dpbox .drop{flex:none;height:52px}
+.dpquit{height:52px;border:0;border-radius:6px;background:#2a2a2a;color:#fff;font:inherit;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 4px 0 #1a1a1a}
+.dpquit[hidden],.dpbox small[hidden]{display:none}
+.dpbox small{color:var(--muted);font-size:.8rem;line-height:1.4;margin-top:4px}
 
 /* summary: achievement cards and the drop-by-drop list */
 .achgrid{display:flex;gap:10px;margin:2px -24px 0;padding:0 24px 4px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 24px;scrollbar-width:none;overscroll-behavior-x:contain}
@@ -709,7 +722,7 @@ body.dropping .barspace{height:16px} /* the controls are off screen, so the boar
     </div>
   </div>
   <div class="daybar" id="daybar">
-    <div class="dayhead"><b id="dayTitle">Daily Game</b><button class="toggle" id="dayBtn" role="switch" aria-checked="false"><span>Practice</span><i aria-hidden="true"></i></button><button class="icon" id="mute" aria-label="Turn sound off"></button></div>
+    <div class="dayhead"><b id="dayTitle">Daily Game</b><button class="toggle" id="dayBtn" role="switch" aria-checked="false"><span>Practice</span><i aria-hidden="true"></i></button><button class="icon" id="dpause" aria-label="Pause" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg></button><button class="icon" id="mute" aria-label="Turn sound off"></button></div>
     <div class="daystats" id="dayStats"><div><small>Daily Total</small><strong id="dayTotal">0</strong><span class="hiscore"><i>High score</i><b id="hiScore">—</b></span></div><div><small>All-time Drop</small><strong id="dayBest">—</strong></div><div><small>Leaderboard</small><strong id="dayPlace">—</strong></div></div>
     <div class="dayline"><span class="daysub" id="daySub"></span></div>
     <div class="barrow"><span class="barlabel" aria-hidden="true">Drops</span><div class="pipcol"><div class="pips" id="pips" role="img"></div><div class="pipnums" id="pipNums" aria-hidden="true"></div></div></div>
@@ -724,6 +737,7 @@ body.dropping .barspace{height:16px} /* the controls are off screen, so the boar
       <button class="drop sumprac white" data-close>Got it</button>
     </div>
   </dialog>
+  <div class="dpaused" id="dpaused" hidden role="dialog" aria-modal="true" aria-label="Paused"><div class="dpbox"><b>Paused</b><button class="drop" id="dpResume">Resume</button><button class="dpquit" id="dpQuit">Quit</button><small id="dpNote">Quitting ends the game. You won't keep this score.</small></div></div>
   <dialog class="modal small leave" id="leaveModal" aria-labelledby="leaveh">
     <div class="mhead"><h2 id="leaveh">Leave game?</h2><button class="x" data-close aria-label="Close">×</button></div>
     <div class="howbody">
@@ -1143,6 +1157,7 @@ function run(){
   };
   startLevel(); render();
   function step(now){
+    if(DFP.on){ t0+=now-(step.lt||now); step.lt=now; requestAnimationFrame(step); return; } step.lt=now; // paused: the ball holds still
     const t=Math.max(0,Math.min(1,(now-t0)/seg));
     balls.forEach(b=>{
       const a=b.pts[p], c=b.pts[p+1], hop=a.peg?rowH*.35:0;
@@ -1346,10 +1361,22 @@ function renderDay(){
     segs.forEach(sg=>{ const s=document.createElement('span'); if(sg.bonus) s.className='bonus'; s.textContent=sg.v==null?'':Number(sg.v).toLocaleString(); nums.appendChild(s); }); }
   // single player: no hit-rate stat in the tray
   { const cells=$('dayStats').children; if(cells[1]) cells[1].hidden=true; if(cells[2]) cells[2].hidden=true; bar.classList.add('nostats'); } // no best-drop or leaderboard stat in the tray
+  $('dpause').hidden=mode!=='practice'; bar.classList.toggle('withpause',mode==='practice');
 }
 // leaving a practice round that's under way asks first; a round not started yet, or already finished, just switches
 const pracUnderway=()=>mode==='practice'&&((day.used>0&&day.used<PER_DAY)||!!day.pending||(done&&bonusPending>0));
 $('dayBtn').onclick=()=>{ if(busy||$('dayBtn').disabled) return; if(mode==='practice'){ if(pracUnderway()){ $('leaveModal').showModal(); return; } startDaily(); } else startPractice(); };
+// pause: single player any time (Resume / Quit); the daily only pauses itself when the page goes to the background mid-drop
+const DFP={on:false};
+function dfPause(auto){ if(DFP.on) return; if(mode!=='practice'&&!(auto&&busy)) return; if(auto&&!busy) return;
+  DFP.on=true; const prac=mode==='practice'; $('dpQuit').hidden=!prac; $('dpNote').hidden=!prac; $('dpaused').hidden=false; }
+function dfResume(){ DFP.on=false; $('dpaused').hidden=true; }
+$('dpause').onclick=()=>{ tone(880,.05,{vol:.12}); dfPause(false); };
+$('dpResume').onclick=()=>{ tone(880,.05,{vol:.12}); dfResume(); };
+$('dpQuit').onclick=()=>{ if(mode!=='practice') return; tone(880,.05,{vol:.12}); // the round is thrown away: no summary, no high score
+  if(busy||counting){ location.reload(); return; } // mid-drop: start clean (single-player rounds aren't saved)
+  dfResume(); startDaily(); pracDay=null; lastPicks.practice=null; showHome(); };
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') dfPause(true); });
 $('leaveGo').onclick=()=>{ closeModal($('leaveModal')); startDaily(); pracDay=null; lastPicks.practice=null; showHome(); }; // the round is thrown away; the next practice starts fresh
 // at midnight a page left open reloads into the new day's drops (it waits if a drop is mid-fall)
 setInterval(()=>{ if(busy) return; if(new Date().getDate()!==NOW.getDate()){ location.reload(); return; } render(); },30000);
