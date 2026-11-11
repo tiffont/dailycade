@@ -62,6 +62,8 @@ a{color:inherit;text-decoration:none}
   background:linear-gradient(#fff,#fff) padding-box,conic-gradient(from var(--ang),#ff8ad8,#c49bff,#7cc8ff,#9deba8,#f2c14e,#ff8ad8) border-box;
   animation:gtRing 3s linear infinite}
 @keyframes gtRing{to{--ang:360deg}}
+html[data-theme="dark"] .gtimer{color:var(--ink);background:linear-gradient(#161616,#161616) padding-box,conic-gradient(from var(--ang),#ff8ad8,#c49bff,#7cc8ff,#9deba8,#f2c14e,#ff8ad8) border-box}
+html[data-theme="dark"] .gtimer small{color:#a3a7ad}
 .gtimer svg{width:37px;height:37px;flex:none;stroke-width:1.7} /* as tall as the label and countdown together */
 .gtimer span{display:flex;flex-direction:column;line-height:1.1}
 .gtimer small{font-size:12px;font-weight:600;color:#6b6b6b}
