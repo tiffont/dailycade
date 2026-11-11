@@ -1673,7 +1673,7 @@ function setBar(){
   const mb=$('#modeBtn'); mb.disabled=!(m==='idle'||m==='over'); mb.setAttribute('aria-pressed',String(practice));
   mb.setAttribute('aria-label',practice?'Back to the daily game':'Switch to practice');
   mb.innerHTML=practice?ICON_DAILY:ICON_PRACTICE; $('#modeTag').hidden=!practice;
-  $('#lbBtn').hidden=practice; // practice doesn't count toward the leaderboard
+  $('#lbBtn').hidden=false; // the leaderboard is always reachable from the home screen (single-player scores just don't post to it)
   if(!$('#dailyBtn').hidden)paintDailyBtn();
   const sumNow=summaryNow();
   $('#sumBtn').hidden=!(sumNow&&(m==='idle'||m==='over'));
