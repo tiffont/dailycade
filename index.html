@@ -20,8 +20,6 @@
 html,body{margin:0;background:#fff;color:var(--ink);overflow-x:clip}
 body{font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-/* opened from the home screen: iOS lays a soft blur over the top of the screen, so start the page below it */
-@media (display-mode:standalone){body{padding-top:calc(max(env(safe-area-inset-top,0px),54px) + 12px)}}
 a{color:inherit;text-decoration:none}
 .wrap{max-width:1180px;margin:0 auto;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
 .mono{font-family:var(--sans);font-size:13px;letter-spacing:0}
