@@ -54,6 +54,20 @@ a{color:inherit;text-decoration:none}
 .btn svg{width:16px;height:16px}
 
 /* hero */
+.aboutrow{display:flex;align-items:center;justify-content:space-between;gap:32px;margin:40px 0 60px}
+.aboutrow .about{margin:0}
+/* global countdown: styled like the games' Daily Challenge button (white, slowly turning multicolour edge) */
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.gtimer{flex:none;display:flex;align-items:center;gap:12px;padding:12px 20px 12px 16px;border-radius:14px;color:#0d0d0d;border:3px solid transparent;border-bottom-width:7px;
+  background:linear-gradient(#fff,#fff) padding-box,linear-gradient(to top,rgba(0,0,0,.32) 0 4px,transparent 4px) border-box,conic-gradient(from var(--ang),#ff8ad8,#c49bff,#7cc8ff,#9deba8,#f2c14e,#ff8ad8) border-box;
+  animation:gtRing 3s linear infinite}
+@keyframes gtRing{to{--ang:360deg}}
+.gtimer svg{width:22px;height:22px;flex:none}
+.gtimer span{display:flex;flex-direction:column;line-height:1.1}
+.gtimer small{font-size:12px;font-weight:600;color:#6b6b6b}
+.gtimer .cd{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+@media (max-width:760px){.aboutrow{flex-direction:column;align-items:flex-start;gap:20px;margin:28px 0 36px}}
+@media (prefers-reduced-motion:reduce){.gtimer{animation:none}}
 .about{font-size:clamp(24px,3vw,38px);font-weight:500;line-height:1.25;letter-spacing:-.025em;color:var(--ink);max-width:36ch;margin:40px 0 60px}
 .rail{--gut:max(28px,calc((100vw - 1180px)/2 + 28px));display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--gut);padding-inline:var(--gut);scrollbar-width:none;overscroll-behavior-x:contain}
 .rail::-webkit-scrollbar{display:none}
@@ -213,7 +227,10 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
 <main id="top">
   <section class="hero">
     <div class="wrap">
-      <p class="about">Free-to-play, arcade-style daily games to challenge yourself and the world.</p>
+      <div class="aboutrow">
+        <p class="about">Free-to-play, arcade-style daily games to challenge yourself and the world.</p>
+        <div class="gtimer" role="timer" aria-live="off"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12M6 21h12M7 3v3a5 5 0 0 0 10 0V3M7 21v-3a5 5 0 0 1 10 0v3"/></svg><span><small>Next games in</small><time class="cd">–</time></span></div>
+      </div>
     </div>
     <div class="rail" id="rail" tabindex="0" aria-label="Games">
       <article class="panel" id="gambit" data-base="2026-11-09" aria-label="Gambit">
@@ -233,7 +250,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
             <div class="floor" aria-hidden="true"></div>
           </div>
         </div>
-        <p class="bhead"><span>Today's daily challenge</span><span class="nextin">Next game in <time class="cd">–</time></span></p>
+        <p class="bhead"><span>Today's daily challenge</span></p>
         <div class="board">
           <div class="cell"><span class="mono">Game</span><b data-k="day">–</b></div>
           <div class="cell"><span class="mono">Players</span><b data-k="players">–</b></div>
@@ -257,7 +274,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
             <div class="floor" aria-hidden="true"></div>
           </div>
         </div>
-        <p class="bhead"><span>Today's daily challenge</span><span class="nextin">Next game in <time class="cd">–</time></span></p>
+        <p class="bhead"><span>Today's daily challenge</span></p>
         <div class="board">
           <div class="cell"><span class="mono">Game</span><b data-k="day">–</b></div>
           <div class="cell"><span class="mono">Players</span><b data-k="players">–</b></div>
