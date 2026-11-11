@@ -605,7 +605,8 @@ body.is-playing .mutebtn{display:none} /* sound settings live in the home header
 .hwatch{display:flex;flex-direction:column;gap:16px}
 .hwatch .sic2{border-radius:50%;background:color-mix(in srgb,var(--c) 16%,#000);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 75%,transparent)} /* round, like the bubbles in the game */
 .hwatch>i{display:block;color:var(--fg);font-size:calc(.62rem + 2px)}
-.hcombo{margin:0;padding:14px 16px;border-radius:12px;background:color-mix(in srgb,var(--mint) 8%,#000);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--mint) 35%,transparent);color:var(--muted);font-size:.9rem;line-height:1.5} /* 'Watch for' in white, 2px bigger */
+.hcombo{display:flex;align-items:center;gap:14px;margin:0;padding:14px 16px;border-radius:12px;background:color-mix(in srgb,var(--mint) 8%,#000);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--mint) 35%,transparent);color:var(--muted);font-size:.9rem;line-height:1.5}
+.hcombo svg{flex:none;width:28px;height:28px;color:var(--mint)} /* 'Watch for' in white, 2px bigger */
 .helpv .slist li{align-items:center}
 /* leaderboard in the summary style */
 .shead.end{justify-content:flex-end}
@@ -875,7 +876,7 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
       <li style="--c:var(--mint)"><span class="sic2">4</span><span class="sl">Hold the line<small>Anything that crosses it costs you health</small></span></li>
     </ol>
     <div class="hwatch"><i>Combine power-ups</i>
-      <p class="hcombo">Power cards stack. Use one while another is still running and their effects work together. You can have all 5 going at once.</p>
+      <p class="hcombo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="10" height="14" rx="2"/><path d="M6 6.5v11A2.5 2.5 0 0 0 8.5 20H15"/><path d="M3 9.5v9A2.5 2.5 0 0 0 5.5 21H11"/><path d="M14 7.5v4M12 9.5h4"/></svg><span>Stack power-up cards to combine their effects, with up to 5 active at once.</span></p>
     </div>
     <div class="hwatch"><i>Watch for</i><ul class="slist" id="helpBonus"></ul></div>
     <div id="specials" hidden></div>
