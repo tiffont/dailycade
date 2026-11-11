@@ -604,7 +604,8 @@ body.is-playing .mutebtn{display:none} /* sound settings live in the home header
 .helpv .sic2 img{width:18px;height:18px;display:block}
 .hwatch{display:flex;flex-direction:column;gap:16px}
 .hwatch .sic2{border-radius:50%;background:color-mix(in srgb,var(--c) 16%,#000);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 75%,transparent)} /* round, like the bubbles in the game */
-.hwatch>i{display:block;color:var(--fg);font-size:calc(.62rem + 2px)} /* 'Watch for' in white, 2px bigger */
+.hwatch>i{display:block;color:var(--fg);font-size:calc(.62rem + 2px)}
+.hcombo{margin:0;padding:14px 16px;border-radius:12px;background:color-mix(in srgb,var(--mint) 8%,#000);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--mint) 35%,transparent);color:var(--muted);font-size:.9rem;line-height:1.5} /* 'Watch for' in white, 2px bigger */
 .helpv .slist li{align-items:center}
 /* leaderboard in the summary style */
 .shead.end{justify-content:flex-end}
@@ -871,9 +872,11 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
       <li style="--c:var(--mint)"><span class="sic2">1</span><span class="sl">Pick 5 power cards<small>Your hand for the game</small></span></li>
       <li style="--c:var(--mint)"><span class="sic2">2</span><span class="sl">Swipe up to throw<small>Bend the swipe to curve the card</small></span></li>
       <li style="--c:var(--mint)"><span class="sic2">3</span><span class="sl">Tap a power card to use it<small>Hit its falling tile to get it back</small></span></li>
-      <li style="--c:var(--mint)"><span class="sic2">4</span><span class="sl">Stack your powers<small>Combine them, up to all 5 at once</small></span></li>
-      <li style="--c:var(--mint)"><span class="sic2">5</span><span class="sl">Hold the line<small>Anything that crosses it costs you health</small></span></li>
+      <li style="--c:var(--mint)"><span class="sic2">4</span><span class="sl">Hold the line<small>Anything that crosses it costs you health</small></span></li>
     </ol>
+    <div class="hwatch"><i>Combine power-ups</i>
+      <p class="hcombo">Power cards stack. Use one while another is still running and their effects work together. You can have all 5 going at once.</p>
+    </div>
     <div class="hwatch"><i>Watch for</i><ul class="slist" id="helpBonus"></ul></div>
     <div id="specials" hidden></div>
     <button class="drop go2 white" data-close>Got it</button>
