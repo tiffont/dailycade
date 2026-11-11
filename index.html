@@ -135,10 +135,13 @@ h1{font-family:var(--sans);font-weight:700;font-size:clamp(64px,8.6vw,120px);lin
 .nextin{font-weight:500;color:#707070;font-size:14px}
 .nextin .cd{color:#0d0d0d;font-weight:600;font-variant-numeric:tabular-nums}
 .board{display:grid;grid-template-columns:repeat(3,1fr)}
-.cell{padding:18px 0 0;border-top:2px solid var(--ink);margin-right:20px}
+.daybox{margin-top:48px;padding:6px 24px 26px;border-radius:20px;background:rgba(0,0,0,.035)} /* today's stats sit in a slightly darker box */
+.daybox .bhead{margin-top:18px}
+html[data-theme="dark"] .daybox{background:rgba(0,0,0,.28)}
+.cell{padding:10px 0 0;border-top:2px solid var(--ink);margin-right:20px}
 .cell:last-child{margin-right:0}
 .cell .mono{color:var(--muted);font-size:13px}
-.cell b{display:block;font-family:var(--sans);font-weight:400;font-size:40px;letter-spacing:-.035em;line-height:1;margin-top:22px;font-variant-numeric:tabular-nums}
+.cell b{display:block;font-family:var(--sans);font-weight:400;font-size:40px;letter-spacing:-.035em;line-height:1;margin-top:22px;font-variant-numeric:tabular-nums;font-weight:600}
 
 footer .flinks{display:flex;gap:20px;flex-wrap:wrap}
 footer .flinks a:hover{color:var(--ink)}
@@ -182,7 +185,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6p
   .lede{font-size:20px;line-height:28px}
   .panel{padding:32px 20px 28px;border-radius:24px}
   .bhead{margin:32px 0 10px;font-size:14px}
-  .cell{margin-right:12px;padding-top:12px}
+  .cell{margin-right:12px;padding-top:4px}
+  .daybox{margin-top:32px;padding:4px 16px 20px;border-radius:16px}
   .cell .mono{font-size:11px}
   .cell b{font-size:24px;margin-top:10px}
 }
@@ -256,11 +260,13 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
             <div class="floor" aria-hidden="true"></div>
           </div>
         </div>
+        <div class="daybox">
         <p class="bhead"><span>Today's daily challenge</span></p>
         <div class="board">
           <div class="cell"><span class="mono">Game</span><b data-k="day">–</b></div>
           <div class="cell"><span class="mono">Players</span><b data-k="players">–</b></div>
           <div class="cell"><span class="mono">Top score</span><b data-k="top">–</b></div>
+        </div>
         </div>
       </article>
       <article class="panel" id="dropface" data-base="2026-11-09" aria-label="Dropface">
@@ -280,11 +286,13 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
             <div class="floor" aria-hidden="true"></div>
           </div>
         </div>
+        <div class="daybox">
         <p class="bhead"><span>Today's daily challenge</span></p>
         <div class="board">
           <div class="cell"><span class="mono">Game</span><b data-k="day">–</b></div>
           <div class="cell"><span class="mono">Players</span><b data-k="players">–</b></div>
           <div class="cell"><span class="mono">Top score</span><b data-k="top">–</b></div>
+        </div>
         </div>
       </article>
     </div>
