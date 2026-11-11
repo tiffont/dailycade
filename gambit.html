@@ -683,7 +683,14 @@ body.is-playing .mutebtn{display:none} /* sound settings live in the home header
 .mhud .mcol{display:flex;flex-direction:column;gap:4px;width:min(62%,220px)}
 .app.hudmini.playing .mhud .mutebtn{display:grid;position:static;flex:none;margin-left:auto;pointer-events:auto;box-shadow:none}
 .app.hudmini.playing .mhud .pausebtn[hidden]{display:none}
-.app.hudmini.playing .mhud .pausebtn:not([hidden])+.mutebtn{margin-left:8px}
+.app.hudmini.playing .mhud .pausebtn{margin-left:4px} /* pause sits right of the sound button */
+.app.ispaused::before{display:none} /* no glow, score or sound button behind the pause card */
+.app.ispaused .mhud{visibility:hidden}
+.pmotion b{animation:pBreathe 2.6s ease-in-out infinite}
+.pmotion:not([hidden]) .pmbox{animation:pIn .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes pIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes pBreathe{0%,100%{opacity:1}50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){.pmotion b,.pmotion .pmbox{animation:none!important}}
 .mhud i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.56rem;color:var(--muted)}
 .mrow{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
 .msc{display:flex;flex-direction:column;gap:4px}
@@ -764,7 +771,7 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
     <button class="chip" id="idleHelp">How to play</button>
   </div>
   <div class="count" id="count" aria-live="polite"></div>
-  <div class="paused" id="paused" hidden><div class="pausebox"><b>Paused</b><button class="drop noarrow" id="resumeBtn">Resume</button><button class="sumbtn sec bigsum" id="exitBtn">Quit</button><small class="pnote" id="pauseNote">Quitting ends the game. You won't keep this score.</small></div></div>
+  <div class="paused pmotion" id="paused" hidden><div class="pausebox pmbox"><b>Paused</b><button class="drop noarrow" id="resumeBtn">Resume</button><button class="sumbtn sec bigsum" id="exitBtn">Quit</button><small class="pnote" id="pauseNote">Quitting forfeits your score.</small></div></div>
 </div>
 <div class="scrim t"></div><div class="scrim b"></div>
 
@@ -808,8 +815,8 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
     <div class="mrow mid"><div class="mhp" id="mHp"></div><div class="mlives" id="mLives"></div></div>
     <div class="mrow"><div class="mbest"><i>High score</i><b id="mBest">0</b></div></div>
     </div>
-    <button class="mutebtn pausebtn" id="hudPause" aria-label="Pause" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg></button>
     <button class="mutebtn" id="muteBtn" aria-label="Mute sound" aria-pressed="false"><svg class="son" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/></svg><svg class="soff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
+    <button class="mutebtn pausebtn" id="hudPause" aria-label="Pause" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg></button>
   </div>
 
   <div class="dock" id="dock">
@@ -1651,7 +1658,7 @@ function setBar(){
     ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5.5v13l10-6.5z"/></svg>'
     :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6v12M15 6v12"/></svg>';
   $('#paused').hidden=m!=='pause'||!!S.wild;
-  { const hp=$('#hudPause'); hp.hidden=!(practice&&m==='play'); }
+  { const hp=$('#hudPause'); hp.hidden=!(m==='play'||m==='count'); } // pause is always there during a game (daily: Resume only)
   app.classList.toggle('ispaused',m==='pause');
   $('#exitBtn').hidden=!practice; $('#pauseNote').hidden=!practice;
   if(app.classList.contains('playing')!==playing){app.classList.toggle('playing',playing); measureDock(); if(playing)try{window.scrollTo({top:0,behavior:'instant'})}catch(e){window.scrollTo(0,0)}}
@@ -1689,7 +1696,6 @@ function start(){
 // pause: single player any time; the daily only pauses itself when the page goes to the background (board hidden, so it's a break, not an edge)
 function pause(auto){
   if(S.mode!=='play'||S.wild)return;
-  if(!practice&&!auto)return;
   S.mode='pause'; drags.clear(); drag=null; gun=null; if(grab){for(const c of grab.cs)c.held=false; grab=null}
   setBar();
 }
