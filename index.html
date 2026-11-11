@@ -379,13 +379,17 @@ function countdown(){const n=new Date(),mid=new Date(n.getFullYear(),n.getMonth(
 countdown();setInterval(countdown,1000);
 
 /* games the admin has taken down are hidden (panel, dot and header link) until put back */
+let lastHidden=null;
 function applyHidden(list){
   list=Array.isArray(list)?list:[];
+  const key=JSON.stringify(list.slice().sort()); if(key===lastHidden)return; // the database re-sends settings now and then: only act on a real change
+  const first=lastHidden===null; lastHidden=key;
   allPanels.forEach((p,i)=>{if(!p.dataset.base)return;const off=list.includes(p.id);p.hidden=off;allDots[i].hidden=off;
     document.querySelectorAll('.games a[href="'+p.id+'.html"]').forEach(a=>a.hidden=off)});
   panels=allPanels.filter(p=>!p.hidden);dots=allDots.filter(d=>!d.hidden);
   try{localStorage.setItem('dc.hidden',JSON.stringify(list))}catch(e){}
-  rail.scrollTo({left:0});paint();
+  if(!first)rail.scrollTo({left:0}); // only jump back when the set of games really changed
+  paint();
 }
 try{applyHidden(JSON.parse(localStorage.getItem('dc.hidden')||'[]'))}catch(e){}
 (async()=>{let db=null;try{if(window.claude&&window.claude.use)db=await window.claude.use('db')}catch(e){}
