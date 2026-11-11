@@ -168,6 +168,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6p
 
 @media (max-width:940px){
   .grid{grid-template-columns:1fr;gap:48px}
+.grid .show{order:-1} /* stacked: the handheld comes first, above the title */
   .panel{padding:40px 36px 36px}
   .show{padding:0;justify-items:start}
   .show::before,.floor,.cabimg{display:none}
