@@ -675,6 +675,8 @@ body.is-playing .mutebtn{display:none} /* sound settings live in the home header
   left:max(max(12px,env(safe-area-inset-left,0px)),calc((var(--appw) - 464px)/2));right:auto;width:min(calc(var(--appw) - 24px),440px);
   padding:14px 14px 14px 16px;border-radius:12px;background:rgba(14,14,14,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+/* no glass tray: the scoreboard sits straight on the board */
+.app.hudmini.playing .mhud{padding:4px;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0}
 .mhud .mcol{display:flex;flex-direction:column;gap:4px;width:min(62%,220px)}
 .app.hudmini.playing .mhud .mutebtn{display:grid;position:static;flex:none;margin-left:auto;pointer-events:auto;box-shadow:none}
 .mhud i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.56rem;color:var(--muted)}
