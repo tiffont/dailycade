@@ -135,8 +135,8 @@ h1{font-family:var(--sans);font-weight:700;font-size:clamp(64px,8.6vw,120px);lin
 .nextin{font-weight:500;color:#707070;font-size:14px}
 .nextin .cd{color:#0d0d0d;font-weight:600;font-variant-numeric:tabular-nums}
 .board{display:grid;grid-template-columns:repeat(3,1fr)}
-.daybox{margin-top:36px;padding:0 16px 14px;border-radius:8px;background:#fff;max-width:420px} /* today's stats: a compact, slightly darker box under Play game */
-.daybox .bhead{margin:12px 0 10px;font-size:13px}
+.daybox{margin-top:36px;padding:6px 24px 22px;border-radius:8px;background:#fff;max-width:420px} /* today's stats: a compact, slightly darker box under Play game */
+.daybox .bhead{margin:14px 0 10px;font-size:13px}
 .daybox .cell{margin-right:14px;padding-top:6px;border-top-width:1.5px}
 .daybox .cell:last-child{margin-right:0}
 .daybox .cell .mono{font-size:11px}
@@ -195,7 +195,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6p
   .panel{padding:32px 20px 28px;border-radius:24px}
   .bhead{margin:32px 0 10px;font-size:14px}
   .cell{margin-right:12px;padding-top:4px}
-  .daybox{margin-top:28px;max-width:none}
+  .daybox{margin-top:28px;max-width:none;padding:0 16px 14px}
+  .daybox .bhead{margin-top:12px}
   .daybox .cell b{font-size:18px}
   .cell .mono{font-size:11px}
   .cell b{font-size:24px;margin-top:10px}
