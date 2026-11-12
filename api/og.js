@@ -25,6 +25,7 @@ const img = (src, style) => ({ type: 'img', props: { src, style } });
 
 export async function GET(req) {
   const url = new URL(req.url);
+  if (url.searchParams.get('game') === 'site') return siteCard(url);
   const key = GAMES[url.searchParams.get('game')] ? url.searchParams.get('game') : 'gambit';
   const g = GAMES[key];
   const s = Math.max(0, Math.min(99999999, parseInt(url.searchParams.get('s') || '', 10) || 0));
@@ -75,4 +76,35 @@ export async function GET(req) {
   });
   const png = new Resvg(svg).render().asPng();
   return new Response(png, { headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=31536000, immutable' } });
+}
+
+// the Dailycade homepage card: the brand, both games' handhelds
+async function siteCard(url) {
+  const [f800, f500, gHand, dHand] = await Promise.all([
+    fetch(new URL('/og/inter-display-800.otf', url)).then(r => r.arrayBuffer()),
+    fetch(new URL('/og/inter-500.otf', url)).then(r => r.arrayBuffer()),
+    fetch(new URL('/og/handheld-gambit.png', url)).then(r => r.arrayBuffer()),
+    fetch(new URL('/og/handheld-dropface.png', url)).then(r => r.arrayBuffer()),
+  ]);
+  const src = b => 'data:image/png;base64,' + Buffer.from(b).toString('base64');
+  const tree = h('div', { width: '100%', height: '100%', background: '#0b0b0b', color: '#fff', fontFamily: 'Inter', position: 'relative', overflow: 'hidden' },
+    h('div', { position: 'absolute', right: 120, top: 60, width: 520, height: 520, borderRadius: 9999, backgroundImage: 'linear-gradient(135deg, #ff8ad8, #c49bff 35%, #7cc8ff 65%, #9deba8)', opacity: 0.85 }),
+    h('div', { position: 'absolute', left: 72, top: 60, bottom: 56, width: 560, flexDirection: 'column', justifyContent: 'space-between' },
+      h('div', { alignItems: 'center', gap: 18 },
+        img(MARK, { width: 46, height: 62 }),
+        h('div', { fontSize: 48, fontWeight: 800, letterSpacing: -1.5 }, 'Dailycade')),
+      h('div', { flexDirection: 'column', gap: 18 },
+        h('div', { fontSize: 76, fontWeight: 800, lineHeight: 1.02, letterSpacing: -2.5 }, 'Free daily arcade games'),
+        h('div', { fontSize: 30, fontWeight: 500, color: '#b8bcc2', lineHeight: 1.3 }, 'New challenges every day.')),
+      h('div', { alignItems: 'center', gap: 14, fontSize: 24, fontWeight: 500, color: '#8f8f8c' },
+        h('div', { width: 10, height: 10, borderRadius: 9999, background: '#9deba8' }), 'Gambit',
+        h('div', { width: 10, height: 10, borderRadius: 9999, background: '#c49bff', marginLeft: 14 }), 'Dropface')),
+    img(src(dHand), { position: 'absolute', right: 40, top: 92, width: 300, height: Math.round(300 * 574 / 380) }),
+    img(src(gHand), { position: 'absolute', right: 270, top: 52, width: 300, height: Math.round(300 * 579 / 380) })
+  );
+  const svg = await satori(tree, { width: 1200, height: 630, fonts: [
+    { name: 'Inter', data: f800, weight: 800, style: 'normal' },
+    { name: 'Inter', data: f500, weight: 500, style: 'normal' },
+  ] });
+  return new Response(new Resvg(svg).render().asPng(), { headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=31536000, immutable' } });
 }
