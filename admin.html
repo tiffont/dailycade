@@ -288,7 +288,7 @@ function paintVis(){const off=hiddenList.includes(game),g=G().name;
   $('visTxt').textContent=off?' '+g+' is off the homepage, and its page shows "taking a break". Scores and settings are kept.':' '+g+' is on the homepage and playable.';
   $('visBtn').textContent=off?'Put back on the site':'Hide from the site'}
 $('visBtn').onclick=async()=>{
-  if(!db){msg("Can't reach the game database here.",'err');return}
+  if(!db){msg("Not connected to the database. Reload the page and sign in again.",'err');return}
   const off=hiddenList.includes(game),g=G().name;
   if(!await ask(off?'Put '+g+' back?':'Hide '+g+'?',off?g+' comes back on the homepage and is playable again.':g+' comes off the homepage and its page shows a "taking a break" notice. Scores, settings and the daily count are kept, so you can put it back any time.',off?'Put back':'Hide'))return;
   const next=off?hiddenList.filter(x=>x!==game):[...hiddenList,game];
@@ -301,7 +301,7 @@ $('testBtn').onclick=()=>{try{window.name='dcpreview:'+JSON.stringify({game,valu
 const dateIn=$('whenDate');dateIn.min=addDays(today(),1);dateIn.value=addDays(today(),1);
 dateIn.addEventListener('focus',()=>{document.querySelector('input[name=when][value=date]').checked=true});
 $('publishBtn').onclick=async()=>{
-  if(!db){msg("Can't reach the game database here.",'err');return}
+  if(!db){msg("Not connected to the database. Reload the page and sign in again.",'err');return}
   const mode=document.querySelector('input[name=when]:checked').value, g=G().name;
   if(mode==='now'){
     if(!await ask('Publish to '+g+' now?','Players get these settings at the start of their next game. Anyone who already played today played on the old settings.','Publish now'))return;
@@ -313,7 +313,7 @@ $('publishBtn').onclick=async()=>{
   }
 };
 $('resetBtn').onclick=async()=>{
-  if(!db){msg("Can't reach the game database here.",'err');return}
+  if(!db){msg("Not connected to the database. Reload the page and sign in again.",'err');return}
   const g=G().name;
   if(!await ask("Reset today's "+g+' daily?',"Everyone can play today's game again, and today's scores come off the board. All-time bests stay.",'Reset'))return;
   try{
@@ -329,7 +329,7 @@ $('resetBtn').onclick=async()=>{
   }catch(e){msg("Couldn't reset. Only the site owner can do this.",'err')}
 };
 $('wipeBtn').onclick=async()=>{
-  if(!db){msg("Can't reach the game database here.",'err');return}
+  if(!db){msg("Not connected to the database. Reload the page and sign in again.",'err');return}
   const g=G().name, word=g.toUpperCase(), n=scoresRows.length;
   $('wT').textContent='Reset all '+g+' data?';
   $('wB').textContent='This permanently deletes '+(n===1?'1 player\'s':n+' players\'')+' scores, all-time bests and leaderboard entries, clears everyone\'s saved progress, and restarts the count so today is '+g+' No. 1. Your tuning settings are kept. This can\'t be undone.';
@@ -357,17 +357,30 @@ load();
   $('loginForm').onsubmit=async e=>{e.preventDefault();const em=$('loginEmail').value.trim();if(!em)return;$('loginGo').disabled=true;
     const {error}=await sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.origin+'/admin.html'}});
     $('loginGo').disabled=false;$('loginMsg').textContent=error?('Could not send the link: '+error.message):'Check your email for the sign-in link, then open it on this device.'};
-  let ok=false;
-  try{const {data:{session}}=await sb.auth.getSession();
-    if(session&&!session.user.is_anonymous){const r=await sb.rpc('is_admin');ok=r.data===true;
-      const w=$('whoami');w.hidden=false;w.innerHTML='';w.append('Signed in as '+session.user.email+(ok?'':' (not an admin)')+' · ');
-      const so=document.createElement('button');so.textContent='Sign out';so.onclick=async()=>{await sb.auth.signOut();location.reload()};w.append(so)}}catch(e){}
-  lock(!ok);
-  if(!ok)return;
-  try{if(window.claude&&window.claude.use)db=await window.claude.use('db')}catch(e){}
-  if(!db){$('offline').hidden=false;return}
-  try{db.doc('site_config/home').onSnapshot(sn=>{hiddenList=sn.exists&&Array.isArray(sn.data().hidden)?sn.data().hidden:[];paintVis()},()=>{})}catch(e){}
-  load();
+  // check who's signed in; the page stays locked until that answer is in (and re-checks when a sign-in lands)
+  const withTimeout=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+  let ready=false, checking=false;
+  async function verify(){
+    if(ready||checking)return; checking=true;
+    let ok=false, session=null;
+    try{ session=(await withTimeout(sb.auth.getSession(),8000)).data.session;
+      if(session&&!session.user.is_anonymous){ const r=await withTimeout(sb.rpc('is_admin'),8000); ok=r.data===true; } }
+    catch(e){ $('loginMsg').textContent="Couldn't check your sign-in. Reload the page to try again."; }
+    const w=$('whoami');
+    if(session&&!session.user.is_anonymous){ w.hidden=false;w.innerHTML='';w.append('Signed in as '+session.user.email+(ok?'':' (not an admin)')+' · ');
+      const so=document.createElement('button');so.textContent='Sign out';so.onclick=async()=>{await sb.auth.signOut();location.reload()};w.append(so); }
+    checking=false;
+    lock(!ok);
+    if(!ok)return;
+    try{if(window.claude&&window.claude.use)db=await window.claude.use('db')}catch(e){}
+    if(!db){$('offline').hidden=false;return}
+    ready=true;
+    try{db.doc('site_config/home').onSnapshot(sn=>{hiddenList=sn.exists&&Array.isArray(sn.data().hidden)?sn.data().hidden:[];paintVis()},()=>{})}catch(e){}
+    load();
+  }
+  lock(true); // nothing can be changed until the sign-in check passes
+  sb.auth.onAuthStateChange(ev=>{ if(ev==='SIGNED_IN'||ev==='TOKEN_REFRESHED') setTimeout(verify,0); });
+  verify();
 })();
 })();
 </script>
