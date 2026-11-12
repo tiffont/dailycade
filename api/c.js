@@ -1,7 +1,6 @@
 // Challenge links: /c/gambit?s=1240&n=3&i=TLT
 // Link previews (Messages, X, Slack…) read the tags below and show the share card from /api/og;
 // people who tap the link are sent straight on to the game.
-export const config = { runtime: 'edge' };
 
 const GAMES = {
   gambit:   { name: 'Gambit',   page: '/gambit.html',   tag: 'Swipe, curve, stack power-ups. Survive the fall.' },
@@ -9,7 +8,7 @@ const GAMES = {
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-export default function handler(req) {
+export function GET(req) {
   const url = new URL(req.url);
   const key = GAMES[url.searchParams.get('game')] ? url.searchParams.get('game') : 'gambit';
   const g = GAMES[key];

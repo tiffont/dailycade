@@ -3,7 +3,6 @@
 // /api/og?game=gambit                    ->  the game's plain card
 import { ImageResponse } from '@vercel/og';
 
-export const config = { runtime: 'edge' };
 
 const GAMES = {
   gambit:   { name: 'Gambit',   tag: 'Swipe, curve, stack power-ups. Survive the fall.', blob: '#9deba8', accent: '#9deba8' },
@@ -23,7 +22,7 @@ const MARK = 'data:image/svg+xml;utf8,' + encodeURIComponent(
 const h = (type, style, ...children) => ({ type, props: { style: { display: 'flex', ...style }, children: children.flat().filter(c => c !== null && c !== undefined && c !== false) } });
 const img = (src, style) => ({ type: 'img', props: { src, style } });
 
-export default async function handler(req) {
+export async function GET(req) {
   const url = new URL(req.url);
   const key = GAMES[url.searchParams.get('game')] ? url.searchParams.get('game') : 'gambit';
   const g = GAMES[key];
