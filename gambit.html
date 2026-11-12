@@ -594,6 +594,19 @@ body.is-playing .mutebtn{display:none} /* sound settings live in the home header
 .srate{display:flex;justify-content:space-between;align-items:baseline;gap:8px;color:var(--muted);font-size:.95rem}
 .srate b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:1.35rem;color:var(--fg);margin-left:2px}
 .slist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px}
+/* achievement cards (same look as Dropface) */
+.oach{display:flex;flex-direction:column;gap:12px}
+.oach[hidden]{display:none}
+.oeyebrow{margin:0;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:11.9px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}
+.achgrid{display:flex;gap:10px;margin:0 -24px;padding:0 24px 4px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 24px;scrollbar-width:none;overscroll-behavior-x:contain}
+.achgrid::-webkit-scrollbar{display:none}
+.acard{flex:none;width:148px;scroll-snap-align:start;display:flex;flex-direction:column;gap:4px;min-width:0;padding:14px;border-radius:12px;background:#1a1a1a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.acard .atop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.acard .ai{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;color:#000;background:var(--c)}
+.acard .ai svg{width:22px;height:22px}
+.acard .ap{font-family:var(--font-mono);font-weight:700;font-size:.85rem;color:var(--c)}
+.acard b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.04em;line-height:1.2;overflow-wrap:anywhere}
+.acard small{font-size:.8rem;color:var(--muted)}
 .slist li{display:flex;align-items:center;gap:16px}
 .sic2{width:30px;height:30px;flex:none;border-radius:7px;box-shadow:inset 0 0 0 1.5px var(--c);color:var(--c);display:grid;place-items:center}
 .sic2 svg{width:16px;height:16px}
@@ -941,6 +954,7 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
       <div class="srate"><i>Hit rate</i><span><span id="oThrown"></span><b id="oHit">0%</b></span></div>
     </div>
     <ul class="slist" id="oFacts"></ul>
+    <div class="oach" id="oAch" hidden></div>
     <p class="snote" id="oNote" hidden></p>
     <button class="drop go2" id="practiceBtn" hidden>Play again</button>
     <button class="drop go2" id="dailyBtn" hidden>Daily challenge</button>
@@ -1874,6 +1888,11 @@ function dailySumNow(){
   }
   return null;
 }
+// Gambit achievements: shown as cards on the summary
+const GACH={
+  sharp:{name:'Sharpshooter',rule:'75%+ hit rate',c:'var(--mint)',
+    g:'<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/>'},
+};
 function fillOver(m){
   $('#practiceBtn').hidden=!m.practice&&!LAB; $('#dailyBtn').hidden=true;
   const isDaily=!m.practice&&!LAB; $('#challengeBtn').hidden=LAB; $('#shareBtn').hidden=true; // Challenge a friend on every summary; no share icon in the corner // daily: Challenge a friend instead of the share icon // Play again only after an arcade game: the daily hand is once a day
@@ -1891,7 +1910,6 @@ function fillOver(m){
   const row=(c,i,label,val)=>`<li style="--c:${c}"><span class="sic2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic[i]}</svg></span><span class="sl">${label}</span><b>${val}</b></li>`;
   const bestNow=Math.max(m.best||0,m.practice?abest:best);
   $('#oFacts').innerHTML=m.partial?row('var(--fg)','clock','Time lasted',fmtT(m.t))+row('var(--fg)','star','Personal best',fmtN(bestNow)):[
-    (m.ach||[]).includes('sharp')?row('var(--mint)','target','Achievement','Sharpshooter'):'',
     row('var(--violet)','clock','Time lasted',fmtT(m.t)),
     m.streak!=null?row('var(--amber)','x','Best streak',fmtN(m.streak)):'',
     row('var(--pink)','chain','Best chain',m.chain+'x'),
@@ -1899,6 +1917,10 @@ function fillOver(m){
     row('var(--sky)','up','Top speed',fmtSpeed(m.speed)),
     m.nb?row('var(--mint)','ok','New personal best',m.pb?'+'+fmtN(m.score-m.pb):fmtN(m.score)):row('var(--fg)','star','Personal best',fmtN(bestNow))
   ].join('');
+  // achievements earned this game, as cards (like Dropface)
+  { const box=$('#oAch'), list=(m.ach||[]).map(id=>GACH[id]).filter(Boolean);
+    box.hidden=!list.length;
+    box.innerHTML=list.length?`<p class="oeyebrow">Achievements</p><div class="achgrid">${list.map(a=>`<div class="acard" style="--c:${a.c}"><div class="atop"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${a.g}</svg></span></div><b>${a.name}</b><small>${a.rule}</small></div>`).join('')}</div>`:''; }
   const note=m.partial?'Detailed stats were not saved for this game.':'';
   $('#oNote').hidden=!note; $('#oNote').textContent=note;
   shareSum=m;
