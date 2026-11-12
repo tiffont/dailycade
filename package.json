@@ -1,0 +1,7 @@
+{
+  "name": "dailycade",
+  "private": true,
+  "dependencies": {
+    "@vercel/og": "^1.0.3"
+  }
+}
