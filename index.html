@@ -168,7 +168,11 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6p
 
 @media (max-width:940px){
   .grid{grid-template-columns:1fr;gap:48px}
-.grid .show{order:-1} /* stacked: the handheld comes first, above the title */
+/* stacked: title, description, Play game, then the handheld, then today's stats */
+.panel .grid{gap:0;align-content:start}
+.grid>div:first-child{display:contents}
+.grid .show{order:1;margin-top:40px}
+.grid .daybox{order:2}
   .panel{padding:40px 36px 36px}
   .show{padding:0;justify-items:start}
   .show::before,.floor,.cabimg{display:none}
