@@ -1843,7 +1843,11 @@ function gameOver(){
   const pb=S.practice?abest:best, nb=S.score>pb && S.score>0; // pb: your best (daily or arcade) before this game
   if(nb){if(S.practice){abest=S.score;try{localStorage.setItem('gambit.r5.abest',String(abest))}catch(e){}}else{best=S.score;try{localStorage.setItem('gambit.r7.best',String(best))}catch(e){}} showToast(S.score)}
   if(!S.practice)postScore(S.score,S.t);
-  const sum={day:DAY_NO,practice:S.practice,score:S.score,t:S.t,thrown:S.thrown,pb,
+  // achievements (kept on this device). Sharpshooter: finish a game hitting with 75%+ of your cards, over at least 50 throws
+  const ach=[], rateNow=S.thrown?S.hitCards/S.thrown*100:0;
+  if(S.thrown>=50&&rateNow>=75)ach.push('sharp');
+  if(ach.length){try{const a=JSON.parse(localStorage.getItem('gambit.ach')||'{}');for(const k of ach){a[k]=a[k]||{first:Date.now(),n:0};a[k].n++}localStorage.setItem('gambit.ach',JSON.stringify(a))}catch(e){}}
+  const sum={day:DAY_NO,practice:S.practice,score:S.score,t:S.t,thrown:S.thrown,pb,ach,
     rate:S.thrown?Math.round(S.hitCards/S.thrown*100):0,kills:S.kills,chain:S.bestChain,streak:S.bestStreak,
     speed:speedMul(),missed:S.missed,best:S.practice?abest:best,nb};
   lastSum=sum; if(S.practice)lastPractice=sum;
@@ -1883,10 +1887,11 @@ function fillOver(m){
   $('#oThrown').textContent=rate==null?'':fmtN(m.thrown)+' cards thrown · ';
   $('#oHit').textContent=rate==null?'–':rate+'%';
   const ic={x:'<path d="M8 8l8 8M16 8l-8 8"/>',chain:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
-    dia:'<path d="M12 7l4 5-4 5-4-5z" fill="currentColor" stroke="none"/>',up:'<path d="M12 18V6M7 11l5-5 5 5"/>',ok:'<path d="M6 12.5l4 4 8-9"/>',clock:'<circle cx="12" cy="12" r="7.5"/><path d="M12 8v4.2l2.8 1.8"/>',star:'<path d="M12 5l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7L5.2 10l4.7-.7z"/>'};
+    dia:'<path d="M12 7l4 5-4 5-4-5z" fill="currentColor" stroke="none"/>',up:'<path d="M12 18V6M7 11l5-5 5 5"/>',ok:'<path d="M6 12.5l4 4 8-9"/>',target:'<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/>',clock:'<circle cx="12" cy="12" r="7.5"/><path d="M12 8v4.2l2.8 1.8"/>',star:'<path d="M12 5l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7L5.2 10l4.7-.7z"/>'};
   const row=(c,i,label,val)=>`<li style="--c:${c}"><span class="sic2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic[i]}</svg></span><span class="sl">${label}</span><b>${val}</b></li>`;
   const bestNow=Math.max(m.best||0,m.practice?abest:best);
   $('#oFacts').innerHTML=m.partial?row('var(--fg)','clock','Time lasted',fmtT(m.t))+row('var(--fg)','star','Personal best',fmtN(bestNow)):[
+    (m.ach||[]).includes('sharp')?row('var(--mint)','target','Achievement','Sharpshooter'):'',
     row('var(--violet)','clock','Time lasted',fmtT(m.t)),
     m.streak!=null?row('var(--amber)','x','Best streak',fmtN(m.streak)):'',
     row('var(--pink)','chain','Best chain',m.chain+'x'),
