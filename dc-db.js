@@ -6,7 +6,10 @@
   const SB_URL='https://qtcxlnchxztinnzbuwmd.supabase.co';
   const SB_KEY='sb_publishable_Mh7eThLTfeBTyY_8lRWv3w_OLI7KriP'; // publishable key: safe in the page, the database rules do the guarding
   let sb=null;
-  try{sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}catch(e){console.warn('Dailycade: database unavailable',e)}
+  // lock: run auth steps straight away instead of queueing on a browser-wide lock; with several Dailycade tabs open
+  // (e.g. a game, the homepage and admin) that lock can stall forever and admin never finishes checking your sign-in
+  const noLock=async(name,timeout,fn)=>await fn();
+  try{sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,lock:noLock}})}catch(e){console.warn('Dailycade: database unavailable',e)}
   window.DCSB=sb;
 
   // every visitor gets a quiet anonymous sign-in the first time they need one (to post a score); it's remembered on this device
