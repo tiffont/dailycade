@@ -2,7 +2,8 @@
   "name": "dailycade",
   "private": true,
   "dependencies": {
-    "@vercel/og": "^1.0.3"
+    "satori": "^0.63.2",
+    "@resvg/resvg-js": "^2.6.2"
   },
   "type": "module"
 }

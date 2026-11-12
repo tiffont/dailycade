@@ -1,7 +1,8 @@
 // Share card image (1200x630) for link previews in Messages, X, Slack, etc.
 // /api/og?game=gambit&s=1240&n=3&i=TLT  ->  "TLT says you can't beat 1,240"
 // /api/og?game=gambit                    ->  the game's plain card
-import { ImageResponse } from '@vercel/og';
+import satori from 'satori';
+import { Resvg } from '@resvg/resvg-js';
 
 
 const GAMES = {
@@ -35,7 +36,8 @@ export async function GET(req) {
     fetch(new URL('/og/inter-display-800.otf', url)).then(r => r.arrayBuffer()),
     fetch(new URL('/og/inter-500.otf', url)).then(r => r.arrayBuffer()),
   ]);
-  const handSrc = new URL(`/og/handheld-${key}.png`, url).toString();
+  const handBuf = Buffer.from(await (await fetch(new URL(`/og/handheld-${key}.png`, url))).arrayBuffer());
+  const handSrc = 'data:image/png;base64,' + handBuf.toString('base64');
 
   const score = s.toLocaleString('en-US');
   const line1 = hasScore ? (ini ? `${ini} says you can't beat` : 'Can you beat') : null;
@@ -64,12 +66,13 @@ export async function GET(req) {
     img(handSrc, { position: 'absolute', right: 70, top: 40, width: 360, height: Math.round(360 * (key === 'gambit' ? 579 : 574) / 380) })
   );
 
-  return new ImageResponse(tree, {
+  const svg = await satori(tree, {
     width: 1200, height: 630,
     fonts: [
       { name: 'Inter', data: f800, weight: 800, style: 'normal' },
       { name: 'Inter', data: f500, weight: 500, style: 'normal' },
     ],
-    headers: { 'Cache-Control': 'public, max-age=31536000, immutable' },
   });
+  const png = new Resvg(svg).render().asPng();
+  return new Response(png, { headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=31536000, immutable' } });
 }
