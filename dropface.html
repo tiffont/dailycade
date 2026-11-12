@@ -1751,7 +1751,7 @@ function openSummary(){
   $('sumShare').hidden=true;
   // Challenge a friend (daily and single player): the share sheet, or copy where there isn't one
   { const sb=el('button','drop sumprac white','Challenge a friend'); sb.id=prac?'sumChallenge':'sumShareBtn';
-    sb.onclick=async()=>{ if(!sumShareText) return; let ok=false; try{ if(navigator.share){ await navigator.share({text:sumShareText}); ok=true; } }catch(e){ if(e&&e.name==='AbortError') return; }
+    sb.onclick=async()=>{ if(!sumShareText) return; let ok=false; try{ if(navigator.share){ await navigator.share({url:sumShareText.split('\n').pop()}); ok=true; } }catch(e){ if(e&&e.name==='AbortError') return; } // share sheet: just the link (its preview card shows the score); copying keeps the text
       if(!ok){ ok=await copyText(sumShareText); sb.textContent=ok?'Link copied':'Copy failed'; clearTimeout(sb._t); sb._t=setTimeout(()=>{ sb.textContent='Challenge a friend'; },2000); } }; body.appendChild(sb); }
   $('sumModal').showModal();
 }
