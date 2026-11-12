@@ -1381,9 +1381,13 @@ function renderDay(){
   // one bar for the day: solid = drops played, glowing = ready to play; bonus drops don't add blocks
   // one dash per drop (mint = still to play, dark = played) plus a gold dash per bonus drop won; each played dash has its score under it
   const p=$('pips'), N=PER_DAY, log=day.log||[], segs=[];
-  for(let k=0;k<N;k++){ const ps=(log[k]&&log[k].passes)||[]; const v=ps.length?ps[0].to:day.scores[k]; segs.push({bonus:false,v:k<day.used?v:null}); }
-  for(let k=0;k<N;k++){ const ps=(log[k]&&log[k].passes)||[]; for(let j=1;j<ps.length;j++) segs.push({bonus:true,v:ps[j].to-ps[j].from}); }
-  for(let k=segs.length-N;k<day.bonus;k++) segs.push({bonus:true,v:null}); // won, not played yet
+  // in drop order: each drop, then the bonus drops it earned right after it (green, gold, green…)
+  let playedBonus=0; for(let k=0;k<N;k++) playedBonus+=Math.max(0,(((log[k]&&log[k].passes)||[]).length)-1);
+  const pending=Math.max(0,day.bonus-playedBonus), pendAt=bonusOf!=null?bonusOf:Math.min(N,day.used)-1; // won but not played yet: after the drop that earned them
+  for(let k=0;k<N;k++){ const ps=(log[k]&&log[k].passes)||[]; const v=ps.length?ps[0].to:day.scores[k]; segs.push({bonus:false,v:k<day.used?v:null});
+    for(let j=1;j<ps.length;j++) segs.push({bonus:true,v:ps[j].to-ps[j].from});
+    if(k===pendAt) for(let q=0;q<pending;q++) segs.push({bonus:true,v:null}); }
+  if(pendAt<0) for(let q=0;q<pending;q++) segs.push({bonus:true,v:null});
   p.textContent=''; segs.forEach(sg=>{ const d=document.createElement('i'); d.className='seg'+(sg.bonus?' bonus':'')+(sg.v!=null?' used':''); p.appendChild(d); });
   const left=Math.max(0,N-Math.min(N,day.used));
   p.setAttribute('aria-label',`${left} of ${N} drops left`+(day.bonus?`, ${day.bonus} bonus drop${day.bonus===1?'':'s'}`:'')+(day.scores.length?`. Drop scores: ${segs.filter(x=>x.v!=null).map(x=>x.v).join(', ')}`:''));
