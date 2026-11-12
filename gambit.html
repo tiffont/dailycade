@@ -443,6 +443,13 @@ body:not(.is-playing) .scrim.b{display:none}
 .hcard i{border-radius:6px;box-shadow:none;background:var(--t)}
 .hcard b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:.84rem;letter-spacing:.04em;color:var(--fg)}
 .hcard span{font-size:.84rem;color:#8f8f8f}
+/* teaser under the power list: not a pickable card */
+.hsoon{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:6px;border:1px dashed #3a3a3a;flex:none}
+.hsoon i{flex:none;display:grid;place-items:center;width:50px;height:50px;border-radius:6px;border:2px solid transparent;background:linear-gradient(#0d0d0d,#0d0d0d) padding-box,linear-gradient(135deg,#ff8ad8,#c49bff,#7cc8ff,#9deba8,#f2c14e) border-box}
+.hsoon i svg{width:24px;height:24px}
+.hsoon>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.hsoon b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:.84rem;letter-spacing:.04em;color:var(--fg)}
+.hsoon span{font-size:.84rem;color:#8f8f8f;line-height:1.35}
 .hcard[aria-pressed="true"]{background:var(--c);box-shadow:none}
 .hcard[aria-pressed="true"] b{color:#0b0b0b}
 .hcard[aria-pressed="true"] span{color:rgba(0,0,0,.72)}
@@ -910,6 +917,7 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
     </div>
     <div class="handscroll">
       <div class="handgrid" id="handGrid"></div>
+      <div class="hsoon"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg></i><div><b>More coming soon</b><span>New power cards will join this list over time. Check back for new ways to play.</span></div></div>
     </div>
     <div class="handtray"><div class="mini" id="handMini"></div><b id="handCount" class="srt" aria-live="polite">0 of 5</b>
       <button class="randbtn" id="handRandom" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h4v4M4 20L20 4M20 16v4h-4M15 15l5 5M4 4l5 5"/></svg>Random</button></div>
