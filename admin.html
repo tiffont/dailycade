@@ -228,7 +228,7 @@ function paintTabs(){const t=$('tabs');t.replaceChildren();
   for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game&&!fbOn));
     b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{fbOn=false;setFb();try{localStorage.setItem('dc.admin.tab',k)}catch(e){}if(k!==game){game=k;load()}else paintTabs()};t.append(b)}
   const f=document.createElement('button');f.type='button';f.setAttribute('role','tab');f.setAttribute('aria-selected',String(fbOn));f.style.setProperty('--c','linear-gradient(120deg,#ff8ad8,#c49bff,#7cc8ff,#9deba8)');
-  f.innerHTML='<i></i>Feedback';f.onclick=()=>{fbOn=true;try{localStorage.setItem('dc.admin.tab','feedback')}catch(e){}setFb();paintTabs();watchFb()};t.append(f)}
+  f.innerHTML='<i></i>Feedback';f.onclick=()=>{fbOn=true;try{localStorage.setItem('dc.admin.tab','feedback')}catch(e){}setFb();paintTabs();watchFb()};t.prepend(f)}
 
 /* ---------- knobs ---------- */
 function paintKnobs(){const box=$('knobs');box.replaceChildren();const def=G().defaults;
