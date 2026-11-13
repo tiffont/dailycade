@@ -959,8 +959,8 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
     <p class="snote" id="oNote" hidden></p>
     <button class="drop go2" id="practiceBtn" hidden>Play again</button>
     <button class="drop go2" id="dailyBtn" hidden>Daily challenge</button>
-    <div id="oIni"></div>
-    <button class="drop go2 white" id="challengeBtn" hidden>Challenge a friend</button>
+    <div class="dcrow"><div id="oIni"></div>
+    <button class="drop go2 white" id="challengeBtn" hidden>Challenge a friend</button></div>
     <div id="oFb"></div>
   </div>
 </dialog>
@@ -1901,7 +1901,7 @@ function fillOver(m){
   $('#practiceBtn').hidden=!m.practice&&!LAB; $('#dailyBtn').hidden=true;
   const isDaily=!m.practice&&!LAB; $('#challengeBtn').hidden=LAB; $('#shareBtn').hidden=true; // Challenge a friend on every summary; no share icon in the corner // daily: Challenge a friend instead of the share icon // Play again only after an arcade game: the daily hand is once a day
   $('#overT').textContent=m.practice?'Game Summary':'Daily Summary';
-  {const iw=$('#oIni');iw.replaceChildren();if(isDaily&&!PREVIEW&&dbNS&&myId&&!postBlocked&&window.DCIni)iw.append(DCIni.block(async v=>{const ref=dbNS.doc('gambit_scores/'+myId),sn=await ref.get();await ref.set(Object.assign({},sn.exists?sn.data():{},{ini:v}))}))}
+  {const iw=$('#oIni');iw.replaceChildren();if(isDaily&&!PREVIEW&&dbNS&&myId&&!postBlocked&&window.DCIni)iw.append(DCIni.block(async v=>{const ref=dbNS.doc('gambit_scores/'+myId),sn=await ref.get();await ref.set(Object.assign({},sn.exists?sn.data():{},{ini:v}))},{compact:true}))}
   $('#oSub').textContent=LAB?'':m.practice?'Single player':'Daily challenge No. '+m.day; $('#oSub').hidden=!!LAB;
   $('#oScore').textContent=fmtN(m.score);
   $('#oNb').hidden=!m.nb;
