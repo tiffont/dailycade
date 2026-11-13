@@ -83,15 +83,6 @@ html[data-theme="dark"] .gtimer small{color:var(--ink)}
 .rail::-webkit-scrollbar{display:none}
 .rail:focus-visible{outline:none}
 .panel{flex:0 0 calc(100vw - 2*var(--gut));max-width:1124px;scroll-snap-align:start;background:#f4f4f2;border-radius:32px;padding:48px 64px 44px;overflow:hidden}
-.xcta{display:flex;align-items:center;gap:18px;margin:40px auto 0;padding:20px 24px;border-radius:14px;background:var(--soft)}
-.xcta .xlogo{flex:none;width:48px;height:48px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center}
-.xcta .xlogo svg{width:20px;height:20px}
-.xcta .xtxt{flex:1;min-width:0}
-.xcta b{display:block;font-size:17px;font-weight:700}
-.xcta span{display:block;color:var(--muted);font-size:15px;margin-top:2px}
-.xcta .btn{margin-bottom:0;height:46px;padding:0 20px}
-html[data-theme="dark"] .xcta .xlogo{color:#0d0d0d}
-@media (max-width:640px){.xcta{flex-wrap:wrap;gap:14px;padding:18px;margin-top:28px}.xcta .btn{width:100%;justify-content:center}}
 .railnav{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
 .dots{display:flex;gap:8px}
 .dots button{width:8px;height:8px;border-radius:4px;border:0;padding:0;background:#d4d4d0;cursor:pointer;transition:width .25s,background .25s}
@@ -328,13 +319,6 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
       <div class="arrows">
         <button id="prev" aria-label="Previous game"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg></button>
         <button id="next" aria-label="Next game"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
-      </div>
-    </div>
-    <div class="wrap">
-      <div class="xcta">
-        <span class="xlogo"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span>
-        <div class="xtxt"><b>Follow @dailycadegames</b><span>New games, daily scores and beta updates.</span></div>
-        <a class="btn line" href="https://x.com/dailycadegames" target="_blank" rel="noopener">Follow on X</a>
       </div>
     </div>
   </section>
