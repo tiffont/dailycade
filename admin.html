@@ -77,6 +77,19 @@ h1{font-size:34px;letter-spacing:-.02em;margin:32px 0 6px;font-weight:700}
 .modal p{margin:0 0 18px;color:var(--muted)}
 .modal .row{justify-content:flex-end}
 .login{display:grid;gap:12px;max-width:420px}.login input{border:1px solid #d9d9d9;border-radius:11px;padding:11px 14px;background:#fff}.login p{margin:0;color:var(--muted);font-size:14px}.whoami{font-size:13px;color:var(--muted);margin:-8px 0 16px}.whoami button{border:0;background:none;padding:0;text-decoration:underline;color:inherit;cursor:pointer}
+body.fbmode main>section:not(#fbCard){display:none!important}
+body.fbmode .dock{display:none!important}
+.fbsum{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.fbsum div{background:#fff;border-radius:14px;padding:10px 14px;min-width:90px}
+.fbsum span{display:block;font-size:12px;color:var(--muted)}.fbsum b{font-size:18px}
+.fbitem{background:#fff;border-radius:14px;padding:14px 16px;margin-top:10px}
+.fbitem .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.fbitem .top .r{font-size:20px;line-height:1}
+.fbitem .top .g{font-weight:700;color:var(--ink);border-radius:999px;padding:2px 9px;background:var(--soft);box-shadow:inset 3px 0 0 var(--c,var(--line))}
+.fbitem .top .del{margin-left:auto;border:0;background:none;color:var(--muted);cursor:pointer;font-size:12px;text-decoration:underline}
+.fbitem p{margin:8px 0 0;white-space:pre-wrap;word-break:break-word}
+.fbitem .ctx{font-size:12px;color:var(--muted);margin-top:8px}
+.fbitem a{color:var(--ink)}
 body.locked main>*:not(h1):not(.sub):not(#loginCard):not(#offline){display:none!important}
 body.locked .dock{display:none!important}
 .offline{background:#fff4e5;color:#7a4d00;border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:14px}
@@ -129,6 +142,12 @@ footer{height:20px}
   <section class="card" aria-labelledby="tuneH">
     <h2 id="tuneH">Tuning <span class="note">Changes stay a draft until you publish</span></h2>
     <div id="knobs"></div>
+  </section>
+  <section class="card" id="fbCard" aria-labelledby="fbH" hidden>
+    <h2 id="fbH">Beta feedback <span class="note" id="fbNote"></span></h2>
+    <div class="fbsum" id="fbSum"></div>
+    <div class="chips" id="fbFilters"></div>
+    <div id="fbList"></div>
   </section>
   <p class="msg" id="msg" role="status" aria-live="polite"></p>
 </main>
@@ -206,8 +225,10 @@ function ask(title,body,yes){return new Promise(res=>{$('mT').textContent=title;
 
 /* ---------- tabs ---------- */
 function paintTabs(){const t=$('tabs');t.replaceChildren();
-  for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game));
-    b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{if(k!==game){game=k;try{localStorage.setItem('dc.admin.tab',k)}catch(e){}load()}};t.append(b)}}
+  for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game&&!fbOn));
+    b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{fbOn=false;setFb();try{localStorage.setItem('dc.admin.tab',k)}catch(e){}if(k!==game){game=k;load()}else paintTabs()};t.append(b)}
+  const f=document.createElement('button');f.type='button';f.setAttribute('role','tab');f.setAttribute('aria-selected',String(fbOn));f.style.setProperty('--c','linear-gradient(120deg,#ff8ad8,#c49bff,#7cc8ff,#9deba8)');
+  f.innerHTML='<i></i>Feedback';f.onclick=()=>{fbOn=true;try{localStorage.setItem('dc.admin.tab','feedback')}catch(e){}setFb();paintTabs();watchFb()};t.append(f)}
 
 /* ---------- knobs ---------- */
 function paintKnobs(){const box=$('knobs');box.replaceChildren();const def=G().defaults;
@@ -347,6 +368,44 @@ $('wipeBtn').onclick=async()=>{
 };
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidden)$('mNo').click();else if(!$('wipe').hidden)$('wNo').click()}});
 
+/* ---------- beta feedback ---------- */
+let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
+function setFb(){document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn}
+const FB_RATE={1:'😕',2:'😐',3:'🙂',4:'😍'}, FB_GAME={site:['Site','#c49bff'],gambit:['Gambit','var(--gambit)'],dropface:['Dropface','var(--dropface)']};
+function device(ua){ua=ua||'';const os=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)?'iPad':/Android/.test(ua)?'Android':/Mac OS X/.test(ua)?'Mac':/Windows/.test(ua)?'Windows':/Linux/.test(ua)?'Linux':'Other';
+  const br=/CriOS|Chrome\//.test(ua)&&!/Edg/.test(ua)?'Chrome':/FxiOS|Firefox/.test(ua)?'Firefox':/Edg/.test(ua)?'Edge':/Safari/.test(ua)?'Safari':'Browser';return os+' · '+br}
+function watchFb(){if(fbUnsub||!db)return;$('fbNote').textContent='Loading…';
+  try{fbUnsub=db.collection('feedback').orderBy('at','desc').limit(500).onSnapshot(r=>{fbRows=r.docs.map(d=>Object.assign({_id:d.id},d.data()));paintFb()},e=>{$('fbNote').textContent="Couldn't load feedback: "+(e&&e.message||e)})}catch(e){$('fbNote').textContent="Couldn't load feedback."}}
+function paintFb(){
+  const notes=fbRows.filter(r=>r.kind!=='quick'), quick=fbRows.filter(r=>r.kind==='quick'), rated=notes.filter(r=>r.rating);
+  const up=quick.filter(r=>r.thumb==='up').length, down=quick.length-up;
+  $('fbNote').textContent=fbRows.length?'Newest first':'Nothing yet';
+  const cell=(l,v)=>{const d=document.createElement('div');d.append(Object.assign(document.createElement('span'),{textContent:l}),Object.assign(document.createElement('b'),{textContent:v}));return d};
+  $('fbSum').replaceChildren(cell('Notes',notes.length),cell('Avg rating',rated.length?(FB_RATE[Math.round(rated.reduce((a,r)=>a+r.rating,0)/rated.length)]+' '+(rated.reduce((a,r)=>a+r.rating,0)/rated.length).toFixed(1)+' / 4'):'–'),
+    cell('👍 after a game',up),cell('👎 after a game',down),cell('👍 rate',quick.length?Math.round(up/quick.length*100)+'%':'–'));
+  const F=[['all','All'],['notes','Notes only'],['site','Site'],['gambit','Gambit'],['dropface','Dropface']], fl=$('fbFilters');fl.replaceChildren();
+  for(const [k,l] of F){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',String(fbFilter===k));b.onclick=()=>{fbFilter=k;paintFb()};fl.append(b)}
+  const list=$('fbList');list.replaceChildren();
+  const rows=fbRows.filter(r=>fbFilter==='all'||(fbFilter==='notes'?r.kind!=='quick':(r.game||'site')===fbFilter));
+  if(!rows.length){const p=document.createElement('p');p.className='hint';p.textContent='No feedback here yet.';list.append(p);return}
+  for(const r of rows){
+    const it=document.createElement('div');it.className='fbitem';const top=document.createElement('div');top.className='top';
+    const g=FB_GAME[r.game]||[r.game||'Site','var(--line)'];
+    top.append(Object.assign(document.createElement('span'),{className:'r',textContent:r.kind==='quick'?(r.thumb==='up'?'👍':'👎'):(FB_RATE[r.rating]||'💬')}));
+    const gp=Object.assign(document.createElement('span'),{className:'g',textContent:g[0]});gp.style.setProperty('--c',g[1]);top.append(gp);
+    const bits=[r.kind==='quick'?'Quick reaction':'Note', r.mode==='practice'?'Single player':r.day?'Daily No. '+r.day:'', r.score!=null?'Score '+fmtN(r.score):'', r.at?when(r.at):''].filter(Boolean);
+    top.append(bits.join(' · '));
+    const del=Object.assign(document.createElement('button'),{className:'del',type:'button',textContent:'Delete'});
+    del.onclick=async()=>{if(!await ask('Delete this feedback?','It will be removed for good.','Delete'))return;try{await db.doc('feedback/'+r._id).delete();msg('Feedback deleted.','ok')}catch(e){msg("Couldn't delete: "+(e.message||e),'err')}};
+    top.append(del);it.append(top);
+    if(r.text){it.append(Object.assign(document.createElement('p'),{textContent:r.text}))}
+    const ctx=document.createElement('div');ctx.className='ctx';
+    if(r.email){const a=document.createElement('a');a.href='mailto:'+r.email+'?subject='+encodeURIComponent('Your Dailycade feedback');a.textContent=r.email;ctx.append(a,' · ')}
+    ctx.append([device(r.ua),r.viewport,r.standalone?'Home screen app':'',r.theme==='dark'?'Dark mode':'',r.page].filter(Boolean).join(' · '));
+    ctx.title=r.ua||'';it.append(ctx);list.append(it)}
+}
+try{if(localStorage.getItem('dc.admin.tab')==='feedback')fbOn=true}catch(e){}
+setFb();
 try{const t=localStorage.getItem('dc.admin.tab');if(GAMES[t])game=t}catch(e){}
 load();
 (async()=>{
@@ -375,6 +434,7 @@ load();
     try{if(window.claude&&window.claude.use)db=await window.claude.use('db')}catch(e){}
     if(!db){$('offline').hidden=false;return}
     ready=true;
+    if(fbOn)watchFb();
     try{db.doc('site_config/home').onSnapshot(sn=>{hiddenList=sn.exists&&Array.isArray(sn.data().hidden)?sn.data().hidden:[];paintVis()},()=>{})}catch(e){}
     load();
   }

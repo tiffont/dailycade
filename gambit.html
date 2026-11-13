@@ -901,6 +901,7 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
     <div class="hwatch"><i>Watch for</i><ul class="slist" id="helpBonus"></ul></div>
     <div id="specials" hidden></div>
     <button class="drop go2 white" data-close>Got it</button>
+    <button class="dcfblink" id="helpFb" type="button">Send feedback</button>
   </div>
 </dialog>
 
@@ -960,11 +961,13 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
     <button class="drop go2" id="dailyBtn" hidden>Daily challenge</button>
     <div id="oIni"></div>
     <button class="drop go2 white" id="challengeBtn" hidden>Challenge a friend</button>
+    <div id="oFb"></div>
   </div>
 </dialog>
 
 <script src="dc-tune.js"></script>
 <script src="dc-initials.js"></script>
+<script src="dc-feedback.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -1922,6 +1925,8 @@ function fillOver(m){
   { const box=$('#oAch'), list=(m.ach||[]).map(id=>GACH[id]).filter(Boolean);
     box.hidden=!list.length;
     box.innerHTML=list.length?`<p class="oeyebrow">Achievements</p><div class="achgrid">${list.map(a=>`<div class="acard" style="--c:${a.c}"><div class="atop"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${a.g}</svg></span></div><b>${a.name}</b><small>${a.rule}</small></div>`).join('')}</div>`:''; }
+  // beta: a quick 👍/👎 under the summary, once a day
+  { const w=$('#oFb'); w.replaceChildren(); if(!LAB&&!PREVIEW&&window.DCFeedback){ const q=DCFeedback.quick('gambit',{mode:m.practice?'practice':'daily',day:m.practice?null:m.day,score:m.score},{dark:true}); if(q) w.append(q); } }
   const note=m.partial?'Detailed stats were not saved for this game.':'';
   $('#oNote').hidden=!note; $('#oNote').textContent=note;
   shareSum=m;
@@ -2636,6 +2641,7 @@ $('#muteBtn').addEventListener('click',e=>{e.stopPropagation();muted=!muted;SFX.
 $('#setMute').addEventListener('click',()=>{muted=!muted;SFX.ensure();SFX.setMuted(muted);saveAudio();paintSound();SFX.click()});
 cv.addEventListener('pointerdown',()=>SFX.ensure(),{capture:true});
 for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,()=>SFX.ensure(),{capture:true});
+$('#helpFb').addEventListener('click',()=>{ if(window.DCFeedback) DCFeedback.open({game:'gambit',dark:true}); });
 $('#sumBtn').addEventListener('click',()=>{const m=summaryNow();if(!m)return;fillOver(m);try{$('#over').showModal()}catch(e){}});
 $('#sumIcon').addEventListener('click',()=>{SFX.ensure();SFX.click();const m=dailySumNow();if(!m)return;fillOver(m);try{$('#over').showModal()}catch(e){}});
 const ICON_PRACTICE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>';

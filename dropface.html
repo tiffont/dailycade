@@ -760,6 +760,7 @@ body.dropping .barspace{height:16px} /* the controls are off screen, so the boar
       <ol class="hlist"><li><span class="hn">1</span><span class="sl">Pick your slots<small>All 10 boards, top to bottom. Tap Random to pick for you.</small></span></li><li><span class="hn">2</span><span class="sl">Tap Drop<small>The ball starts from a hidden spot and falls through every board</small></span></li><li><span class="hn">3</span><span class="sl">Score where it lands<small>Your pick is 100, the slots beside it 25, the rest 10</small></span></li><li><span class="hn">4</span><span class="sl">Three drops a game<small>Your score is all three added up. The Daily challenge uses the same boards for everyone.</small></span></li></ol>
       <div class="hwatch"><p class="eyebrow">Watch for</p><ul class="hlist"><li style="--c:var(--red)"><span class="slot bomb wslot" aria-hidden="true"><b>💣</b></span><span class="sl">Bomb<small>Explodes: score to 0, drop over</small></span></li><li style="--c:var(--violet)"><span class="slot x10 wslot" aria-hidden="true"><b>10x</b></span><span class="sl">10x<small>Score times 10</small></span></li><li style="--c:var(--sky)"><span class="slot split wslot" aria-hidden="true"><b>Split</b></span><span class="sl">Split<small>One ball becomes two</small></span></li><li style="--c:var(--pink)"><span class="slot portal wslot" aria-hidden="true"><b>Portal</b></span><span class="sl">Portal<small>Drop again from the top</small></span></li><li style="--c:var(--orange)"><span class="slot rewind wslot" aria-hidden="true"><b>Rewind</b></span><span class="sl">Rewind<small>Replay the same board</small></span></li><li style="--c:var(--lime)"><span class="slot trip wslot" aria-hidden="true"><b>Trip</b></span><span class="sl">Trip<small>Skip the next level</small></span></li><li style="--c:var(--teal)"><span class="slot half wslot" aria-hidden="true"><b>½</b></span><span class="sl">Half<small>Score cut in half</small></span></li><li style="--c:var(--fg)"><span class="slot freefall wslot" aria-hidden="true"><b>Void</b></span><span class="sl">Void<small>Drops straight through the next board</small></span></li><li style="--c:var(--blue)"><span class="slot aim wslot" aria-hidden="true"><b>Aim</b></span><span class="sl">Aim<small>You pick where the next drop starts</small></span></li><li style="--c:var(--gold-solid)"><span class="slot bonus wslot" aria-hidden="true"><b>+1</b></span><span class="sl">Bonus<small>Replay the board, your score keeps adding</small></span></li><li style="--c:var(--steel)"><span class="slot magnet wslot" aria-hidden="true"><b>Magnet</b></span><span class="sl">Magnet<small>Pulls the ball into your 100</small></span></li></ul></div>
       <button class="drop sumprac white" data-close>Got it</button>
+      <button class="dcfblink" id="howFb" type="button">Send feedback</button>
     </div>
   </dialog>
   <div class="dpaused pmotion" id="dpaused" hidden role="dialog" aria-modal="true" aria-label="Paused"><div class="dpbox pmbox"><b>Paused</b><button class="drop" id="dpResume">Resume</button><button class="dpquit" id="dpQuit">Quit</button><small id="dpNote">Quitting forfeits your score.</small></div></div>
@@ -805,6 +806,7 @@ body.dropping .barspace{height:16px} /* the controls are off screen, so the boar
 
 <script src="dc-tune.js"></script>
 <script src="dc-initials.js"></script>
+<script src="dc-feedback.js"></script>
 <script>
 const LEVELS=10, ROWS=8, SLOTS=7, MAXBALLS=8;
 const DF_DEF={perDay:3,specials:10,pool:['bomb','x10','split','portal','rewind','trip','half','freefall','aim','bonus','magnet'],pick:100,near:25,other:10};
@@ -1753,6 +1755,8 @@ function openSummary(){
   { const sb=el('button','drop sumprac white','Challenge a friend'); sb.id=prac?'sumChallenge':'sumShareBtn';
     sb.onclick=async()=>{ if(!sumShareText) return; let ok=false; try{ if(navigator.share){ await navigator.share({url:sumShareText.split('\n').pop()}); ok=true; } }catch(e){ if(e&&e.name==='AbortError') return; } // share sheet: just the link (its preview card shows the score); copying keeps the text
       if(!ok){ ok=await copyText(sumShareText); sb.textContent=ok?'Link copied':'Copy failed'; clearTimeout(sb._t); sb._t=setTimeout(()=>{ sb.textContent='Challenge a friend'; },2000); } }; body.appendChild(sb); }
+  // beta: a quick 👍/👎 under the summary, once a day
+  if(!PREVIEW&&window.DCFeedback&&day.used>=PER_DAY&&!day.pending){ const q=DCFeedback.quick('dropface',{mode,day:prac?null:dayNo(),score:day.total},{dark:true}); if(q) body.appendChild(q); }
   $('sumModal').showModal();
 }
 // closing the Game Summary once the game is over (all 3 drops played, no bonus drop waiting) goes back to the home screen;
@@ -1761,6 +1765,7 @@ let sumSkipHome=false;
 $('sumModal').addEventListener('close',()=>{ if(sumSkipHome){ sumSkipHome=false; return; } if(!$('home').hidden||busy) return;
   if(day.used>=PER_DAY&&!day.pending&&!bonusPending){ if(mode==='practice') startDaily(); showHome(); } });
 $('sumBtn').onclick=()=>{ if(!busy) openSummary(); };
+$('howFb').onclick=()=>{ if(window.DCFeedback) DCFeedback.open({game:'dropface',dark:true}); };
 // an owner reset (config/game.at changes) also wipes this device's All-time Drop, achievements and today's drops
 function applyReset(at){ let seen=null; try{ seen=localStorage.getItem('dropface-resetat'); localStorage.setItem('dropface-resetat',String(at)); }catch(e){}
   if(seen===null||seen===String(at)) return;
