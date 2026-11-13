@@ -2199,8 +2199,11 @@ function drawIcon(g,k,col,s,spin=0){
       P([[-s*.85,0],[s*.85,0]]);g.stroke();P([[0,-s*.85],[0,s*.85]]);g.stroke();
       for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const x=dx*s*.85,y=dy*s*.85,h=s*.26;P([[x-dx*h-dy*h,y-dy*h-dx*h],[x,y],[x-dx*h+dy*h,y-dy*h+dx*h]]);g.stroke()}
       break;
-    case 'big': // a small card next to a big one
-      g.strokeRect(-s*.95,s*.15,s*.5,s*.7);g.strokeRect(-s*.2,-s*.85,s*1.1,s*1.7);break;
+    case 'big': // a card with four arrows pushing out to the corners
+      g.strokeRect(-s*.22,-s*.32,s*.44,s*.64);
+      for(const [dx,dy] of [[1,1],[1,-1],[-1,1],[-1,-1]]){const x0=dx*s*.42,y0=dy*s*.48,x1=dx*s*.92,y1=dy*s*.95,a=s*.3;
+        P([[x0,y0],[x1,y1]]);g.stroke();P([[x1-dx*a,y1],[x1,y1],[x1,y1-dy*a]]);g.stroke()}
+      break;
     case 'tap': // a target being tapped
       g.beginPath();g.arc(0,0,s*.55,0,6.283);g.stroke();
       g.beginPath();g.arc(0,0,s*.14,0,6.283);g.fillStyle=col;g.fill();
