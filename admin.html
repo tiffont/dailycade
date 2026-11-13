@@ -371,7 +371,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidd
 /* ---------- beta feedback ---------- */
 let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
 function setFb(){document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn}
-const FB_RATE={1:'😕',2:'😐',3:'🙂',4:'😍'}, FB_GAME={site:['Site','#c49bff'],gambit:['Gambit','var(--gambit)'],dropface:['Dropface','var(--dropface)']};
+const FB_RATE={1:'😕',2:'😐',3:'🙂',4:'😍'}, FB_GAME={site:['Dailycade','#c49bff'],gambit:['Gambit','var(--gambit)'],dropface:['Dropface','var(--dropface)']};
 function device(ua){ua=ua||'';const os=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)?'iPad':/Android/.test(ua)?'Android':/Mac OS X/.test(ua)?'Mac':/Windows/.test(ua)?'Windows':/Linux/.test(ua)?'Linux':'Other';
   const br=/CriOS|Chrome\//.test(ua)&&!/Edg/.test(ua)?'Chrome':/FxiOS|Firefox/.test(ua)?'Firefox':/Edg/.test(ua)?'Edge':/Safari/.test(ua)?'Safari':'Browser';return os+' · '+br}
 function watchFb(){if(fbUnsub||!db)return;$('fbNote').textContent='Loading…';
@@ -383,14 +383,14 @@ function paintFb(){
   const cell=(l,v)=>{const d=document.createElement('div');d.append(Object.assign(document.createElement('span'),{textContent:l}),Object.assign(document.createElement('b'),{textContent:v}));return d};
   $('fbSum').replaceChildren(cell('Notes',notes.length),cell('Avg rating',rated.length?(FB_RATE[Math.round(rated.reduce((a,r)=>a+r.rating,0)/rated.length)]+' '+(rated.reduce((a,r)=>a+r.rating,0)/rated.length).toFixed(1)+' / 4'):'–'),
     cell('👍 after a game',up),cell('👎 after a game',down),cell('👍 rate',quick.length?Math.round(up/quick.length*100)+'%':'–'));
-  const F=[['all','All'],['notes','Notes only'],['site','Site'],['gambit','Gambit'],['dropface','Dropface']], fl=$('fbFilters');fl.replaceChildren();
+  const F=[['all','All'],['notes','Notes only'],['site','Dailycade'],['gambit','Gambit'],['dropface','Dropface']], fl=$('fbFilters');fl.replaceChildren();
   for(const [k,l] of F){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',String(fbFilter===k));b.onclick=()=>{fbFilter=k;paintFb()};fl.append(b)}
   const list=$('fbList');list.replaceChildren();
   const rows=fbRows.filter(r=>fbFilter==='all'||(fbFilter==='notes'?r.kind!=='quick':(r.game||'site')===fbFilter));
   if(!rows.length){const p=document.createElement('p');p.className='hint';p.textContent='No feedback here yet.';list.append(p);return}
   for(const r of rows){
     const it=document.createElement('div');it.className='fbitem';const top=document.createElement('div');top.className='top';
-    const g=FB_GAME[r.game]||[r.game||'Site','var(--line)'];
+    const g=FB_GAME[r.game]||[r.game||'Dailycade','var(--line)'];
     top.append(Object.assign(document.createElement('span'),{className:'r',textContent:r.kind==='quick'?(r.thumb==='up'?'👍':'👎'):(FB_RATE[r.rating]||'💬')}));
     const gp=Object.assign(document.createElement('span'),{className:'g',textContent:g[0]});gp.style.setProperty('--c',g[1]);top.append(gp);
     const bits=[r.kind==='quick'?'Quick reaction':'Note', r.mode==='practice'?'Single player':r.day?'Daily No. '+r.day:'', r.score!=null?'Score '+fmtN(r.score):'', r.at?when(r.at):''].filter(Boolean);
