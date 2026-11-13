@@ -172,7 +172,7 @@ const nice=iso=>{const [y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,
 const when=ms=>new Date(ms).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
 
 /* ---------- what each game exposes (defaults match the games) ---------- */
-const GPU=[['split','Split'],['firework','Firework'],['magnet','Magnet'],['slow','Slow'],['pierce','Pierce'],['freeze','Freeze'],['shield','Shield'],['electric','Electric'],['gunner','Gunner'],['rewind','Rewind'],['clone','Clone'],['blackhole','Black Hole'],['force','Force Field'],['telekinesis','Telekinesis'],['tap','Tap'],['missile','Missile']];
+const GPU=[['split','Split'],['firework','Firework'],['magnet','Magnet'],['slow','Slow'],['pierce','Pierce'],['freeze','Freeze'],['shield','Shield'],['electric','Electric'],['gunner','Gunner'],['rewind','Rewind'],['clone','Clone'],['blackhole','Black Hole'],['force','Force Field'],['telekinesis','Telekinesis'],['tap','Tap'],['missile','Missile'],['big','Big']];
 const SPECIALS=[['bomb','Bomb'],['x10','10x'],['split','Split'],['portal','Portal'],['rewind','Rewind'],['trip','Trip'],['half','Half'],['freefall','Void'],['aim','Aim'],['bonus','+1 drop'],['magnet','Magnet']];
 const GAMES={
   gambit:{name:'Gambit',color:'var(--gambit)',

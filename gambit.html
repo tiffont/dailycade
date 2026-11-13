@@ -998,6 +998,7 @@ const PU={
   telekinesis:{name:'Telekinesis',tile:'Telekinesis',hue:'#ffb13d',tint:'#3a2a10',dur:8, desc:'After a throw, touch anywhere to stop the card and steer it with your finger. It smashes through everything it touches.'},
   tap:{name:'Tap',tile:'Tap',hue:'#ff4fd8',tint:'#3a1234',dur:8, desc:'Just tap a falling item and a card shoots straight to it.'},
   missile:{name:'Missile',tile:'Missile',hue:C('lime'),tint:'#2E3418',dur:8, desc:'When a card hits, three more cards shoot out from the impact.'},
+  big:{name:'Big',tile:'Big',hue:'#ff5d5d',tint:'#3a1616',dur:8, desc:'Cards are 3x bigger. Each one smashes through the first thing it hits and breaks on the second, and takes out a 3-hit stone in one hit.'},
 };
 const ALL_PU=Object.keys(PU);   // the full pool of power-ups
 let POOL=ALL_PU.slice();         // the ones the admin has switched on
@@ -1394,7 +1395,7 @@ function analyze(pts){
 }
 function makeCard(a,dh,t){
   return {t,dh:dh||0,x0:a.x,y0:a.y,x:a.x,y:a.y,h:a.h+(dh||0),sp:a.sp,om:a.om,spin:Math.random()*6,trail:[],hit:new Set(),
-    pierce:!!S.pu.pierce,fw:!!S.pu.firework,magnet:!!S.pu.magnet,missile:!!S.pu.missile,elec:!!S.pu.electric,tk:!!S.pu.telekinesis,bh:!!S.pu.blackhole,age:0};
+    pierce:!!S.pu.pierce,fw:!!S.pu.firework,magnet:!!S.pu.magnet,missile:!!S.pu.missile,elec:!!S.pu.electric,tk:!!S.pu.telekinesis,bh:!!S.pu.blackhole,big:!!S.pu.big,age:0};
 }
 function throwCard(pts){
   if(S.mode!=='play'||(S.cool>0&&!S.pu.clone))return;
@@ -1474,7 +1475,7 @@ function explode(c,target){
   let pts=0,kills=0;
   const hitList=[target];
   for(const o of S.objs) if(o!==target&&o.kind!=='bomb'&&!c.hit.has(o)&&seen(o)&&Math.hypot(o.x-c.x,o.y-c.y)<R+o.r*.6) hitList.push(o);
-  for(const o of hitList){ if(!S.objs.includes(o))continue; c.hit.add(o); const p=damage(o,o===target||c.fw?dmg:1); if(p){pts+=p;kills++} }
+  for(const o of hitList){ if(!S.objs.includes(o))continue; c.hit.add(o); const p=damage(o,o===target&&c.big&&o.kind==='boulder'?o.hp:(o===target||c.fw?dmg:1)); if(p){pts+=p;kills++} } // Big smashes a 3-hit stone in one go
   if(c.elec&&target&&target.kind!=='pu'&&target.kind!=='bomb')startZap(target);
   if(c.missile&&!c.child&&target&&target.kind!=='pu'){ // three cards fan out at even 120° angles
     const base=Math.random()*6.283;
@@ -2100,7 +2101,7 @@ function update(dt){
     let dead=false;
     for(const o of [...S.objs]){
       if(c.hit.has(o)||!S.objs.includes(o)||(c.target&&o!==c.target)||!seen(o))continue; // a Tap card flies past everything else to what you tapped
-      if(Math.hypot(o.x-c.x,o.y-c.y)<o.r+8*scale()){
+      if(Math.hypot(o.x-c.x,o.y-c.y)<o.r+(c.big?24:8)*scale()){ // a Big card is 3x the size
         if(o.kind==='bomb'){if(c.t)S.streak=0;detonate(o,c);dead=true;break}
         if(!c.counted){c.counted=true;S.hitCards++;
           if(o.kind!=='pu'&&!c.child){const r=Math.hypot(c.x-c.x0,c.y-c.y0)/Math.max(1,lineY()); // share of the board the card crossed
@@ -2112,6 +2113,7 @@ function update(dt){
           if(c.pc>=3){const bonus=25*(c.pc-2);S.score+=bonus;pop(o.x,o.y-30,'Pierce ×'+c.pc+' +'+bonus,PU.pierce.tint,PU.pierce.hue);SFX.chain(c.pc)}
         }
         if(c.tk)(c.rh=c.rh||[]).push(...[...c.hit].filter(x=>!c.rh?.some(r=>r[0]===x)).map(x=>[x,c.age+.3]));
+        if(c.big&&o.kind!=='pu'&&!c.pierce&&!c.tk){c.bigHits=(c.bigHits||0)+1;if(c.bigHits>=2){dead=true;break}continue} // Big: through the first, breaks on the second
         if(!c.pierce&&!c.tk){dead=true;break}
       }
     }
@@ -2197,6 +2199,8 @@ function drawIcon(g,k,col,s,spin=0){
       P([[-s*.85,0],[s*.85,0]]);g.stroke();P([[0,-s*.85],[0,s*.85]]);g.stroke();
       for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const x=dx*s*.85,y=dy*s*.85,h=s*.26;P([[x-dx*h-dy*h,y-dy*h-dx*h],[x,y],[x-dx*h+dy*h,y-dy*h+dx*h]]);g.stroke()}
       break;
+    case 'big': // a small card next to a big one
+      g.strokeRect(-s*.95,s*.15,s*.5,s*.7);g.strokeRect(-s*.2,-s*.85,s*1.1,s*1.7);break;
     case 'tap': // a target being tapped
       g.beginPath();g.arc(0,0,s*.55,0,6.283);g.stroke();
       g.beginPath();g.arc(0,0,s*.14,0,6.283);g.fillStyle=col;g.fill();
@@ -2289,10 +2293,10 @@ function drawCard(c){
     }
     ctx.globalAlpha=1;
   }
-  const s=scale(), w=14*s, h=20*s;
+  const s=scale()*(c.big?3:1), w=14*s, h=20*s;
   ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
   rr(-w/2,-h/2,w,h,2.5*s); ctx.fillStyle=COL.mint; ctx.fill();
-  if(c.fw||c.pierce||c.child){ctx.lineWidth=2;ctx.strokeStyle=c.fw?PU.firework.hue:c.pierce?PU.pierce.hue:PU.missile.hue;ctx.stroke()}
+  if(c.fw||c.pierce||c.child||c.big){ctx.lineWidth=c.big?3:2;ctx.strokeStyle=c.fw?PU.firework.hue:c.pierce?PU.pierce.hue:c.child?PU.missile.hue:PU.big.hue;ctx.stroke()}
   ctx.beginPath(); ctx.moveTo(0,-h*.28); ctx.lineTo(w*.24,0); ctx.lineTo(0,h*.28); ctx.lineTo(-w*.24,0); ctx.closePath();
   ctx.fillStyle=COL.mintInk; ctx.fill();
   ctx.restore();
