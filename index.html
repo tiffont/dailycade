@@ -409,11 +409,11 @@ tick();setInterval(tick,30000);
     const pl=pn.querySelector('[data-k="player"]'),ini=best&&typeof best.ini==='string'?best.ini.trim():'';
     pl.textContent=!best?'–':ini||'Nameless';pl.classList.toggle('nameless',!!best&&!ini)};
   let gEpoch='2026-11-09';const gDay=()=>{const d=new Date(),[y,m,dd]=gEpoch.split('-').map(Number);return Math.max(1,Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(y,m-1,dd))/864e5)+1)};
-  let gSub=null;const gWatch=()=>{try{if(gSub)gSub();gSub=db.collection('gambit_scores').where('day','==',gDay()).onSnapshot(s=>set('gambit',s.docs.map(x=>x.data()),'dayBest'),()=>{})}catch(e){}};
+  let gSub=null;const gWatch=()=>{try{if(gSub)gSub();gSub=db.collection('gambit_scores').where('day','==',gDay()).fields('ini','dayBest').onSnapshot(s=>set('gambit',s.docs.map(x=>x.data()),'dayBest'),()=>{})}catch(e){}};
   const dDay=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
   gWatch();
   try{db.doc('gambit_config/game').onSnapshot(sn=>{const e=sn.exists&&sn.data().epoch;if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)&&e!==gEpoch){gEpoch=e;$('gambit').dataset.base=e;tick();gWatch()}},()=>{})}catch(e){}
-  try{db.collection('dropface_scores').where('day','==',dDay()).onSnapshot(s=>set('dropface',s.docs.map(x=>x.data()),'dayScore'),()=>{})}catch(e){}
+  try{db.collection('dropface_scores').where('day','==',dDay()).fields('ini','dayScore').onSnapshot(s=>set('dropface',s.docs.map(x=>x.data()),'dayScore'),()=>{})}catch(e){}
   try{db.doc('dropface_config/game').onSnapshot(sn=>{const e=sn.exists&&sn.data().epoch;if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)){$('dropface').dataset.base=e;tick()}},()=>{})}catch(e){}
 })();
 

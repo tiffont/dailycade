@@ -808,6 +808,11 @@ body.dropping .barspace{height:16px} /* the controls are off screen, so the boar
 <script src="dc-initials.js"></script>
 <script src="dc-feedback.js"></script>
 <script>
+/* play stats: count visits that came from a Challenge a friend link */
+(()=>{try{const u=new URL(location.href);if(u.searchParams.get('via')!=='challenge')return;u.searchParams.delete('via');history.replaceState(null,'',u.pathname+(u.search||'')+u.hash);
+  const go=()=>window.DCTrack&&DCTrack('dropface','challenge_opened');if(window.DCTrack)go();else addEventListener('load',go)}catch(e){}})();
+</script>
+<script>
 const LEVELS=10, ROWS=8, SLOTS=7, MAXBALLS=8;
 const DF_DEF={perDay:3,specials:10,pool:['bomb','x10','split','portal','rewind','trip','half','freefall','aim','bonus','magnet'],pick:100,near:25,other:10};
 const DF=Object.assign({},DF_DEF,{pool:DF_DEF.pool.slice()});
@@ -1167,6 +1172,7 @@ function follow(i){
 }
 
 function run(){
+  if(!inBonus&&!PREVIEW&&day.used===0&&!day.pending&&window.DCTrack) DCTrack('dropface',mode==='daily'?'start_daily':'start_practice'); // first drop of a set
   busy=true; if(!inBonus) badgeStart(); startedAt=carry; score=carry; carry=0; runLog=[]; results=results.map(()=>[]); landed=landed.map(()=>[]);
   const seg=reduce?50:135;
   // every ball is a token: where it starts and which board it enters next. The balls with the lowest
@@ -1320,6 +1326,9 @@ function finishGame(s){
   day.total=scores.reduce((a,v)=>a+v,0)+achPts(); // drop scores plus today's achievement bonuses
   if(bonusPending>0){ day.pending={n,picks:picks.slice(),count:bonusPending,seq:bonusSeq}; bonusOf=n; } else bonusOf=null;
   if(daily){ saveDay(); postScore(s); }
+  if(day.used>=PER_DAY&&!day.pending&&!PREVIEW&&window.DCTrack){ // count each finished set once
+    const k=(mode==='daily'?'d:'+TODAY:'p:'+(day.seed||''))+':'+(mode||''); let seen='';try{seen=localStorage.getItem('dc.trk.fin.dropface')||''}catch(e){}
+    if(seen!==k){ try{localStorage.setItem('dc.trk.fin.dropface',k)}catch(e){} DCTrack('dropface',mode==='daily'?'finish_daily':'finish_practice'); } }
   if(day.used>=PER_DAY&&!day.pending) setTimeout(()=>{ if(!busy) openSummary(); },1400);
   render();
 }
@@ -1532,10 +1541,10 @@ let db=null, user=null, myId=null, board=[], todayBoard=[], lbState='loading', c
   if(!PREVIEW) db.doc('dropface_config/tune').onSnapshot(sn=>applyDF(DCTune.pick(sn.exists?sn.data():null)),()=>{});
   try{ myId=user?await user.id():null; }catch(e){}
   db.doc('dropface_config/game').onSnapshot(sn=>{ if(sn.exists&&sn.data().at) applyReset(sn.data().at); const e=sn.exists?sn.data().epoch:null; if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)&&e!==EPOCH){ EPOCH=e; if(!busy) renderDay(); } },()=>{});
-  db.collection('dropface_scores').orderBy('best','desc').limit(50).onSnapshot(
+  db.collection('dropface_scores').orderBy('best','desc').limit(50).fields('ini','best','dayScore','games','day').onSnapshot(
     s=>{ board=s.docs.map(d=>({id:d.id,...d.data()})).filter(r=>(Number(r.best)||0)>0); lbState='ok'; renderLb(); },
     ()=>{ lbState='off'; renderLb(); });
-  db.collection('dropface_scores').where('day','==',TODAY).orderBy('dayScore','desc').limit(50).onSnapshot(
+  db.collection('dropface_scores').where('day','==',TODAY).orderBy('dayScore','desc').limit(50).fields('ini','best','dayScore','games','day').onSnapshot(
     s=>{ todayBoard=s.docs.map(d=>({id:d.id,...d.data()})); renderLb(); if(!busy) renderDay(); }, ()=>{});
   // already played today on another device? lock the Daily Drop here too
   if(myId){ try{ const sn=await db.doc('dropface_scores/'+myId).get(), d=sn.exists?sn.data():null;
@@ -1755,7 +1764,7 @@ function openSummary(){
   $('sumShare').hidden=true;
   // Challenge a friend (daily and single player): the share sheet, or copy where there isn't one
   { const sb=el('button','drop sumprac white','Challenge a friend'); sb.id=prac?'sumChallenge':'sumShareBtn';
-    sb.onclick=async()=>{ if(!sumShareText) return; let ok=false; try{ if(navigator.share){ await navigator.share({url:sumShareText.split('\n').pop()}); ok=true; } }catch(e){ if(e&&e.name==='AbortError') return; } // share sheet: just the link (its preview card shows the score); copying keeps the text
+    sb.onclick=async()=>{ if(!sumShareText) return; if(!PREVIEW&&window.DCTrack) DCTrack('dropface','challenge_shared'); let ok=false; try{ if(navigator.share){ await navigator.share({url:sumShareText.split('\n').pop()}); ok=true; } }catch(e){ if(e&&e.name==='AbortError') return; } // share sheet: just the link (its preview card shows the score); copying keeps the text
       if(!ok){ ok=await copyText(sumShareText); sb.textContent=ok?'Link copied':'Copy failed'; clearTimeout(sb._t); sb._t=setTimeout(()=>{ sb.textContent='Challenge a friend'; },2000); } };
     if(iniBlock){ const row=el('div','dcrow'); row.append(iniBlock,sb); body.appendChild(row); } else body.appendChild(sb); }
   // beta: a quick 👍/👎 under the summary, once a day

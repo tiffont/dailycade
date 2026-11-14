@@ -81,6 +81,15 @@ body.fbmode main>section:not(#fbCard){display:none!important}
 body.fbmode .dock{display:none!important}
 body.lbmode main>section:not(#lbCard){display:none!important}
 body.lbmode .dock{display:none!important}
+body.stmode main>section:not(#stCard){display:none!important}
+body.stmode .dock{display:none!important}
+.sttable{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:14px;margin-top:6px}
+.sttable th{font-size:12px;font-weight:600;color:var(--muted);text-align:right;padding:0 10px}
+.sttable th:first-child,.sttable td:first-child{text-align:left}
+.sttable td{background:#fff;padding:10px;text-align:right;font-variant-numeric:tabular-nums}
+.sttable td:first-child{border-radius:10px 0 0 10px;font-weight:600}.sttable td:last-child{border-radius:0 10px 10px 0}
+.sttable td small{color:var(--muted);font-size:11px;margin-left:4px}
+.stwrap{overflow-x:auto}
 .lbcols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
 @media (max-width:760px){.lbcols{grid-template-columns:1fr}}
 .lbcols h3{margin:0 0 8px;font-size:14px}
@@ -154,6 +163,13 @@ footer{height:20px}
   <section class="card" aria-labelledby="tuneH">
     <h2 id="tuneH">Tuning <span class="note">Changes stay a draft until you publish</span></h2>
     <div id="knobs"></div>
+  </section>
+  <section class="card" id="stCard" aria-labelledby="stH" hidden>
+    <h2 id="stH">Stats <span class="note" id="stNote"></span></h2>
+    <p class="hint" style="margin:0 0 14px">Counted by Dailycade itself, by day (New York time). Players are unique devices that started a game that day.</p>
+    <div class="fbsum" id="stSum"></div>
+    <div class="chips" id="stGames"></div>
+    <div class="stwrap"><table class="sttable"><thead><tr><th>Day</th><th>Players</th><th>Daily started</th><th>Daily finished</th><th>Single player</th><th>Challenges sent</th><th>Challenge links opened</th></tr></thead><tbody id="stRows"></tbody></table></div>
   </section>
   <section class="card" id="lbCard" aria-labelledby="lbH" hidden>
     <h2 id="lbH">Leaderboards <span class="note" id="lbNote"></span></h2>
@@ -244,12 +260,14 @@ function ask(title,body,yes){return new Promise(res=>{$('mT').textContent=title;
 
 /* ---------- tabs ---------- */
 function paintTabs(){const t=$('tabs');t.replaceChildren();
-  for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game&&!fbOn&&!lbOn));
-    b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{fbOn=false;lbOn=false;setFb();try{localStorage.setItem('dc.admin.tab',k)}catch(e){}if(k!==game){game=k;load()}else paintTabs()};t.append(b)}
-  const f=document.createElement('button');f.type='button';f.setAttribute('role','tab');f.setAttribute('aria-selected',String(fbOn));f.style.setProperty('--c','linear-gradient(120deg,#ff8ad8,#c49bff,#7cc8ff,#9deba8)');
-  f.innerHTML='<i></i>Feedback';f.onclick=()=>{fbOn=true;lbOn=false;try{localStorage.setItem('dc.admin.tab','feedback')}catch(e){}setFb();paintTabs();watchFb()};t.prepend(f);
-  const l=document.createElement('button');l.type='button';l.setAttribute('role','tab');l.setAttribute('aria-selected',String(lbOn));l.style.setProperty('--c','#f2c14e');
-  l.innerHTML='<i></i>Leaderboards';l.onclick=()=>{lbOn=true;fbOn=false;try{localStorage.setItem('dc.admin.tab','leaderboards')}catch(e){}setFb();paintTabs();watchLb()};f.after(l)}
+  for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game&&!fbOn&&!lbOn&&!stOn));
+    b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{fbOn=false;lbOn=false;stOn=false;setFb();try{localStorage.setItem('dc.admin.tab',k)}catch(e){}if(k!==game){game=k;load()}else paintTabs()};t.append(b)}
+  const f=document.createElement('button');f.type='button';f.setAttribute('role','tab');f.setAttribute('aria-selected',String(fbOn&&!stOn));f.style.setProperty('--c','linear-gradient(120deg,#ff8ad8,#c49bff,#7cc8ff,#9deba8)');
+  f.innerHTML='<i></i>Feedback';f.onclick=()=>{fbOn=true;lbOn=false;stOn=false;try{localStorage.setItem('dc.admin.tab','feedback')}catch(e){}setFb();paintTabs();watchFb()};t.prepend(f);
+  const l=document.createElement('button');l.type='button';l.setAttribute('role','tab');l.setAttribute('aria-selected',String(lbOn&&!stOn));l.style.setProperty('--c','#f2c14e');
+  l.innerHTML='<i></i>Leaderboards';l.onclick=()=>{lbOn=true;fbOn=false;stOn=false;try{localStorage.setItem('dc.admin.tab','leaderboards')}catch(e){}setFb();paintTabs();watchLb()};f.after(l);
+  const st=document.createElement('button');st.type='button';st.setAttribute('role','tab');st.setAttribute('aria-selected',String(stOn));st.style.setProperty('--c','#7cc8ff');
+  st.innerHTML='<i></i>Stats';st.onclick=()=>{stOn=true;fbOn=false;lbOn=false;try{localStorage.setItem('dc.admin.tab','stats')}catch(e){}setFb();paintTabs();loadSt()};l.after(st)}
 
 /* ---------- knobs ---------- */
 function paintKnobs(){const box=$('knobs');box.replaceChildren();const def=G().defaults;
@@ -392,7 +410,27 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidd
 /* ---------- beta feedback ---------- */
 let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
 let lbOn=false, lbGame='gambit', lbData={gambit:[],dropface:[]}, lbBlocked=[], lbSubs=null;
-function setFb(){document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn}
+function setFb(){document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn}
+/* ---------- stats: daily counts from the track() function ---------- */
+let stOn=false, stRows=[], stGame='all', stT=0;
+async function loadSt(){if(!window.DCSB)return;$('stNote').textContent='Loading…';
+  try{const r=await DCSB.rpc('stats_summary',{p_days:30});if(r.error)throw r.error;stRows=r.data||[];paintSt()}catch(e){$('stNote').textContent="Couldn't load stats: "+(e.message||e)}
+  clearTimeout(stT);stT=setTimeout(()=>{if(stOn&&document.visibilityState==='visible')loadSt()},60000)}
+function paintSt(){$('stNote').textContent='Last 30 days';
+  const ch=$('stGames');ch.replaceChildren();for(const [k,l] of [['all','Both games'],['gambit','Gambit'],['dropface','Dropface']]){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',String(k===stGame));b.onclick=()=>{stGame=k;paintSt()};ch.append(b)}
+  const F=['players','start_daily','finish_daily','start_practice','challenge_shared','challenge_opened'];
+  const byDay={};for(const r of stRows){if(stGame!=='all'&&r.game!==stGame)continue;const d=byDay[r.day]||(byDay[r.day]={});for(const f of F)d[f]=(d[f]||0)+Number(r[f]||0)}
+  const days=Object.keys(byDay).sort().reverse();
+  const wk=days.slice(0,7).reduce((a,d)=>{for(const f of F)a[f]=(a[f]||0)+byDay[d][f];return a},{});
+  const pct=(a,b)=>b?Math.round(a/b*100)+'%':'–';
+  const cell=(l,v)=>{const d=document.createElement('div');d.append(Object.assign(document.createElement('span'),{textContent:l}),Object.assign(document.createElement('b'),{textContent:v}));return d};
+  $('stSum').replaceChildren(cell('Player-days, last 7 days',fmtN(wk.players||0)),cell('Daily games finished',fmtN(wk.finish_daily||0)),cell('Daily finish rate',pct(wk.finish_daily||0,wk.start_daily||0)),
+    cell('Challenges sent',fmtN(wk.challenge_shared||0)),cell('Challenge links opened',fmtN(wk.challenge_opened||0)));
+  const tb=$('stRows');tb.replaceChildren();
+  if(!days.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='No plays counted yet. Numbers start from today.';td.style.textAlign='left';tr.append(td);tb.append(tr);return}
+  for(const d of days){const v=byDay[d],tr=document.createElement('tr');const [y,m,dd]=d.split('-').map(Number);
+    const vals=[new Date(y,m-1,dd).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),fmtN(v.players),fmtN(v.start_daily),null,fmtN(v.start_practice),fmtN(v.challenge_shared),fmtN(v.challenge_opened)];
+    vals.forEach((x,i)=>{const td=document.createElement('td');if(i===3){td.textContent=fmtN(v.finish_daily);const sm=document.createElement('small');sm.textContent=pct(v.finish_daily,v.start_daily);td.append(sm)}else td.textContent=x;tr.append(td)});tb.append(tr)}}
 /* ---------- leaderboards: review and remove scores ---------- */
 const LB={gambit:{name:'Gambit',col:'gambit_scores',today:()=>{const b=new Date(2026,10,9),n=new Date();return Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-b)/864e5)},
     day:r=>r.dayBest,dayOk:(r,t)=>r.day===t&&r.dayBest>0,best:r=>r.best,meta:(r,d)=>{const t=d?r.dayTime:r.bestTime;return t?Math.round(t)+'s':''},at:r=>r.updatedAt||r.playedAt},
@@ -453,7 +491,7 @@ function paintFb(){
     ctx.append([device(r.ua),r.viewport,r.standalone?'Home screen app':'',r.theme==='dark'?'Dark mode':'',r.page].filter(Boolean).join(' · '));
     ctx.title=r.ua||'';it.append(ctx);list.append(it)}
 }
-try{const t=localStorage.getItem('dc.admin.tab');if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true}catch(e){}
+try{const t=localStorage.getItem('dc.admin.tab');if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true}catch(e){}
 setFb();
 try{const t=localStorage.getItem('dc.admin.tab');if(GAMES[t])game=t}catch(e){}
 load();
@@ -485,6 +523,7 @@ load();
     ready=true;
     if(fbOn)watchFb();
     if(lbOn)watchLb();
+    if(stOn)loadSt();
     try{db.doc('site_config/home').onSnapshot(sn=>{hiddenList=sn.exists&&Array.isArray(sn.data().hidden)?sn.data().hidden:[];paintVis()},()=>{})}catch(e){}
     load();
   }

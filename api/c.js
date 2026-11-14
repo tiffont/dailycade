@@ -25,7 +25,7 @@ export function GET(req) {
   if (n) q.set('n', String(n));
   if (ini) q.set('i', ini);
   const image = `${url.origin}/api/og?${q}`;
-  const dest = `${url.origin}${g.page}`;
+  const dest = `${url.origin}${g.page}?via=challenge`;
 
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">

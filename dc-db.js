@@ -36,18 +36,21 @@
 
   /* ---- live updates: one realtime channel per collection, plus a slow poll in case realtime drops ---- */
   const watchers={}; // col -> {fns:Set, ch, t}
-  function fire(col,now){const w=watchers[col];if(!w)return;clearTimeout(w.t);w.t=setTimeout(()=>w.fns.forEach(f=>{try{f()}catch(e){}}),now?0:250)}
+  function fire(col,now){const w=watchers[col];if(!w)return;clearTimeout(w.t);w.t=setTimeout(()=>{w.last=Date.now();w.fns.forEach(f=>{try{f()}catch(e){}})},now?0:1500+Math.random()*1000)}
   function watch(col,fn){
     let w=watchers[col];
     if(!w){
       w=watchers[col]={fns:new Set(),ch:null,t:0};
-      try{w.ch=sb.channel('dc-'+col).on('postgres_changes',{event:'*',schema:'public',table:'docs',filter:'col=eq.'+col},()=>fire(col)).subscribe()}catch(e){}
+      try{w.ch=sb.channel('dc-'+col).on('postgres_changes',{event:'*',schema:'public',table:'docs',filter:'col=eq.'+col},()=>fire(col)).subscribe(st=>{w.live=st==='SUBSCRIBED'})}catch(e){}
     }
     w.fns.add(fn); fn();
     return ()=>{w.fns.delete(fn)};
   }
-  setInterval(()=>{if(document.visibilityState==='visible')Object.keys(watchers).forEach(c=>fire(c,true))},30000);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')Object.keys(watchers).forEach(c=>fire(c,true))});
+  // refresh by polling only when realtime is down (every 30s), otherwise a slow safety refresh every 5 min
+  setInterval(()=>{if(document.visibilityState!=='visible')return;const now=Date.now();
+    for(const c of Object.keys(watchers)){const w=watchers[c];if(!w.live||now-(w.last||0)>300000)fire(c,true)}},30000);
+  // coming back to the tab: refresh if it's been more than a minute
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){const now=Date.now();Object.keys(watchers).forEach(c=>{if(now-(watchers[c].last||0)>60000)fire(c,true)})}});
 
   /* ---- documents ---- */
   function doc(path){
@@ -67,18 +70,20 @@
   function query(col,q){
     q=q||{w:[],o:null,l:0};
     const run=async()=>{
-      let b=T().select('id,data').eq('col',col);
+      const sel=q.f?'id,'+q.f.map(f=>f+':data->'+f).join(','):'id,data';
+      let b=T().select(sel).eq('col',col);
       for(const [f,op,v] of q.w){if(op!=='==')throw new Error('Only == filters are supported');b=b.eq('data->>'+f,String(v))}
       if(q.o)b=b.order('data->'+q.o[0],{ascending:q.o[1]!=='desc',nullsFirst:false});
       b=b.limit(q.l||1000);
       const r=fail(await b);
-      const docs=(r.data||[]).map(row=>snap(row.id,row));
+      const docs=(r.data||[]).map(row=>snap(row.id,q.f?{data:Object.fromEntries(q.f.filter(f=>row[f]!==undefined&&row[f]!==null).map(f=>[f,row[f]]))}:row));
       return {docs,size:docs.length,empty:!docs.length,forEach:f=>docs.forEach(f)};
     };
     return {
       where:(f,op,v)=>query(col,{...q,w:[...q.w,[f,op,v]]}),
       orderBy:(f,dir)=>query(col,{...q,o:[f,dir||'asc']}),
       limit:n=>query(col,{...q,l:n}),
+      fields:(...f)=>query(col,{...q,f:f.flat().filter(x=>/^[A-Za-z_][A-Za-z0-9_]*$/.test(x))}), // only download these fields
       doc:id=>doc(col+'/'+id),
       get:run,
       onSnapshot(cb,err){return watch(col,()=>run().then(cb,e=>err&&err(e)))}
@@ -90,6 +95,8 @@
     async id(){return (await ensureAuth()).id},
     async profiles(){return {}} // players are anonymous for now: the leaderboard shows their initials
   };
+  /* ---- play stats: DCTrack('gambit','start_daily') adds one to today's count (see admin > Stats) ---- */
+  window.DCTrack=(game,name)=>{try{ensureAuth().catch(()=>null).then(()=>sb.rpc('track',{p_game:game,p_name:name})).then(()=>{},()=>{})}catch(e){}};
   window.claude={use:async n=>{
     if(!sb)throw new Error('Database unavailable');
     if(n==='db')return db;

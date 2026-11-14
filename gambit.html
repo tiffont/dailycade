@@ -969,6 +969,11 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
 <script src="dc-initials.js"></script>
 <script src="dc-feedback.js"></script>
 <script>
+/* play stats: count visits that came from a Challenge a friend link */
+(()=>{try{const u=new URL(location.href);if(u.searchParams.get('via')!=='challenge')return;u.searchParams.delete('via');history.replaceState(null,'',u.pathname+(u.search||'')+u.hash);
+  const go=()=>window.DCTrack&&DCTrack('gambit','challenge_opened');if(window.DCTrack)go();else addEventListener('load',go)}catch(e){}})();
+</script>
+<script>
 (()=>{
 'use strict';
 const TF_DEF={pool:null,lives:6,lifeCount:3,step:90,inc:.2,cap:4.5,fall:1,spawn:1,dur:1,refall:25,fw:95,flushHp:10,bombCost:2,bombAt:180,flushAt:55,splitFall:.55};
@@ -1624,7 +1629,7 @@ setTimeout(async()=>{
     try{['gambit.r7.played','gambit.r7.playedAt','gambit.r7.daily'].concat(wipe?['gambit.r7.best','gambit.r5.abest']:[]).forEach(k=>localStorage.removeItem(k));localStorage.setItem('gambit.r7.resetAt',String(at))}catch(e){}
     if(wipe){try{best=0}catch(e){}try{abest=0}catch(e){}}
     playedDay=0;playedAt=0;daily=null;dayRec=null;try{setBar();updateHUD();paintDailyBtn()}catch(e){}},()=>{});
-  dbNS.collection('gambit_scores').orderBy('best','desc').limit(500).onSnapshot(
+  dbNS.collection('gambit_scores').orderBy('best','desc').limit(500).fields('ini','day','dayBest','dayTime','best','bestTime').onSnapshot(
     snap=>{lbRows=snap.docs.map(d=>Object.assign({id:d.id},d.data()));lbState='ready';renderLB()},
     ()=>{lbState='error';renderLB()});
 },0);
@@ -1721,6 +1726,7 @@ function start(){
   S=fresh(); S.practice=practice; S.seed=practice?0:hash32('gambit-daily',DAY_NO);
   if(S.seed){roll('t:first');S.bombT=TF.bombAt+wr()*30;S.flushT=TF.flushAt+wr()*20}
   S.mode='count'; SFX.count(); S.count=0; S.countN=3; flash('3'); hud={};
+  if(!LAB&&!PREVIEW&&window.DCTrack)DCTrack('gambit',S.practice?'start_practice':'start_daily');
   if(COLLECT){S.bank={};for(const k of PU_KEYS)S.bank[k]=BANK_MAX} // start with the chosen hand filled
   setBar(); updateHUD();
 }
@@ -1855,6 +1861,7 @@ function hpCheck(){ // out of hit points: spend a life and refill, or end the ga
 function gameOver(){
   if(S.wild)closeWildBar();
   S.mode='over'; drag=null; S.ambT=1.2; SFX.over();
+  if(!LAB&&!PREVIEW&&window.DCTrack)DCTrack('gambit',S.practice?'finish_practice':'finish_daily');
   // muting only lasts for the game: sound is back on once it's over
   setTimeout(()=>{ if(muted||!sfxOn){ muted=false; sfxOn=true; try{SFX.setMuted(false);SFX.setMix()}catch(e){} saveAudio(); paintSound(); } },0);
   for(const o of S.objs)o.amb=true;
@@ -1945,7 +1952,7 @@ new MutationObserver(()=>{setTimeout(crtLift,0);setTimeout(crtLift,450)}) /* aga
 addEventListener('resize',crtLift);
 setTimeout(crtLift,0);
 let shareText='', shareSum=null;
-$('#challengeBtn').addEventListener('click',async()=>{SFX.click();const b=$('#challengeBtn'),m=shareSum;
+$('#challengeBtn').addEventListener('click',async()=>{SFX.click();if(!LAB&&!PREVIEW&&window.DCTrack)DCTrack('gambit','challenge_shared');const b=$('#challengeBtn'),m=shareSum;
   let ini='';try{ini=(localStorage.getItem('dc.initials')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3)}catch(e){}
   const link=m?location.origin+'/c/gambit?s='+Math.max(0,Math.round(m.score||0))+(m.practice?'':'&n='+m.day)+(ini?'&i='+ini:''):SHARE_URL; // shows a score card in link previews
   const msg=(m?'I scored '+fmtN(m.score)+(m.practice?' on Gambit':' on Gambit Daily challenge No. '+m.day)+'. Can you beat it?':'Can you beat my Gambit score?')+'\n'+link;
