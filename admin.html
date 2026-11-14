@@ -25,8 +25,10 @@ header .back{margin-left:auto;color:var(--muted);text-decoration:none;font-size:
 header .back:hover{color:var(--ink)}
 h1{font-size:34px;letter-spacing:-.02em;margin:32px 0 6px;font-weight:700}
 .sub{color:var(--muted);margin:0 0 22px}
-.tabs{display:flex;gap:6px;margin-bottom:22px}
-.tabs button{border:0;background:var(--soft);border-radius:999px;padding:9px 16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tabs{display:flex;gap:6px;margin-bottom:22px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;scroll-padding:0 20px}
+.tabs::-webkit-scrollbar{display:none}
+@media (max-width:640px){.tabs{margin-left:calc(-1 * var(--tabpad,20px));margin-right:calc(-1 * var(--tabpad,20px));padding:0 var(--tabpad,20px)}.tabs::after{content:'';flex:0 0 1px}}
+.tabs button{flex:none;white-space:nowrap;scroll-snap-align:start;border:0;background:var(--soft);border-radius:999px;padding:9px 16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
 .tabs button i{width:10px;height:10px;border-radius:50%;background:var(--c)}
 .tabs button[aria-selected="true"]{background:var(--ink);color:#fff}
 .card{background:var(--soft);border-radius:20px;padding:22px;margin-bottom:16px}
@@ -267,7 +269,8 @@ function paintTabs(){const t=$('tabs');t.replaceChildren();
   const l=document.createElement('button');l.type='button';l.setAttribute('role','tab');l.setAttribute('aria-selected',String(lbOn&&!stOn));l.style.setProperty('--c','#f2c14e');
   l.innerHTML='<i></i>Leaderboards';l.onclick=()=>{lbOn=true;fbOn=false;stOn=false;try{localStorage.setItem('dc.admin.tab','leaderboards')}catch(e){}setFb();paintTabs();watchLb()};f.after(l);
   const st=document.createElement('button');st.type='button';st.setAttribute('role','tab');st.setAttribute('aria-selected',String(stOn));st.style.setProperty('--c','#7cc8ff');
-  st.innerHTML='<i></i>Stats';st.onclick=()=>{stOn=true;fbOn=false;lbOn=false;try{localStorage.setItem('dc.admin.tab','stats')}catch(e){}setFb();paintTabs();loadSt()};l.after(st)}
+  st.innerHTML='<i></i>Stats';st.onclick=()=>{stOn=true;fbOn=false;lbOn=false;try{localStorage.setItem('dc.admin.tab','stats')}catch(e){}setFb();paintTabs();loadSt()};l.after(st);
+  const on=t.querySelector('[aria-selected="true"]');if(on&&t.scrollWidth>t.clientWidth)t.scrollTo({left:Math.max(0,on.offsetLeft-t.offsetLeft-20),behavior:'smooth'})}
 
 /* ---------- knobs ---------- */
 function paintKnobs(){const box=$('knobs');box.replaceChildren();const def=G().defaults;
