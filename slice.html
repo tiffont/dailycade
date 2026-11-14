@@ -1248,10 +1248,10 @@ let callTO=0;
 function callout(title,big,small,color){const c=$('#call');$('#callT').textContent=title;$('#callT').style.color=color||'var(--fg)';$('#callS').textContent=big;$('#callP').textContent=small;
   c.classList.toggle('note',!big);c.classList.add('show');clearTimeout(callTO);callTO=setTimeout(()=>c.classList.remove('show'),big?1100:1400)}
 const STAGE={
-  0:{t:'Swipe straight through',s:'Cut each one as close to 50 / 50 as you can',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L20 4"/><path d="M6 8l2-2M16 18l2-2" opacity=".6"/></svg>'},};
+  0:{t:'Swipe through each one to cut it in half',s:'',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L20 4"/><path d="M6 8l2-2M16 18l2-2" opacity=".6"/></svg>'},};
 let sbanT=0;
-function stageBanner(st){const el=$('#sban');$('#sbanI').innerHTML=st.i;$('#sbanT').textContent=st.t;$('#sbanS').textContent=st.s;
-  el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(sbanT);sbanT=setTimeout(()=>el.classList.remove('show'),2600)}
+function stageBanner(st){const el=$('#sban');$('#sbanI').innerHTML=st.i;$('#sbanT').textContent=st.t;$('#sbanS').textContent=st.s;$('#sbanS').hidden=!st.s;
+  el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(sbanT);sbanT=setTimeout(()=>el.classList.remove('show'),st.ms||2600)}
 
 /* ---------- HUD ---------- */
 let hud={};
@@ -1385,7 +1385,8 @@ function start(){
   if(TF_PENDING){applyTF(TF_PENDING);TF_PENDING=null}
   SFX.ensure();
   if(!practice&&!PREVIEW)markPlayed();
-  S=fresh(); S.practice=practice; S.run=newRun(); S.mode='count'; S.count=0;
+  S=fresh(); S.practice=practice; S.run=newRun(); S.mode='count'; S.count=-1.6; // the tip shows first, then 3-2-1
+  stageBanner(Object.assign({ms:3400},STAGE[0]));
   pieces=[];sparks=[];cutLine=null;hud={};countN=-1;
   if(!PREVIEW&&window.DCTrack)DCTrack('slice',S.practice?'start_practice':'start_daily');
   setBar(); updateHUD();
@@ -1393,7 +1394,6 @@ function start(){
 function nextObject(){
   if(S.idx>=10){gameOver();return}
   S.cur=Object.assign({},S.run[S.idx],{t:0,cut:false});S.mode='play';stroke=null;S.tickT=0;
-  if(STAGE[S.idx])stageBanner(STAGE[S.idx]);
   updateHUD();
 }
 // pause: single player any time; the daily pauses itself when the page goes to the background, and from the HUD (Resume only)
@@ -1627,7 +1627,7 @@ function frame(now){
   if(shake>0){cx.translate((Math.random()-.5)*18*shake,(Math.random()-.5)*18*shake);shake=Math.max(0,shake-dt*2.5)}
   drawTunnel(S.mode==='pause'?0:gdt,danger);
   if(S.mode==='count'){S.count+=dt;const n=Math.floor(S.count/.7);
-    if(n!==countN){countN=n;if(n<3){flash(String(3-n));SFX.count(1)}else{flash('Slice','go',C('pink'));SFX.count(0)}}
+    if(S.count>=0&&n!==countN){countN=n;if(n<3){flash(String(3-n));SFX.count(1)}else{flash('Slice','go',C('pink'));SFX.count(0)}}
     if(S.count>=2.6){countEl.replaceChildren();countN=-1;nextObject()}}
   if(S.mode==='gap'){S.gapT-=gdt;if(S.gapT<=0){S.idx++;S.cur=null;nextObject()}}
   if(S.mode==='idle'||S.mode==='over')ambientStep(dt);
