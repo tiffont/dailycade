@@ -1684,10 +1684,11 @@ async function renderLB(){
 
 /* ---------- modes ---------- */
 const goBtn=$('#go'), droprow=$('#droprow'), idleEl=$('#idle');
+let holdBoard=false; // right after a game: keep the game screen up behind the summary; home shows once it's closed
 function setBar(){
   const m=S.mode;
-  droprow.hidden=(m==='play'||m==='count');
-  const app=document.querySelector('.app'), playing=(m==='play'||m==='count'||m==='pause');
+  droprow.hidden=(m==='play'||m==='count'||holdBoard);
+  const app=document.querySelector('.app'), playing=(m==='play'||m==='count'||m==='pause'||holdBoard);
   const pb=$('#pauseBtn'); pb.hidden=!practice; pb.disabled=!(m==='play'||m==='pause'); // pause is a practice-only tool
   pb.setAttribute('aria-label',m==='pause'?'Resume':'Pause');
   pb.innerHTML=m==='pause'
@@ -1861,6 +1862,7 @@ function hpCheck(){ // out of hit points: spend a life and refill, or end the ga
 function gameOver(){
   if(S.wild)closeWildBar();
   S.mode='over'; drag=null; S.ambT=1.2; SFX.over();
+  holdBoard=!LAB;
   if(!LAB&&!PREVIEW&&window.DCTrack)DCTrack('gambit',S.practice?'finish_practice':'finish_daily');
   // muting only lasts for the game: sound is back on once it's over
   setTimeout(()=>{ if(muted||!sfxOn){ muted=false; sfxOn=true; try{SFX.setMuted(false);SFX.setMix()}catch(e){} saveAudio(); paintSound(); } },0);
@@ -1879,7 +1881,7 @@ function gameOver(){
   if(!S.practice){daily=sum;try{localStorage.setItem('gambit.r7.daily',JSON.stringify(sum))}catch(e){}}
   fillOver(sum);
   setBar(); updateHUD();
-  setTimeout(()=>{try{$('#over').showModal()}catch(e){} raiseToast()},700);
+  setTimeout(()=>{try{$('#over').showModal()}catch(e){holdBoard=false;setBar()} raiseToast()},700);
 }
 let lastSum=null, daily=null; try{daily=JSON.parse(localStorage.getItem('gambit.r7.daily')||'null')}catch(e){}
 let lastPractice=null;
@@ -2649,6 +2651,7 @@ $('#setMute').addEventListener('click',()=>{muted=!muted;SFX.ensure();SFX.setMut
 cv.addEventListener('pointerdown',()=>SFX.ensure(),{capture:true});
 for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,()=>SFX.ensure(),{capture:true});
 $('#helpFb').addEventListener('click',()=>{ if(window.DCFeedback) DCFeedback.open({game:'gambit',dark:true}); });
+$('#over').addEventListener('close',()=>{if(holdBoard){holdBoard=false;setBar();updateHUD()}});
 $('#sumBtn').addEventListener('click',()=>{const m=summaryNow();if(!m)return;fillOver(m);try{$('#over').showModal()}catch(e){}});
 $('#sumIcon').addEventListener('click',()=>{SFX.ensure();SFX.click();const m=dailySumNow();if(!m)return;fillOver(m);try{$('#over').showModal()}catch(e){}});
 const ICON_PRACTICE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>';
