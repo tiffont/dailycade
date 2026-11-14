@@ -1366,7 +1366,7 @@ function setBar(){
   droprow.hidden=pl;
   const pb=$('#pauseBtn'); pb.hidden=!practice; pb.disabled=!(m==='play'||m==='gap'||m==='pause');
   $('#paused').hidden=m!=='pause';
-  $('#hudPause').hidden=!(m==='play'||m==='gap'||m==='count');
+  $('#hudPause').hidden=!(S.practice&&(m==='play'||m==='gap'||m==='count')); // only single player can pause; the daily only pauses itself when the page goes to the background
   app.classList.toggle('ispaused',m==='pause');
   $('#exitBtn').hidden=!S.practice; $('#pauseNote').hidden=!S.practice;
   if(app.classList.contains('playing')!==pl){app.classList.toggle('playing',pl); if(pl)try{window.scrollTo({top:0,behavior:'instant'})}catch(e){window.scrollTo(0,0)}}
@@ -1402,6 +1402,7 @@ function nextObject(){
 // pause: single player any time; the daily pauses itself when the page goes to the background, and from the HUD (Resume only)
 function pause(auto){
   if(!(S.mode==='play'||S.mode==='gap'||S.mode==='count'))return;
+  if(!auto&&!S.practice)return; // the daily can't be paused by hand
   S.prev=S.mode; S.mode='pause'; stroke=null; setBar();
 }
 function resume(){if(S.mode!=='pause')return;S.mode=S.prev||'play';S.prev=null;last=performance.now();setBar()}

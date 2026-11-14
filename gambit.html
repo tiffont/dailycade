@@ -1695,7 +1695,7 @@ function setBar(){
     ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5.5v13l10-6.5z"/></svg>'
     :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6v12M15 6v12"/></svg>';
   $('#paused').hidden=m!=='pause'||!!S.wild;
-  { const hp=$('#hudPause'); hp.hidden=!(m==='play'||m==='count'); } // pause is always there during a game (daily: Resume only)
+  { const hp=$('#hudPause'); hp.hidden=!(S.practice&&(m==='play'||m==='count')); } // only single player can pause; the daily only pauses itself when the page goes to the background
   app.classList.toggle('ispaused',m==='pause');
   $('#exitBtn').hidden=!practice; $('#pauseNote').hidden=!practice;
   if(app.classList.contains('playing')!==playing){app.classList.toggle('playing',playing); measureDock(); if(playing)try{window.scrollTo({top:0,behavior:'instant'})}catch(e){window.scrollTo(0,0)}}
@@ -1734,6 +1734,7 @@ function start(){
 // pause: single player any time; the daily only pauses itself when the page goes to the background (board hidden, so it's a break, not an edge)
 function pause(auto){
   if(S.mode!=='play'||S.wild)return;
+  if(!auto&&!S.practice)return; // the daily can't be paused by hand
   S.mode='pause'; drags.clear(); drag=null; gun=null; if(grab){for(const c of grab.cs)c.held=false; grab=null}
   setBar();
 }

@@ -1408,14 +1408,14 @@ function renderDay(){
     segs.forEach(sg=>{ const s=document.createElement('span'); if(sg.bonus) s.className='bonus'; s.textContent=sg.v==null?'':Number(sg.v).toLocaleString(); nums.appendChild(s); }); }
   // single player: no hit-rate stat in the tray
   { const cells=$('dayStats').children; if(cells[1]) cells[1].hidden=true; if(cells[2]) cells[2].hidden=true; bar.classList.add('nostats'); } // no best-drop or leaderboard stat in the tray
-  $('dpause').hidden=false; bar.classList.add('withpause'); // pause is always there (daily: Resume only)
+  { const pz=mode==='practice'; $('dpause').hidden=!pz; bar.classList.toggle('withpause',pz); } // only single player can pause; the daily only pauses itself when the page goes to the background
 }
 // leaving a practice round that's under way asks first; a round not started yet, or already finished, just switches
 const pracUnderway=()=>mode==='practice'&&((day.used>0&&day.used<PER_DAY)||!!day.pending||(done&&bonusPending>0));
 $('dayBtn').onclick=()=>{ if(busy||$('dayBtn').disabled) return; if(mode==='practice'){ if(pracUnderway()){ $('leaveModal').showModal(); return; } startDaily(); } else startPractice(); };
 // pause: single player any time (Resume / Quit); the daily only pauses itself when the page goes to the background mid-drop
 const DFP={on:false};
-function dfPause(auto){ if(DFP.on) return; if(auto&&!busy) return;
+function dfPause(auto){ if(DFP.on) return; if(auto&&!busy) return; if(!auto&&mode!=='practice') return; // the daily can't be paused by hand
   DFP.on=true; const prac=mode==='practice'; $('dpQuit').hidden=!prac; $('dpNote').hidden=!prac; $('dpaused').hidden=false; }
 function dfResume(){ DFP.on=false; $('dpaused').hidden=true; }
 $('dpause').onclick=()=>{ tone(880,.05,{vol:.12}); dfPause(false); };
