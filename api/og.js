@@ -8,6 +8,7 @@ import { Resvg } from '@resvg/resvg-js';
 const GAMES = {
   gambit:   { name: 'Gambit',   tag: 'Swipe, curve, stack power-ups. Survive the fall.', blob: '#9deba8', accent: '#9deba8' },
   dropface: { name: 'Dropface', tag: 'Ten boards, one ball. Call where it lands.',       blob: '#c49bff', accent: '#c49bff' },
+  slice:    { name: 'Slice',    tag: 'Ten things fly at you. Cut each one exactly in half.', blob: '#ff8ad8', accent: '#ff8ad8', noHand: true },
 };
 
 // Dailycade mark in the brand gradient
@@ -37,8 +38,8 @@ export async function GET(req) {
     fetch(new URL('/og/inter-display-800.otf', url)).then(r => r.arrayBuffer()),
     fetch(new URL('/og/inter-500.otf', url)).then(r => r.arrayBuffer()),
   ]);
-  const handBuf = Buffer.from(await (await fetch(new URL(`/og/handheld-${key}.png`, url))).arrayBuffer());
-  const handSrc = 'data:image/png;base64,' + handBuf.toString('base64');
+  // games without a handheld image yet show just their colored shape
+  const handSrc = g.noHand ? null : 'data:image/png;base64,' + Buffer.from(await (await fetch(new URL(`/og/handheld-${key}.png`, url))).arrayBuffer()).toString('base64');
 
   const score = s.toLocaleString('en-US');
   const line1 = hasScore ? (ini ? `${ini} says you can't beat` : 'Can you beat') : null;
@@ -64,7 +65,7 @@ export async function GET(req) {
         h('div', { width: 10, height: 10, borderRadius: 9999, background: g.accent }),
         prompt)),
     // right: the game's handheld
-    img(handSrc, { position: 'absolute', right: 70, top: 40, width: 360, height: Math.round(360 * (key === 'gambit' ? 579 : 574) / 380) })
+    handSrc ? img(handSrc, { position: 'absolute', right: 70, top: 40, width: 360, height: Math.round(360 * (key === 'gambit' ? 579 : 574) / 380) }) : null
   );
 
   const svg = await satori(tree, {
@@ -98,7 +99,8 @@ async function siteCard(url) {
         h('div', { fontSize: 30, fontWeight: 500, color: '#b8bcc2', lineHeight: 1.3 }, 'New challenges every day.')),
       h('div', { alignItems: 'center', gap: 14, fontSize: 24, fontWeight: 500, color: '#8f8f8c' },
         h('div', { width: 10, height: 10, borderRadius: 9999, background: '#9deba8' }), 'Gambit',
-        h('div', { width: 10, height: 10, borderRadius: 9999, background: '#c49bff', marginLeft: 14 }), 'Dropface')),
+        h('div', { width: 10, height: 10, borderRadius: 9999, background: '#c49bff', marginLeft: 14 }), 'Dropface',
+        h('div', { width: 10, height: 10, borderRadius: 9999, background: '#ff8ad8', marginLeft: 14 }), 'Slice')),
     img(src(dHand), { position: 'absolute', right: 40, top: 92, width: 300, height: Math.round(300 * 574 / 380) }),
     img(src(gHand), { position: 'absolute', right: 270, top: 52, width: 300, height: Math.round(300 * 579 / 380) })
   );
