@@ -1025,7 +1025,7 @@ const SFX=(()=>{
   return {
     ensure(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ac&&ac.state==='suspended')ac.resume().catch(()=>{})},
     tone,
-    click(){tone(1500,.035,'square',.025)},
+    click(){tone(880,.05,'sine',.12)}, // same click as Gambit and Dropface
     count(n){tone(n?520:880,n?.12:.28,'triangle',.11)},
     swish(){if(!live())return;const t=ac.currentTime,n=ac.sampleRate*.18,buf=ac.createBuffer(1,n,ac.sampleRate),d=buf.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
       const s=ac.createBufferSource(),f=ac.createBiquadFilter(),v=ac.createGain();s.buffer=buf;f.type='bandpass';f.frequency.setValueAtTime(900,t);f.frequency.exponentialRampToValueAtTime(4200,t+.16);f.Q.value=1.2;v.gain.value=.35;s.connect(f).connect(v).connect(ac.destination);s.start(t)},
