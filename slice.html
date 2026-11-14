@@ -1476,7 +1476,7 @@ function fillOver(m){
       pop.style.setProperty('--k',cutColor(c));pop.innerHTML='<i></i><b>'+(c.miss?'–':c.score)+'</b><small>'+(c.miss?'Missed':(NAMES[c.name]||c.name))+'</small>';pop.hidden=false;
       const sr=tk.parentElement.getBoundingClientRect(),cxp=r.left-sr.left+(i+.5)*r.width/10,w=pop.offsetWidth/2;pop.style.left=Math.max(w,Math.min(sr.width-w,cxp))+'px';
       const card=row.children[i];if(card){const want=card.offsetLeft-row.offsetLeft-(row.clientWidth-card.offsetWidth)/2;row.scrollTo({left:want,behavior:'smooth'})}
-      SFX.tick(i/9)};
+      };
     const done=()=>{clearTimeout(hideT);hideT=setTimeout(()=>{pop.hidden=true;lastI=-1;tk.classList.remove('scrub');[...tk.children].forEach(s=>s.classList.remove('sel'));[...row.children].forEach(d=>d.classList.remove('sel'))},1400)};
     tk.onpointerdown=e=>{clearTimeout(hideT);try{tk.setPointerCapture(e.pointerId)}catch(_){}pick(e)};
     tk.onpointermove=e=>{if(e.buttons||e.pointerType==='mouse'){clearTimeout(hideT);pick(e)}};

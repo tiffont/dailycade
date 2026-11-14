@@ -1716,7 +1716,6 @@ function openSummary(){
     const spans=[...ticks.children]; let cur=-1;
     const show=x=>{ const r=ticks.getBoundingClientRect(); let i=Math.floor((x-r.left)/r.width*spans.length); i=Math.max(0,Math.min(spans.length-1,i));
       if(i!==cur){ if(cur>=0) spans[cur].classList.remove('hot'); cur=i; spans[i].classList.add('hot');
-        tone(620+i/Math.max(1,spans.length-1)*520,.06,{type:'square',vol:.035}); // same rising tick as Slice's summary bars
         const e=evs[i], amt=e.d?(e.d>0?'+':'−')+Math.abs(e.d).toLocaleString():'';
         tip.innerHTML=''; tip.style.setProperty('--k',`var(${EVC[e.v]||'--muted'})`);
         tip.append(el('b',null,where(e)),el('span',null,`Drop ${e.dn+1} · Level ${e.lv+1}${amt?' · '+amt:''}`)); }
