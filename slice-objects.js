@@ -155,7 +155,7 @@ const OBJECTS={
       arms.push(tubeRaw(t=>{const rr=.3+.75*t,yy=.2+.55*Math.sin(t*2.2)-.25*t*t;return[c*rr,yy,s*rr]},16,t=>.14*(1-t*.85)*endR(t,.04),10))}
     return combine(head,...arms)},
   cloud:r=>{const j=()=>(r()-.5)*.15;return radial(blobs([E([0,0,0],[.62,.5,.5]),E([-.65+j(),.12,j()],[.45,.36,.42]),E([.65+j(),.1,j()],[.48,.38,.42]),E([-.25+j(),-.35,j()],[.42,.42,.4]),E([.3+j(),-.32,.1],[.4,.4,.4]),E([0,.3,0],[.9,.22,.4])],null,.08),28,40)},
-  cactus:()=>combine(tubeRaw(lineP([0,1.1,0],[0,-1.2,0]),18,t=>.3*(t>.85?Math.sqrt(Math.max(0,1-((t-.85)/.15)**2)):1),16),
+  cactus:()=>combine(tubeRaw(lineP([0,1.1,0],[0,-1.2,0]),18,t=>.3*(t>.85?Math.sqrt(Math.max(0,1-((t-.85)/.15)**2)):t<.06?Math.sqrt(Math.max(0,1-((.06-t)/.06)**2)):1),16), // closed at both ends
     tubeRaw(t=>t<.45?[-.2-t/.45*.45,.15,0]:[-.65-.08*Math.sin((t-.45)/.55*Math.PI/2),.15-(t-.45)/.55*.75,0],16,t=>.17*endR(t,.08),12),
     tubeRaw(t=>t<.4?[.2+t/.4*.4,-.2,0]:[.6+.06*Math.sin((t-.4)/.6*Math.PI/2),-.2-(t-.4)/.6*.6,0],16,t=>.15*endR(t,.08),12)),
 
