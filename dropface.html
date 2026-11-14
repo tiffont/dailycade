@@ -1745,14 +1745,14 @@ function openSummary(){
   body.appendChild(el('hr','sdiv')); body.appendChild(ul); // light gray line between sections
   // today's achievements as cards in a row that scrolls sideways
   if(todays.length){
-    body.appendChild(el('hr','sdiv'));
-    body.appendChild(el('p','eyebrow',`Achievements today · +${achPts().toLocaleString()} pts`));
+    body.appendChild(el('p','eyebrow',`Bonus points · +${achPts().toLocaleString()} pts`));
     const grid=el('div','achgrid');
     todays.forEach(({b,n})=>{ const c=el('div','acard'); c.style.setProperty('--c',`var(${b.c})`);
       const top=el('div','atop'); const ic=el('span','ai',b.g); ic.setAttribute('aria-hidden','true'); top.append(ic,el('span','ap',`+${b.pts.toLocaleString()}`));
       c.append(top,el('b',null,b.name),el('small',null,`Drop ${n+1}`)); grid.appendChild(c); });
     body.appendChild(grid);
   }
+  body.appendChild(el('hr','sdiv')); // the stats list and bonus points are one section; the line goes under it
   // drop by drop: one list per drop, a row for every landing
   const where=e=>typeof e.v==='number'?(e.v===100?'Your pick':e.v===25?'Next to your pick':'Other slot'):(EVN[e.v]||e.v);
   // daily: leaderboard initials sit right above Challenge a friend
