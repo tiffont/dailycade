@@ -830,6 +830,17 @@ body.is-playing .scrim.b{display:none} /* nothing to read at the bottom during a
 #over .dcrow #challengeBtn{margin-top:0!important} /* 4px under Play again + 28px gap - 12px = 20px edge to edge, minus its 4px raised edge = 16px of space */ /* Challenge a friend tucks under Play again, same gap as the home buttons */
 .count>span.go{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.02em} /* "Slice" after the countdown: the title's bold extended type */
 .hsteps li{--c:var(--mint)!important} /* How to play numbers in green */
+/* stage banner: when the game changes (spins, tumbles, lopsided, finale), a glass card drops in under the score, like Gambit's Wild card */
+.sban{position:fixed;z-index:6;left:50%;top:calc(env(safe-area-inset-top,0px) + 96px);transform:translate(-50%,-30px) scale(.9);opacity:0;pointer-events:none;
+  display:flex;align-items:center;gap:12px;padding:10px 18px 10px 10px;border-radius:16px;width:max-content;max-width:calc(var(--appw) - 32px);
+  background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 12px 32px rgba(0,0,0,.45);
+  transition:transform .45s cubic-bezier(.3,1.5,.5,1),opacity .25s}
+.sban.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.sban .sbi{width:40px;height:40px;flex:none;border-radius:50%;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 2px #fff;display:grid;place-items:center}
+.sban .sbi svg{width:21px;height:21px;display:block}
+.sban b{display:block;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:1rem;letter-spacing:.02em;line-height:1.1}
+.sban small{display:block;font-size:.82rem;font-weight:500;color:rgba(255,255,255,.78);margin-top:2px}
+@media (prefers-reduced-motion: reduce){.sban{transition:opacity .2s;transform:translate(-50%,0)}}
 /* help: grade swatches */
 #helpGrades .sic2{font-family:var(--font-mono);font-weight:700;font-size:.62rem;color:var(--c)}
 #helpGrades b{font-size:.9rem}
@@ -846,6 +857,7 @@ body.is-playing .scrim.b{display:none} /* nothing to read at the bottom during a
   <div class="count" id="count" aria-live="polite"></div>
   <div class="call" id="call" aria-live="polite"><b id="callT"></b><span id="callS"></span><small id="callP"></small></div>
   <div class="warn" id="warn" aria-hidden="true">Too close · cut now</div>
+  <div class="sban" id="sban" role="status" aria-live="polite"><span class="sbi" id="sbanI"></span><span><b id="sbanT"></b><small id="sbanS"></small></span></div>
   <div class="paused pmotion" id="paused" hidden><div class="pausebox pmbox"><b>Paused</b><button class="drop noarrow" id="resumeBtn">Resume</button><button class="sumbtn sec bigsum" id="exitBtn">Quit</button><small class="pnote" id="pauseNote">Quitting forfeits your score.</small></div></div>
 </div>
 <div class="scrim t"></div><div class="scrim b"></div>
@@ -1235,7 +1247,15 @@ function flash(text,cls,color){const s=document.createElement('span');s.textCont
 let callTO=0;
 function callout(title,big,small,color){const c=$('#call');$('#callT').textContent=title;$('#callT').style.color=color||'var(--fg)';$('#callS').textContent=big;$('#callP').textContent=small;
   c.classList.toggle('note',!big);c.classList.add('show');clearTimeout(callTO);callTO=setTimeout(()=>c.classList.remove('show'),big?1100:1400)}
-const STAGE={3:'It spins now',5:'Now it tumbles',6:'Lopsided ones',9:'Last one · the finale'};
+const STAGE={
+  0:{t:'Swipe straight through',s:'Cut each one as close to 50 / 50 as you can',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L20 4"/><path d="M6 8l2-2M16 18l2-2" opacity=".6"/></svg>'},
+  3:{t:'It spins now',s:'Time your cut',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>'},
+  5:{t:'Now it tumbles',s:'Cut the whole thing in half, not just the front',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>'},
+  6:{t:'Lopsided ones',s:"The middle isn't where it looks",i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M5 20h14"/><path d="M4 9l3-5 3 5a3 3 0 0 1-6 0zM14 11l3-5 3 5a3 3 0 0 1-6 0z"/><path d="M7 4h10"/></svg>'},
+  9:{t:'Last one · the finale',s:'Make it count',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg>'}};
+let sbanT=0;
+function stageBanner(st){const el=$('#sban');$('#sbanI').innerHTML=st.i;$('#sbanT').textContent=st.t;$('#sbanS').textContent=st.s;
+  el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(sbanT);sbanT=setTimeout(()=>el.classList.remove('show'),2600)}
 
 /* ---------- HUD ---------- */
 let hud={};
@@ -1377,8 +1397,7 @@ function start(){
 function nextObject(){
   if(S.idx>=10){gameOver();return}
   S.cur=Object.assign({},S.run[S.idx],{t:0,cut:false});S.mode='play';stroke=null;S.tickT=0;
-  if(S.idx===0)callout('Swipe straight through','','');
-  if(STAGE[S.idx])callout(STAGE[S.idx],'','');
+  if(STAGE[S.idx])stageBanner(STAGE[S.idx]);
   updateHUD();
 }
 // pause: single player any time; the daily pauses itself when the page goes to the background, and from the HUD (Resume only)
@@ -1387,7 +1406,7 @@ function pause(auto){
   S.prev=S.mode; S.mode='pause'; stroke=null; setBar();
 }
 function resume(){if(S.mode!=='pause')return;S.mode=S.prev||'play';S.prev=null;last=performance.now();setBar()}
-function endRun(){S=fresh();pieces=[];sparks=[];countEl.replaceChildren();$('#call').classList.remove('show');hud={};ambient=null}
+function endRun(){S=fresh();$('#sban').classList.remove('show');pieces=[];sparks=[];countEl.replaceChildren();$('#call').classList.remove('show');hud={};ambient=null}
 // the summary slides up over the finished game; closing it goes back to the home screen
 $('#over').addEventListener('close',()=>{if(S.mode==='ending'){S.mode='over';setBar();updateHUD()}});
 // on phones the summary slides down before it really closes: switch to the home screen as soon as it starts, so home is already there underneath
