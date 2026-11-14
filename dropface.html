@@ -519,6 +519,7 @@ body.athome{overflow:hidden}
 #openBadges,.hnav [data-go="openBadges"]{display:none!important}
 /* ---- summary page (Gambit game-summary style): big score, a tick for every landing, stat rows ---- */
 .sumv2{container-type:inline-size;gap:28px}
+.sbox{display:flex;flex-direction:column;gap:28px;padding:16px;border-radius:8px;background:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)} /* light gray outline */
 .sumv2 .ssub{margin:-16px 0 0;color:var(--muted);font-size:1rem}
 .sumv2 i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.62rem;color:var(--muted)}
 .sbig{display:flex;align-items:center;gap:16px;min-width:0}
@@ -1697,9 +1698,11 @@ function openSummary(){
   // the total, big, with NEW BEST DROP when today's best drop is your all-time best
   const big=el('div','sbig'), lab=el('span'); big.appendChild(el('strong',null,day.total.toLocaleString()));
   lab.appendChild(el('i',null,prac?'Total':'Daily total')); if(!prac&&pb>0&&pb>=bestDrop) lab.appendChild(el('em',null,'New best drop'));
-  big.appendChild(lab); body.appendChild(big);
+  big.appendChild(lab);
+  // the score, each drop and the landing ticks sit together in a light outlined box
+  const sbox=el('div','sbox'); body.appendChild(sbox); sbox.appendChild(big);
   // each drop's score, quietly, under the total
-  if(day.scores.length){ const ds=el('div','dsplit'); day.scores.forEach((v,n)=>{ const c=el('div'); c.append(el('i',null,`Drop ${n+1}`),el('span',null,Number(v).toLocaleString())); ds.appendChild(c); }); body.appendChild(ds); }
+  if(day.scores.length){ const ds=el('div','dsplit'); day.scores.forEach((v,n)=>{ const c=el('div'); c.append(el('i',null,`Drop ${n+1}`),el('span',null,Number(v).toLocaleString())); ds.appendChild(c); }); sbox.appendChild(ds); }
   // a tick for every landing, in what it scored: mint 100, amber 25, a special's own colour; 10s stay dark
   const evs=[]; (day.log||[]).forEach((l,n)=>((l&&l.passes)||[]).forEach(ps=>(ps.ev||[]).forEach(e=>evs.push(Object.assign({},e,{dn:n})))));
   const shit=el('div','shit'), ticks=el('div','sticks'); ticks.setAttribute('aria-hidden','true');
@@ -1727,7 +1730,7 @@ function openSummary(){
     ticks.addEventListener('pointerup',e=>{ if(e.pointerType!=='mouse') hide(); });
     ticks.addEventListener('pointercancel',hide); ticks.addEventListener('pointerleave',e=>{ if(e.pointerType==='mouse') hide(); });
     shit.append(tw,rate); } else shit.append(ticks,rate);
-  body.appendChild(shit);
+  sbox.appendChild(shit);
   // stat rows
   const todays=(day.ach||[]).map(x=>({...x,b:badge(x.id)})).filter(x=>x.b);
   const rows=[];
