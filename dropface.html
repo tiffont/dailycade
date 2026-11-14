@@ -1737,7 +1737,6 @@ function openSummary(){
   else { rows.push(['star','All-time drop',bestDrop?bestDrop.toLocaleString():'—','--amber']); rows.push(['rank','Leaderboard',todayPlace(),'--pink']); }
   rows.push(['spark','Specials hit',String(evs.filter(e=>typeof e.v!=='number').length),'--violet']);
   if(day.bonus) rows.push(['plus','Bonus drops',String(day.bonus),'--gold-solid']);
-  if(!prac) rows.push(['shield','Achievements',todays.length?`+${achPts().toLocaleString()}`:'0','--sky',()=>$('openBadges').click()]);
   const ul=el('ul','slist');
   rows.forEach(([ic,l,v,c,fn])=>{ const li=el('li'); li.style.setProperty('--c',`var(${c})`); const sq=el('span','sic2'); sq.innerHTML=SICONS[ic]; sq.setAttribute('aria-hidden','true');
     li.append(sq,el('span','sl',l),el('b',null,v));
