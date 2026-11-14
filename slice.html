@@ -1248,11 +1248,7 @@ let callTO=0;
 function callout(title,big,small,color){const c=$('#call');$('#callT').textContent=title;$('#callT').style.color=color||'var(--fg)';$('#callS').textContent=big;$('#callP').textContent=small;
   c.classList.toggle('note',!big);c.classList.add('show');clearTimeout(callTO);callTO=setTimeout(()=>c.classList.remove('show'),big?1100:1400)}
 const STAGE={
-  0:{t:'Swipe straight through',s:'Cut each one as close to 50 / 50 as you can',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L20 4"/><path d="M6 8l2-2M16 18l2-2" opacity=".6"/></svg>'},
-  3:{t:'It spins now',s:'Time your cut',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>'},
-  5:{t:'Now it tumbles',s:'Cut the whole thing in half, not just the front',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>'},
-  6:{t:'Lopsided ones',s:"The middle isn't where it looks",i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M5 20h14"/><path d="M4 9l3-5 3 5a3 3 0 0 1-6 0zM14 11l3-5 3 5a3 3 0 0 1-6 0z"/><path d="M7 4h10"/></svg>'},
-  9:{t:'Last one · the finale',s:'Make it count',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg>'}};
+  0:{t:'Swipe straight through',s:'Cut each one as close to 50 / 50 as you can',i:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L20 4"/><path d="M6 8l2-2M16 18l2-2" opacity=".6"/></svg>'},};
 let sbanT=0;
 function stageBanner(st){const el=$('#sban');$('#sbanI').innerHTML=st.i;$('#sbanT').textContent=st.t;$('#sbanS').textContent=st.s;
   el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(sbanT);sbanT=setTimeout(()=>el.classList.remove('show'),2600)}
