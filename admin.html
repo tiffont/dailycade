@@ -79,6 +79,18 @@ h1{font-size:34px;letter-spacing:-.02em;margin:32px 0 6px;font-weight:700}
 .login{display:grid;gap:12px;max-width:420px}.login input{border:1px solid #d9d9d9;border-radius:11px;padding:11px 14px;background:#fff}.login p{margin:0;color:var(--muted);font-size:14px}.whoami{font-size:13px;color:var(--muted);margin:-8px 0 16px}.whoami button{border:0;background:none;padding:0;text-decoration:underline;color:inherit;cursor:pointer}
 body.fbmode main>section:not(#fbCard){display:none!important}
 body.fbmode .dock{display:none!important}
+body.lbmode main>section:not(#lbCard){display:none!important}
+body.lbmode .dock{display:none!important}
+.lbcols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+@media (max-width:760px){.lbcols{grid-template-columns:1fr}}
+.lbcols h3{margin:0 0 8px;font-size:14px}
+.lbrow{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:10px 12px;margin-top:6px;font-size:14px}
+.lbrow .rk{width:22px;color:var(--muted);font-size:12px}
+.lbrow .ini{font-weight:700;min-width:44px}.lbrow .ini.none{font-weight:500;color:var(--muted)}
+.lbrow .sc{font-weight:700;margin-left:auto;font-variant-numeric:tabular-nums}
+.lbrow .meta{color:var(--muted);font-size:12px}
+.lbrow button{border:0;background:none;color:#c0392b;font:inherit;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;padding:0 0 0 6px}
+.lbrow button.un{color:var(--ink)}
 .fbsum{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}
 .fbsum div{background:#fff;border-radius:14px;padding:10px 14px;min-width:90px}
 .fbsum span{display:block;font-size:12px;color:var(--muted)}.fbsum b{font-size:18px}
@@ -142,6 +154,13 @@ footer{height:20px}
   <section class="card" aria-labelledby="tuneH">
     <h2 id="tuneH">Tuning <span class="note">Changes stay a draft until you publish</span></h2>
     <div id="knobs"></div>
+  </section>
+  <section class="card" id="lbCard" aria-labelledby="lbH" hidden>
+    <h2 id="lbH">Leaderboards <span class="note" id="lbNote"></span></h2>
+    <p class="hint" style="margin:0 0 14px">Impossible scores are rejected automatically. Remove anything that still looks wrong: it deletes that player's score and blocks them from posting again.</p>
+    <div class="chips" id="lbGames"></div>
+    <div class="lbcols"><div><h3>Today</h3><div id="lbToday"></div></div><div><h3>All time</h3><div id="lbAll"></div></div></div>
+    <h3 style="margin:22px 0 4px;font-size:14px">Blocked players</h3><div id="lbBlocked"></div>
   </section>
   <section class="card" id="fbCard" aria-labelledby="fbH" hidden>
     <h2 id="fbH">Beta feedback <span class="note" id="fbNote"></span></h2>
@@ -225,10 +244,12 @@ function ask(title,body,yes){return new Promise(res=>{$('mT').textContent=title;
 
 /* ---------- tabs ---------- */
 function paintTabs(){const t=$('tabs');t.replaceChildren();
-  for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game&&!fbOn));
-    b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{fbOn=false;setFb();try{localStorage.setItem('dc.admin.tab',k)}catch(e){}if(k!==game){game=k;load()}else paintTabs()};t.append(b)}
+  for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game&&!fbOn&&!lbOn));
+    b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{fbOn=false;lbOn=false;setFb();try{localStorage.setItem('dc.admin.tab',k)}catch(e){}if(k!==game){game=k;load()}else paintTabs()};t.append(b)}
   const f=document.createElement('button');f.type='button';f.setAttribute('role','tab');f.setAttribute('aria-selected',String(fbOn));f.style.setProperty('--c','linear-gradient(120deg,#ff8ad8,#c49bff,#7cc8ff,#9deba8)');
-  f.innerHTML='<i></i>Feedback';f.onclick=()=>{fbOn=true;try{localStorage.setItem('dc.admin.tab','feedback')}catch(e){}setFb();paintTabs();watchFb()};t.prepend(f)}
+  f.innerHTML='<i></i>Feedback';f.onclick=()=>{fbOn=true;lbOn=false;try{localStorage.setItem('dc.admin.tab','feedback')}catch(e){}setFb();paintTabs();watchFb()};t.prepend(f);
+  const l=document.createElement('button');l.type='button';l.setAttribute('role','tab');l.setAttribute('aria-selected',String(lbOn));l.style.setProperty('--c','#f2c14e');
+  l.innerHTML='<i></i>Leaderboards';l.onclick=()=>{lbOn=true;fbOn=false;try{localStorage.setItem('dc.admin.tab','leaderboards')}catch(e){}setFb();paintTabs();watchLb()};f.after(l)}
 
 /* ---------- knobs ---------- */
 function paintKnobs(){const box=$('knobs');box.replaceChildren();const def=G().defaults;
@@ -370,7 +391,35 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidd
 
 /* ---------- beta feedback ---------- */
 let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
-function setFb(){document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn}
+let lbOn=false, lbGame='gambit', lbData={gambit:[],dropface:[]}, lbBlocked=[], lbSubs=null;
+function setFb(){document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn}
+/* ---------- leaderboards: review and remove scores ---------- */
+const LB={gambit:{name:'Gambit',col:'gambit_scores',today:()=>{const b=new Date(2026,10,9),n=new Date();return Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-b)/864e5)},
+    day:r=>r.dayBest,dayOk:(r,t)=>r.day===t&&r.dayBest>0,best:r=>r.best,meta:(r,d)=>{const t=d?r.dayTime:r.bestTime;return t?Math.round(t)+'s':''},at:r=>r.updatedAt||r.playedAt},
+  dropface:{name:'Dropface',col:'dropface_scores',today:()=>{const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')},
+    day:r=>r.dayScore,dayOk:(r,t)=>r.day===t&&r.dayScore!=null,best:r=>r.best,meta:()=>'',at:r=>r.at}};
+function watchLb(){if(lbSubs||!db)return;lbSubs=[];$('lbNote').textContent='Loading…';
+  for(const k of Object.keys(LB))lbSubs.push(db.collection(LB[k].col).orderBy('best','desc').limit(500).onSnapshot(r=>{lbData[k]=r.docs.map(d=>Object.assign({_id:d.id},d.data()));paintLb()},e=>{$('lbNote').textContent="Couldn't load: "+(e&&e.message||e)}));
+  lbSubs.push(db.collection('blocked').onSnapshot(r=>{lbBlocked=r.docs.map(d=>Object.assign({_id:d.id},d.data()));paintLb()},()=>{}));}
+async function lbRemove(k,r){const who=r.ini||'Nameless';
+  if(!await ask('Remove '+who+"'s score?","This deletes their "+LB[k].name+' score and blocks this player from posting scores again. You can unblock them below.','Remove and block'))return;
+  try{await db.doc('blocked/'+r._id).set({ini:r.ini||'',game:k,best:LB[k].best(r)||0,day:LB[k].day(r)||0,at:Date.now()});await db.doc(LB[k].col+'/'+r._id).delete();msg('Removed '+who+' and blocked them.','ok')}
+  catch(e){msg("Couldn't remove: "+(e.message||e),'err')}}
+async function lbUnblock(b){try{await db.doc('blocked/'+b._id).delete();msg('Unblocked '+(b.ini||'player')+'.','ok')}catch(e){msg("Couldn't unblock: "+(e.message||e),'err')}}
+function paintLb(){const g=LB[lbGame],rows=lbData[lbGame],t=g.today();$('lbNote').textContent=rows.length+' players';
+  const ch=$('lbGames');ch.replaceChildren();for(const k of Object.keys(LB)){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=LB[k].name;b.setAttribute('aria-pressed',String(k===lbGame));b.onclick=()=>{lbGame=k;paintLb()};ch.append(b)}
+  const list=(el,items,score,daily)=>{el.replaceChildren();if(!items.length){el.append(Object.assign(document.createElement('p'),{className:'hint',textContent:'No scores yet.'}));return}
+    items.slice(0,25).forEach((r,i)=>{const d=document.createElement('div');d.className='lbrow';
+      d.append(Object.assign(document.createElement('span'),{className:'rk',textContent:i+1}),Object.assign(document.createElement('span'),{className:'ini'+(r.ini?'':' none'),textContent:r.ini||'Nameless'}));
+      const m=[g.meta(r,daily),g.at(r)?when(g.at(r)):''].filter(Boolean).join(' · ');d.append(Object.assign(document.createElement('span'),{className:'meta',textContent:m}));
+      d.append(Object.assign(document.createElement('span'),{className:'sc',textContent:fmtN(score(r))}));
+      const x=Object.assign(document.createElement('button'),{type:'button',textContent:'Remove'});x.onclick=()=>lbRemove(lbGame,r);d.append(x);el.append(d)})};
+  list($('lbToday'),rows.filter(r=>g.dayOk(r,t)).sort((a,b)=>g.day(b)-g.day(a)),g.day,true);
+  list($('lbAll'),rows.filter(r=>g.best(r)>0).sort((a,b)=>g.best(b)-g.best(a)),g.best,false);
+  const bl=$('lbBlocked');bl.replaceChildren();if(!lbBlocked.length){bl.append(Object.assign(document.createElement('p'),{className:'hint',textContent:'Nobody is blocked.'}))}
+  for(const b of lbBlocked){const d=document.createElement('div');d.className='lbrow';
+    d.append(Object.assign(document.createElement('span'),{className:'ini'+(b.ini?'':' none'),textContent:b.ini||'Nameless'}),Object.assign(document.createElement('span'),{className:'meta',textContent:[(LB[b.game]||{}).name,b.best?'best '+fmtN(b.best):'',b.at?'blocked '+when(b.at):''].filter(Boolean).join(' · ')}));
+    const u=Object.assign(document.createElement('button'),{type:'button',className:'un',textContent:'Unblock'});u.style.marginLeft='auto';u.onclick=()=>lbUnblock(b);d.append(u);bl.append(d)}}
 const FB_RATE={1:'😕',2:'😐',3:'🙂',4:'😍'}, FB_GAME={site:['Dailycade','#c49bff'],gambit:['Gambit','var(--gambit)'],dropface:['Dropface','var(--dropface)']};
 function device(ua){ua=ua||'';const os=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)?'iPad':/Android/.test(ua)?'Android':/Mac OS X/.test(ua)?'Mac':/Windows/.test(ua)?'Windows':/Linux/.test(ua)?'Linux':'Other';
   const br=/CriOS|Chrome\//.test(ua)&&!/Edg/.test(ua)?'Chrome':/FxiOS|Firefox/.test(ua)?'Firefox':/Edg/.test(ua)?'Edge':/Safari/.test(ua)?'Safari':'Browser';return os+' · '+br}
@@ -404,7 +453,7 @@ function paintFb(){
     ctx.append([device(r.ua),r.viewport,r.standalone?'Home screen app':'',r.theme==='dark'?'Dark mode':'',r.page].filter(Boolean).join(' · '));
     ctx.title=r.ua||'';it.append(ctx);list.append(it)}
 }
-try{if(localStorage.getItem('dc.admin.tab')==='feedback')fbOn=true}catch(e){}
+try{const t=localStorage.getItem('dc.admin.tab');if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true}catch(e){}
 setFb();
 try{const t=localStorage.getItem('dc.admin.tab');if(GAMES[t])game=t}catch(e){}
 load();
@@ -435,6 +484,7 @@ load();
     if(!db){$('offline').hidden=false;return}
     ready=true;
     if(fbOn)watchFb();
+    if(lbOn)watchLb();
     try{db.doc('site_config/home').onSnapshot(sn=>{hiddenList=sn.exists&&Array.isArray(sn.data().hidden)?sn.data().hidden:[];paintVis()},()=>{})}catch(e){}
     load();
   }
