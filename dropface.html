@@ -519,6 +519,7 @@ body.athome{overflow:hidden}
 #openBadges,.hnav [data-go="openBadges"]{display:none!important}
 /* ---- summary page (Gambit game-summary style): big score, a tick for every landing, stat rows ---- */
 .sumv2{container-type:inline-size;gap:28px}
+.sdiv{flex:none;width:100%;height:1px;margin:0;border:0;background:rgba(255,255,255,.12)} /* divider between summary sections */
 .sumv2 .ssub{margin:-16px 0 0;color:var(--muted);font-size:1rem}
 .sumv2 i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.62rem;color:var(--muted)}
 .sbig{display:flex;align-items:center;gap:16px;min-width:0}
@@ -1741,9 +1742,10 @@ function openSummary(){
     li.append(sq,el('span','sl',l),el('b',null,v));
     if(fn){ li.classList.add('link'); li.tabIndex=0; li.setAttribute('role','button'); li.setAttribute('aria-label',`${l}: ${v}. See all achievements`); li.onclick=fn; li.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fn(); } }; }
     ul.appendChild(li); });
-  body.appendChild(ul);
+  body.appendChild(el('hr','sdiv')); body.appendChild(ul); // light gray line between sections
   // today's achievements as cards in a row that scrolls sideways
   if(todays.length){
+    body.appendChild(el('hr','sdiv'));
     body.appendChild(el('p','eyebrow',`Achievements today · +${achPts().toLocaleString()} pts`));
     const grid=el('div','achgrid');
     todays.forEach(({b,n})=>{ const c=el('div','acard'); c.style.setProperty('--c',`var(${b.c})`);
