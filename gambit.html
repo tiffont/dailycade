@@ -613,6 +613,7 @@ body.is-playing .mutebtn{display:none} /* sound settings live in the home header
 .slist .sl{flex:1;font-size:1.05rem}
 .slist b{font-family:var(--font-mono);font-weight:700;font-size:1rem;color:var(--c);font-variant-numeric:tabular-nums}
 .snote{margin:-10px 0 0;color:var(--muted);font-size:.85rem}
+.sdiv{flex:none;align-self:stretch;width:auto;height:1px;margin:0 -24px;border:0;background:rgba(255,255,255,.12)} /* divider between summary sections, edge to edge (same as Dropface) */
 #over .drop{margin-top:4px}
 #challengeBtn{transition:background .2s,color .2s,box-shadow .2s}
 #challengeBtn.copied{background:var(--mint);color:var(--mint-ink);box-shadow:0 4px 0 var(--btn-edge)}
@@ -954,8 +955,10 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
       <div class="sticks" id="oTicks" aria-hidden="true"></div>
       <div class="srate"><i>Hit rate</i><span><span id="oThrown"></span><b id="oHit">0%</b></span></div>
     </div>
+    <hr class="sdiv">
     <ul class="slist" id="oFacts"></ul>
     <div class="oach" id="oAch" hidden></div>
+    <hr class="sdiv">
     <p class="snote" id="oNote" hidden></p>
     <button class="drop go2" id="practiceBtn" hidden>Play again</button>
     <button class="drop go2" id="dailyBtn" hidden>Daily challenge</button>
