@@ -1390,6 +1390,8 @@ function resume(){if(S.mode!=='pause')return;S.mode=S.prev||'play';S.prev=null;l
 function endRun(){S=fresh();pieces=[];sparks=[];countEl.replaceChildren();$('#call').classList.remove('show');hud={};ambient=null}
 // the summary slides up over the finished game; closing it goes back to the home screen
 $('#over').addEventListener('close',()=>{if(S.mode==='ending'){S.mode='over';setBar();updateHUD()}});
+// on phones the summary slides down before it really closes: switch to the home screen as soon as it starts, so home is already there underneath
+new MutationObserver(()=>{if($('#over').classList.contains('closing')&&S.mode==='ending'){S.mode='over';setBar();updateHUD()}}).observe($('#over'),{attributes:true,attributeFilter:['class']});
 function gameOver(){
   S.mode='ending'; S.cur=null; stroke=null; SFX.over();
   if(!PREVIEW&&window.DCTrack)DCTrack('slice',S.practice?'finish_practice':'finish_daily');

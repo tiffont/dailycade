@@ -2652,6 +2652,8 @@ cv.addEventListener('pointerdown',()=>SFX.ensure(),{capture:true});
 for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,()=>SFX.ensure(),{capture:true});
 $('#helpFb').addEventListener('click',()=>{ if(window.DCFeedback) DCFeedback.open({game:'gambit',dark:true}); });
 $('#over').addEventListener('close',()=>{if(holdBoard){holdBoard=false;setBar();updateHUD()}});
+// on phones the summary slides down before it really closes: switch to the home screen as soon as it starts, so home is already there underneath
+new MutationObserver(()=>{if(holdBoard&&$('#over').classList.contains('closing')){holdBoard=false;setBar();updateHUD()}}).observe($('#over'),{attributes:true,attributeFilter:['class']});
 $('#sumBtn').addEventListener('click',()=>{const m=summaryNow();if(!m)return;fillOver(m);try{$('#over').showModal()}catch(e){}});
 $('#sumIcon').addEventListener('click',()=>{SFX.ensure();SFX.click();const m=dailySumNow();if(!m)return;fillOver(m);try{$('#over').showModal()}catch(e){}});
 const ICON_PRACTICE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>';
