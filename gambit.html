@@ -389,7 +389,8 @@ body:not(.is-playing) .scrim.b{display:none}
 .drop.go2.daily:not(:disabled):active{transform:translateY(3px);height:61px;margin-bottom:-1px;border-bottom-width:4px;box-shadow:none}
 @keyframes dailyRing{to{--ang:360deg}}
 #oIni:empty{display:none}
-#practiceBtn:not([hidden])~#challengeBtn{margin-top:-18px} /* Challenge a friend tucks under Play again */
+#practiceBtn:not([hidden])~.dcrow{margin-top:-12px} /* 16px of space under Play again's raised edge, same as Slice and Dropface */
+#over .dcrow #challengeBtn{margin-top:0!important} /* Challenge a friend tucks under Play again */
 /* locked daily (timer): same shape as the active button, in greyscale */
 #go.daily:disabled{height:64px;margin-bottom:-4px;border:3px solid transparent;border-bottom-width:7px;box-shadow:none;color:#5c5c5c;opacity:1;
   background:linear-gradient(#e4e4e2,#e4e4e2) padding-box,linear-gradient(to top,rgba(0,0,0,.32) 0 4px,transparent 4px) border-box,
