@@ -8,7 +8,7 @@ import { Resvg } from '@resvg/resvg-js';
 const GAMES = {
   gambit:   { name: 'Gambit',   tag: 'Swipe, curve, stack power-ups. Survive the fall.', blob: '#9deba8', accent: '#9deba8' },
   dropface: { name: 'Dropface', tag: 'Ten boards, one ball. Call where it lands.',       blob: '#c49bff', accent: '#c49bff' },
-  slice:    { name: 'Slice',    tag: 'Things fly at you. Try to cut them perfectly in half.', blob: '#ff8ad8', accent: '#ff8ad8' },
+  slice:    { name: 'Slice',    tag: 'Things fly at you. Cut them perfectly in half.', blob: '#ff8ad8', accent: '#ff8ad8' },
 };
 
 // Dailycade mark in the brand gradient
