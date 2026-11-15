@@ -85,6 +85,25 @@ body.lbmode main>section:not(#lbCard){display:none!important}
 body.lbmode .dock{display:none!important}
 body.stmode main>section:not(#stCard){display:none!important}
 body.stmode .dock{display:none!important}
+body.usmode main>section:not(#usCard){display:none!important}
+body.usmode .dock{display:none!important}
+.usvc{background:#fff;border-radius:14px;padding:16px;margin-top:12px}
+.usvc .uh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.usvc .uh b{font-size:16px}.usvc .uh span.plan{color:var(--muted);font-size:13px}
+.upill{margin-left:auto;font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;background:#e6f6e8;color:#1d6b2a}
+.upill.warn{background:#fff3d6;color:#8a5a00}.upill.none{background:var(--soft);color:var(--muted)}.upill.bad{background:#fde3e1;color:#a3261b}
+.urow{margin-top:14px}
+.urow .ut{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.urow .ut span{color:var(--muted);font-variant-numeric:tabular-nums}
+.ubar{height:8px;border-radius:4px;background:var(--soft);margin-top:6px;overflow:hidden}
+.ubar i{display:block;height:100%;border-radius:4px;background:#5bbf6a;transition:width .4s}
+.ubar i.warn{background:#e5a50a}.ubar i.bad{background:#e5484d}
+.urow.check .ut span a{color:var(--ink)}
+.usvc .uup{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.usvc .uup a{color:var(--ink);font-weight:600}
+#usageWarn{display:flex;align-items:center;gap:10px;background:#fde3e1;color:#a3261b;border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;font-weight:600}
+#usageWarn.warn{background:#fff3d6;color:#8a5a00}
+#usageWarn button{margin-left:auto;border:0;background:none;color:inherit;font:inherit;text-decoration:underline;cursor:pointer}
 .sttable{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:14px;margin-top:6px}
 .sttable th{font-size:12px;font-weight:600;color:var(--muted);text-align:right;padding:0 10px}
 .sttable th:first-child,.sttable td:first-child{text-align:left}
@@ -137,6 +156,7 @@ footer{height:20px}
     <form id="loginForm" style="display:flex;gap:8px;flex-wrap:wrap"><input type="email" id="loginEmail" required placeholder="you@example.com" autocomplete="email" style="flex:1;min-width:200px"><button class="btn" type="submit" id="loginGo">Email me a link</button></form>
   </section>
   <p class="whoami" id="whoami" hidden></p>
+  <div id="usageWarn" hidden></div>
   <div class="tabs" role="tablist" id="tabs"></div>
 
   <section class="card" aria-labelledby="todayH">
@@ -165,6 +185,11 @@ footer{height:20px}
   <section class="card" aria-labelledby="tuneH">
     <h2 id="tuneH">Tuning <span class="note">Changes stay a draft until you publish</span></h2>
     <div id="knobs"></div>
+  </section>
+  <section class="card" id="usCard" aria-labelledby="usH" hidden>
+    <h2 id="usH">Usage <span class="note" id="usNote"></span></h2>
+    <p class="hint" style="margin:0 0 4px">How close each service is to its free plan's limits. Bars fill as usage grows: amber at 70%, red at 90% means it's time to subscribe. Some numbers only the service's own dashboard can show; those rows link there.</p>
+    <div id="usList"></div>
   </section>
   <section class="card" id="stCard" aria-labelledby="stH" hidden>
     <h2 id="stH">Stats <span class="note" id="stNote"></span></h2>
@@ -269,14 +294,16 @@ function ask(title,body,yes){return new Promise(res=>{$('mT').textContent=title;
 
 /* ---------- tabs ---------- */
 function paintTabs(){const t=$('tabs');t.replaceChildren();
-  for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game&&!fbOn&&!lbOn&&!stOn));
-    b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{fbOn=false;lbOn=false;stOn=false;setFb();try{localStorage.setItem('dc.admin.tab',k)}catch(e){}if(k!==game){game=k;load()}else paintTabs()};t.append(b)}
-  const f=document.createElement('button');f.type='button';f.setAttribute('role','tab');f.setAttribute('aria-selected',String(fbOn&&!stOn));f.style.setProperty('--c','linear-gradient(120deg,#ff8ad8,#c49bff,#7cc8ff,#9deba8)');
-  f.innerHTML='<i></i>Feedback';f.onclick=()=>{fbOn=true;lbOn=false;stOn=false;try{localStorage.setItem('dc.admin.tab','feedback')}catch(e){}setFb();paintTabs();watchFb()};t.prepend(f);
-  const l=document.createElement('button');l.type='button';l.setAttribute('role','tab');l.setAttribute('aria-selected',String(lbOn&&!stOn));l.style.setProperty('--c','#f2c14e');
-  l.innerHTML='<i></i>Leaderboards';l.onclick=()=>{lbOn=true;fbOn=false;stOn=false;try{localStorage.setItem('dc.admin.tab','leaderboards')}catch(e){}setFb();paintTabs();watchLb()};f.after(l);
-  const st=document.createElement('button');st.type='button';st.setAttribute('role','tab');st.setAttribute('aria-selected',String(stOn));st.style.setProperty('--c','#7cc8ff');
-  st.innerHTML='<i></i>Stats';st.onclick=()=>{stOn=true;fbOn=false;lbOn=false;try{localStorage.setItem('dc.admin.tab','stats')}catch(e){}setFb();paintTabs();loadSt()};l.after(st);
+  for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game&&!fbOn&&!lbOn&&!stOn&&!usOn));
+    b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{fbOn=false;lbOn=false;stOn=false;usOn=false;setFb();try{localStorage.setItem('dc.admin.tab',k)}catch(e){}if(k!==game){game=k;load()}else paintTabs()};t.append(b)}
+  const f=document.createElement('button');f.type='button';f.setAttribute('role','tab');f.setAttribute('aria-selected',String(fbOn&&!stOn&&!usOn));f.style.setProperty('--c','linear-gradient(120deg,#ff8ad8,#c49bff,#7cc8ff,#9deba8)');
+  f.innerHTML='<i></i>Feedback';f.onclick=()=>{fbOn=true;lbOn=false;stOn=false;usOn=false;try{localStorage.setItem('dc.admin.tab','feedback')}catch(e){}setFb();paintTabs();watchFb()};t.prepend(f);
+  const l=document.createElement('button');l.type='button';l.setAttribute('role','tab');l.setAttribute('aria-selected',String(lbOn&&!stOn&&!usOn));l.style.setProperty('--c','#f2c14e');
+  l.innerHTML='<i></i>Leaderboards';l.onclick=()=>{lbOn=true;fbOn=false;stOn=false;usOn=false;try{localStorage.setItem('dc.admin.tab','leaderboards')}catch(e){}setFb();paintTabs();watchLb()};f.after(l);
+  const st=document.createElement('button');st.type='button';st.setAttribute('role','tab');st.setAttribute('aria-selected',String(stOn&&!usOn));st.style.setProperty('--c','#7cc8ff');
+  st.innerHTML='<i></i>Stats';st.onclick=()=>{stOn=true;fbOn=false;lbOn=false;usOn=false;try{localStorage.setItem('dc.admin.tab','stats')}catch(e){}setFb();paintTabs();loadSt()};l.after(st);
+  const us=document.createElement('button');us.type='button';us.setAttribute('role','tab');us.setAttribute('aria-selected',String(usOn));us.style.setProperty('--c',usLevel>=2?'#e5484d':usLevel===1?'#e5a50a':'#5bbf6a');
+  us.innerHTML='<i></i>Usage';us.onclick=()=>openUsage();st.after(us);
   const on=t.querySelector('[aria-selected="true"]');if(on&&t.scrollWidth>t.clientWidth)t.scrollTo({left:Math.max(0,on.offsetLeft-t.offsetLeft-20),behavior:'smooth'})}
 
 /* ---------- knobs ---------- */
@@ -421,9 +448,60 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidd
 /* ---------- beta feedback ---------- */
 let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
 let lbOn=false, lbGame='gambit', lbData={gambit:[],dropface:[],slice:[]}, lbBlocked=[], lbSubs=null;
-function setFb(){document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn}
+function setFb(){document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn}
 /* ---------- stats: daily counts from the track() function ---------- */
 let stOn=false, stRows=[], stGame='all', stT=0;
+/* ---------- usage: how close each service is to its free plan ---------- */
+let usOn=false, usLevel=0, usData=null, usT=0;
+function openUsage(){usOn=true;fbOn=false;lbOn=false;stOn=false;try{localStorage.setItem('dc.admin.tab','usage')}catch(e){}setFb();paintTabs();loadUsage()}
+const MB=1024*1024;
+const SERVICES=()=>{const d=usData||{};return[
+  {name:'Supabase',what:'Database, sign-ins and live leaderboards',plan:'Free plan',up:'Pro, from $25/month',upUrl:'https://supabase.com/dashboard/org/_/billing',
+   dash:'https://supabase.com/dashboard/project/qtcxlnchxztinnzbuwmd/settings/billing/usage',rows:[
+    {l:'Database size',v:d.db_bytes,max:500*MB,fmt:v=>(v/MB).toFixed(1)+' MB',maxTxt:'500 MB'},
+    {l:'Monthly active players',v:d.mau,max:50000,fmt:v=>fmtN(v),maxTxt:'50,000',sub:d.players_today!=null?fmtN(d.players_today)+' played today':''},
+    {l:'Data sent out',check:'5 GB a month'},
+    {l:'People connected at once',check:'200 at a time'}]},
+  {name:'Vercel',what:'Hosting, share cards and analytics',plan:'Hobby (free)',up:'Pro, $20/month',upUrl:'https://vercel.com/tiffonts-projects/~/settings/billing',
+   dash:'https://vercel.com/tiffonts-projects/~/usage',rows:[
+    {l:'Data transfer',check:'100 GB a month'},
+    {l:'Function runs (share cards, challenge links)',check:'1,000,000 a month'},
+    {l:'Web Analytics events',check:'50,000 a month'}]},
+  {name:'Resend',what:'Feedback email alerts',plan:'Free plan',up:'Pro, $20/month',upUrl:'https://resend.com/settings/billing',
+   dash:'https://resend.com/emails',rows:[
+    {l:'Emails today',v:d.emails_today,max:100,fmt:v=>fmtN(v),maxTxt:'100'},
+    {l:'Emails this month',v:d.emails_month,max:3000,fmt:v=>fmtN(v),maxTxt:'3,000'}]}]};
+const lvlOf=p=>p>=.9?2:p>=.7?1:0;
+async function loadUsage(){if(!window.DCSB)return;if(usOn)$('usNote').textContent='Checking…';
+  try{const r=await DCSB.rpc('usage_summary');if(r.error)throw r.error;usData=r.data||{};paintUsage()}
+  catch(e){if(usOn)$('usNote').textContent="Couldn't check usage: "+(e.message||e)}
+  clearTimeout(usT);usT=setTimeout(()=>{if(document.visibilityState==='visible')loadUsage()},5*60*1000)}
+function paintUsage(){
+  const svcs=SERVICES();let worst=0,worstSvc=null;
+  const list=$('usList');list.replaceChildren();
+  for(const sv of svcs){let lv=0;
+    const box=document.createElement('div');box.className='usvc';
+    const h=document.createElement('div');h.className='uh';
+    h.append(Object.assign(document.createElement('b'),{textContent:sv.name}),Object.assign(document.createElement('span'),{className:'plan',textContent:sv.what+' · '+sv.plan}));
+    const pill=document.createElement('span');h.append(pill);box.append(h);
+    for(const r of sv.rows){const row=document.createElement('div');row.className='urow'+(r.check?' check':'');const t=document.createElement('div');t.className='ut';
+      t.append(Object.assign(document.createElement('div'),{textContent:r.l}));const val=document.createElement('span');
+      if(r.check){val.append('Free limit '+r.check+' · ');const a=document.createElement('a');a.href=sv.dash;a.target='_blank';a.rel='noopener';a.textContent='Check';val.append(a);t.append(val);row.append(t)}
+      else{const v=Number(r.v||0),p=r.max?v/r.max:0,l=lvlOf(p);lv=Math.max(lv,l);
+        val.textContent=(r.v==null?'–':r.fmt(v))+' of '+r.maxTxt+(r.v==null?'':' · '+Math.round(p*100)+'%');t.append(val);
+        const bar=document.createElement('div');bar.className='ubar';const fill=document.createElement('i');fill.className=['','warn','bad'][l];fill.style.width=Math.min(100,Math.max(r.v?1.5:0,p*100))+'%';bar.append(fill);row.append(t,bar);
+        if(r.sub)row.append(Object.assign(document.createElement('div'),{className:'hint',textContent:r.sub,style:'margin:4px 0 0;font-size:12px'}))}
+      box.append(row)}
+    const live=sv.rows.some(r=>!r.check);pill.className='upill'+(lv===2?' bad':lv===1?' warn':live?'':' none');pill.textContent=lv===2?'Upgrade needed':lv===1?'Getting close':live?'OK on free plan':'Check its dashboard';
+    const up=document.createElement('div');up.className='uup';up.append(lv?'Time to subscribe: ':'When you outgrow it: ');const a=document.createElement('a');a.href=sv.upUrl;a.target='_blank';a.rel='noopener';a.textContent=sv.up+' ›';up.append(a);box.append(up);
+    list.append(box);if(lv>worst){worst=lv;worstSvc=sv.name}}
+  if(usOn)$('usNote').textContent=usData&&usData.checked_at?'Checked '+new Date(usData.checked_at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'';
+  // banner above the tabs when something is close to its limit, wherever you are in admin
+  const w=$('usageWarn');w.hidden=!worst;w.className=worst===1?'warn':'';
+  if(worst){w.replaceChildren(document.createTextNode((worst===2?'⚠️ '+worstSvc+' is almost at its free limit. Time to subscribe.':worstSvc+' is getting close to its free limit.')));
+    const b=document.createElement('button');b.type='button';b.textContent='See usage';b.onclick=openUsage;w.append(b)}
+  if(usLevel!==worst){usLevel=worst;paintTabs()}
+}
 async function loadSt(){if(!window.DCSB)return;$('stNote').textContent='Loading…';
   try{const r=await DCSB.rpc('stats_summary',{p_days:30});if(r.error)throw r.error;stRows=r.data||[];paintSt()}catch(e){$('stNote').textContent="Couldn't load stats: "+(e.message||e)}
   clearTimeout(stT);stT=setTimeout(()=>{if(stOn&&document.visibilityState==='visible')loadSt()},60000)}
@@ -504,7 +582,7 @@ function paintFb(){
     ctx.append([device(r.ua),r.viewport,r.standalone?'Home screen app':'',r.theme==='dark'?'Dark mode':'',r.page].filter(Boolean).join(' · '));
     ctx.title=r.ua||'';it.append(ctx);list.append(it)}
 }
-try{const t=localStorage.getItem('dc.admin.tab');if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true}catch(e){}
+try{const t=localStorage.getItem('dc.admin.tab');if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true;if(t==='usage')usOn=true}catch(e){}
 setFb();
 try{const t=localStorage.getItem('dc.admin.tab');if(GAMES[t])game=t}catch(e){}
 load();
@@ -537,6 +615,7 @@ load();
     if(fbOn)watchFb();
     if(lbOn)watchLb();
     if(stOn)loadSt();
+    loadUsage(); // also powers the warning banner on every tab
     try{db.doc('site_config/home').onSnapshot(sn=>{hiddenList=sn.exists&&Array.isArray(sn.data().hidden)?sn.data().hidden:[];paintVis()},()=>{})}catch(e){}
     load();
   }
