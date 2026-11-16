@@ -218,6 +218,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6p
 @media (max-width:940px){.cab.tv{aspect-ratio:auto;width:100%;max-width:300px;justify-self:center;margin:0 auto}.cab.tv .cabimg{display:block}.cab.tv .crt{display:none}}
 @media (prefers-reduced-motion:reduce){.float{position:relative;z-index:1;animation:none}}
 main .panel[hidden],.dots button[hidden],.games a[hidden]{display:none!important}
+html.noboards .daybox{display:none!important} /* admin can turn off the Today's daily challenge cards */
 /* ---- dark mode (toggle in the nav; follows the device until you pick) ---- */
 .theme{width:36px;height:36px;margin:-8px -8px -8px auto;border:0;padding:0;border-radius:50%;background:transparent;color:#9a9ea4;display:grid;place-items:center;cursor:pointer;transition:color .15s,background .15s}
 @media (hover:hover){.theme:hover{color:var(--ink);background:var(--soft)}}
@@ -486,8 +487,10 @@ function applyHidden(list){
   paint();
 }
 try{applyHidden(JSON.parse(localStorage.getItem('dc.hidden')||'[]'))}catch(e){}
+function applyBoards(on){document.documentElement.classList.toggle('noboards',on===false);try{localStorage.setItem('dc.boards',on===false?'0':'1')}catch(e){}}
+try{applyBoards(localStorage.getItem('dc.boards')!=='0')}catch(e){}
 (async()=>{let db=null;try{if(window.claude&&window.claude.use)db=await window.claude.use('db')}catch(e){}
-  if(db)try{db.doc('site_config/home').onSnapshot(sn=>applyHidden(sn.exists?sn.data().hidden:[]),()=>{})}catch(e){}})();
+  if(db)try{db.doc('site_config/home').onSnapshot(sn=>{const d=sn.exists?sn.data():{};applyHidden(d.hidden||[]);applyBoards(d.boards!==false)},()=>{})}catch(e){}})();
 
 /* Play game: switch the game on like a tube TV when it opens */
 document.querySelectorAll('a.btn[href$=".html"], .games a[href$=".html"]').forEach(a=>a.addEventListener('click',e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;

@@ -201,6 +201,7 @@ footer{height:20px}
   <section class="card" id="lbCard" aria-labelledby="lbH" hidden>
     <h2 id="lbH">Leaderboards <span class="note" id="lbNote"></span></h2>
     <p class="hint" style="margin:0 0 14px">Impossible scores are rejected automatically. Remove anything that still looks wrong: it deletes that player's score and blocks them from posting again.</p>
+    <div class="row" style="margin:0 0 16px"><span class="pill" id="bdPill"></span><span id="bdTxt"></span><button class="btn ghost small" id="bdBtn" type="button" style="margin-left:auto"></button></div>
     <div class="chips" id="lbGames"></div>
     <div class="lbcols"><div><h3>Today</h3><div id="lbToday"></div></div><div><h3>All time</h3><div id="lbAll"></div></div></div>
     <h3 style="margin:22px 0 4px;font-size:14px">Blocked players</h3><div id="lbBlocked"></div>
@@ -390,7 +391,19 @@ $('visBtn').onclick=async()=>{
   const off=hiddenList.includes(game),g=G().name;
   if(!await ask(off?'Put '+g+' back?':'Hide '+g+'?',off?g+' comes back on the homepage and is playable again.':g+' comes off the homepage and its page shows a "taking a break" notice. Scores, settings and the daily count are kept, so you can put it back any time.',off?'Put back':'Hide'))return;
   const next=off?hiddenList.filter(x=>x!==game):[...hiddenList,game];
-  try{await db.doc('site_config/home').set({hidden:next,updatedAt:Date.now()});msg(g+(off?' is back on the site.':' is hidden from the site.'),'ok')}
+  try{await db.doc('site_config/home').set({hidden:next,boards:boardsOn,updatedAt:Date.now()});msg(g+(off?' is back on the site.':' is hidden from the site.'),'ok')}
+  catch(e){msg("Couldn't save. Only the site owner can do this.",'err')}};
+
+/* ---------- homepage "Today's daily challenge" cards on or off ---------- */
+let boardsOn=true;
+function paintBoards(){$('bdPill').textContent=boardsOn?'Showing':'Hidden';$('bdPill').className='pill '+(boardsOn?'live':'sched');
+  $('bdTxt').textContent=boardsOn?" The homepage shows each game's Today's daily challenge card (top player and top score).":" The Today's daily challenge cards are off the homepage. Scores still save and the leaderboards below keep working.";
+  $('bdBtn').textContent=boardsOn?'Hide homepage cards':'Show homepage cards'}
+paintBoards();
+$('bdBtn').onclick=async()=>{
+  if(!db){msg("Not connected to the database. Reload the page and sign in again.",'err');return}
+  const on=!boardsOn;
+  try{await db.doc('site_config/home').set({hidden:hiddenList,boards:on,updatedAt:Date.now()});msg(on?"Today's daily challenge cards are back on the homepage.":"Today's daily challenge cards are hidden on the homepage.",'ok')}
   catch(e){msg("Couldn't save. Only the site owner can do this.",'err')}};
 
 /* ---------- actions ---------- */
@@ -616,7 +629,7 @@ load();
     if(lbOn)watchLb();
     if(stOn)loadSt();
     loadUsage(); // also powers the warning banner on every tab
-    try{db.doc('site_config/home').onSnapshot(sn=>{hiddenList=sn.exists&&Array.isArray(sn.data().hidden)?sn.data().hidden:[];paintVis()},()=>{})}catch(e){}
+    try{db.doc('site_config/home').onSnapshot(sn=>{hiddenList=sn.exists&&Array.isArray(sn.data().hidden)?sn.data().hidden:[];boardsOn=!(sn.exists&&sn.data().boards===false);paintVis();paintBoards()},()=>{})}catch(e){}
     load();
   }
   lock(true); // nothing can be changed until the sign-in check passes
