@@ -25,7 +25,7 @@ export function GET(req) {
   if (hasScore) q.set('s', String(s));
   if (n) q.set('n', String(n));
   if (ini) q.set('i', ini);
-  q.set('v', '2'); // card design version: bump to refresh cached previews
+  q.set('v', '3'); // card design version: bump to refresh cached previews
   const image = `${url.origin}/api/og?${q}`;
   const dest = `${url.origin}${g.page}?via=challenge`;
 

@@ -40,8 +40,8 @@ export async function GET(req) {
   const hasScore = url.searchParams.has('s');
 
   const file = p => fetch(new URL(p, url)).then(r => r.arrayBuffer());
-  const [j300, j600, j700, j800, wide, hand] = await Promise.all([
-    file('/og/jakarta-300.ttf'), file('/og/jakarta-600.ttf'), file('/og/jakarta-700.ttf'), file('/og/jakarta-800.ttf'),
+  const [j300, j500, j600, j700, j800, wide, hand] = await Promise.all([
+    file('/og/jakarta-300.ttf'), file('/og/jakarta-500.ttf'), file('/og/jakarta-600.ttf'), file('/og/jakarta-700.ttf'), file('/og/jakarta-800.ttf'),
     file('/og/archivo-wide-900.ttf'), file(`/og/handheld-${key}.png`),
   ]);
   const handSrc = 'data:image/png;base64,' + Buffer.from(hand).toString('base64');
@@ -71,9 +71,8 @@ export async function GET(req) {
         h('div', { marginTop: 10, width: 600, fontSize: 28, fontWeight: 300, color: '#b8bcc2', lineHeight: 1.3 }, n ? `Daily challenge No. ${n}` : g.tag))
     : h('div', { position: 'absolute', left: 72, top: 64, width: 600, flexDirection: 'column' },
         brand,
-        h('div', { marginTop: 140 }, logo(fit(112, 580))),
-        h('div', { marginTop: 34, width: 540, fontSize: 32, fontWeight: 300, color: '#b8bcc2', lineHeight: 1.35 }, g.tag),
-        h('div', { marginTop: 22, fontSize: 32, fontWeight: 300, color: '#b8bcc2', lineHeight: 1.35 }, 'New challenge every day.'));
+        h('div', { marginTop: 160 }, logo(fit(112, 580))),
+        h('div', { marginTop: 34, width: 540, fontSize: 32, fontWeight: 500, color: '#b8bcc2', lineHeight: 1.35 }, g.tag));
 
   const tree = h('div', { width: '100%', height: '100%', background: '#0b0b0b', color: '#fff', fontFamily: 'Jakarta', position: 'relative', overflow: 'hidden' },
     // the game's color shape, cropped off the right edge like the homepage card
@@ -85,6 +84,7 @@ export async function GET(req) {
     width: 1200, height: 630,
     fonts: [
       { name: 'Jakarta', data: j300, weight: 300, style: 'normal' },
+      { name: 'Jakarta', data: j500, weight: 500, style: 'normal' },
       { name: 'Jakarta', data: j600, weight: 600, style: 'normal' },
       { name: 'Jakarta', data: j700, weight: 700, style: 'normal' },
       { name: 'Jakarta', data: j800, weight: 800, style: 'normal' },
