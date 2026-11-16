@@ -1484,6 +1484,7 @@ function rollPicks(){
 const sheetMQ=matchMedia('(max-width:600px)');
 function closeModal(d){
   if(!d.open) return;
+  if(d.id==='sumModal') sumToHome();
   if(!sheetMQ.matches||reduce){ d.close(); return; }
   d.classList.add('closing');
   d.addEventListener('animationend',()=>{ d.classList.remove('closing'); d.close(); },{once:true});
@@ -1784,8 +1785,10 @@ function openSummary(){
 // closing the Game Summary once the game is over (all 3 drops played, no bonus drop waiting) goes back to the home screen;
 // its Play buttons go straight into the next game instead
 let sumSkipHome=false;
-$('sumModal').addEventListener('close',()=>{ if(sumSkipHome){ sumSkipHome=false; return; } if(!$('home').hidden||busy) return;
-  if(day.used>=PER_DAY&&!day.pending&&!bonusPending){ if(mode==='practice') startDaily(); showHome(); } });
+// home is put in place under the summary as soon as it starts closing, so the slide-down reveals home, never the board
+function sumToHome(){ if(sumSkipHome||!$('home').hidden||busy) return;
+  if(day.used>=PER_DAY&&!day.pending&&!bonusPending){ if(mode==='practice') startDaily(); showHome(); } }
+$('sumModal').addEventListener('close',()=>{ sumToHome(); sumSkipHome=false; });
 $('sumBtn').onclick=()=>{ if(!busy) openSummary(); };
 $('howFb').onclick=()=>{ if(window.DCFeedback) DCFeedback.open({game:'dropface',dark:true}); };
 // an owner reset (config/game.at changes) also wipes this device's All-time Drop, achievements and today's drops
