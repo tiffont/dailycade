@@ -407,6 +407,14 @@ html,body{background:#000}
 .howbody{padding:20px 24px 24px;gap:24px}
 .modal.small .howbody{gap:20px}
 @media (max-width:600px){ .mhead{padding-top:calc(16px + env(safe-area-inset-top,0px))} .modal.small .mhead{padding-top:20px} }
+/* phones: the summary is a full-screen page like Gambit's and Slice's. Only the content scrolls; the title and X stay put */
+@media (max-width:600px){
+  #sumModal[open]{display:flex;flex-direction:column;overflow:hidden}
+  #sumModal .mhead{flex:none}
+  #sumModal .mhead::before{display:none} /* no grab handle on a full page */
+  #sumModal #sumBody>*{flex-shrink:0} /* items keep their size; the list scrolls instead */
+  #sumModal #sumBody{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
+}
 .intro{font-size:15px;line-height:1.45}
 .steps .n{border-radius:7px;font-family:var(--font-wide);font-stretch:125%;font-weight:900}
 .steps li+li{border-top-color:var(--panel2)}
