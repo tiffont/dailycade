@@ -1155,9 +1155,10 @@ const OBJ_SYM=['vase','pawn','bell','apple','mushroom','spintop'],OBJ_ASYM=['duc
 const LADDER_V1=[['flat',FLAT_SYM],['flat',FLAT_SYM],['flat',FLAT_ASYM],['solid',SOLID_SYM],['solid',SOLID_ASYM],
   ['object',OBJ_SYM],['object',OBJ_SYM],['object',OBJ_ASYM],['object',OBJ_ASYM],['object',['bust']]];
 
-// every object is 3D now (slice-objects.js): easy (symmetrical) x3, medium x3, hard (lopsided) x3, then a finale
+// every object is 3D now (slice-objects.js). Any of the 45 objects can show up in any of the 10 spots; only the motion gets harder as the game goes on
 const {OBJECTS,OBJ_COLOR,OBJ_NAMES,TIER_EASY,TIER_MED,TIER_HARD,TIER_FINALE}=window.SLICE_LIB;
-const LADDER=[['object',TIER_EASY],['object',TIER_EASY],['object',TIER_EASY],['object',TIER_MED],['object',TIER_MED],['object',TIER_MED],['object',TIER_HARD],['object',TIER_HARD],['object',TIER_HARD],['object',TIER_FINALE]];
+const ALL_OBJ=[...TIER_EASY,...TIER_MED,...TIER_HARD,...TIER_FINALE];
+const LADDER=Array.from({length:10},()=>['object',ALL_OBJ]);
 function makeRun(seed){
   const r=mulberry(hash(seed)),pick=a=>a[Math.floor(r()*a.length)],sg=()=>r()<.5?-1:1;
   const SPIN=[0,0,0,.35,.6,.9,1.3,1.8,2.4,3.1], TUMBLE=[0,0,0,0,0,.7,1,1.4,1.9,2.5], SWAY=[0,0,0,0,0,0,0,.05,.08,.11];
@@ -1451,7 +1452,7 @@ function dailySumNow(){
 const SACH={
   surgeon:{name:'Surgeon',rule:'3+ Perfect cuts in one game',c:'var(--gold-solid)',g:'<path d="M4 20L20 4"/><path d="M14 4h6v6"/>'},
   steady:{name:'Steady hand',rule:'Every cut Close or better',c:'var(--sky)',g:'<path d="M3 12h4l2-5 4 10 2-5h6"/>'},
-  sculptor:{name:'Sculptor',rule:'A Perfect cut on the finale',c:'var(--pink)',g:'<circle cx="12" cy="9" r="5"/><path d="M7 21c.5-4 2.6-6 5-6s4.5 2 5 6"/>'},
+  sculptor:{name:'Finisher',rule:'A Perfect cut on the last object',c:'var(--pink)',g:'<path d="M6 21V4"/><path d="M6 4h12l-2.5 4L18 12H6"/>'},
 };
 let shareSum=null, shareText='';
 function fillOver(m){
