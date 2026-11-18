@@ -272,7 +272,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
           <div>
             <h1>Gambit</h1>
             <p class="lede">Swipe, curve, stack power-ups. Survive the fall.</p>
-            <div class="ctas"><a class="btn" href="gambit.html">Play game
+            <div class="ctas"><a class="btn" href="/gambit">Play game
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></div>
             <div class="daybox">
             <p class="bhead"><svg class="dglobe" viewBox="0 0 24 24" fill="none" stroke="url(#dcGrad)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span>Today's daily challenge</span></p>
@@ -298,7 +298,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
           <div>
             <h1>Dropface</h1>
             <p class="lede">Ten boards, one ball. Call where it lands.</p>
-            <div class="ctas"><a class="btn" href="dropface.html">Play game
+            <div class="ctas"><a class="btn" href="/dropface">Play game
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></div>
             <div class="daybox">
             <p class="bhead"><svg class="dglobe" viewBox="0 0 24 24" fill="none" stroke="url(#dcGrad)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span>Today's daily challenge</span></p>
@@ -324,7 +324,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
           <div>
             <h1>Slice</h1>
             <p class="lede">Things fly at you. Cut them perfectly in half.</p>
-            <div class="ctas"><a class="btn" href="slice.html">Play game
+            <div class="ctas"><a class="btn" href="/slice">Play game
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></div>
             <div class="daybox">
             <p class="bhead"><svg class="dglobe" viewBox="0 0 24 24" fill="none" stroke="url(#dcGrad)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span>Today's daily challenge</span></p>
@@ -461,7 +461,7 @@ allDots.forEach(b=>b.onclick=()=>go(dots.indexOf(b)));
 rail.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();go(cur()+1)}if(e.key==='ArrowLeft'){e.preventDefault();go(cur()-1)}});
 /* pages: home, #contact, #privacy, #do-not-sell */
 const views={privacy:$('privacy'),'do-not-sell':$('do-not-sell'),contact:$('contact')},home=$('top');
-function route(){if(location.hash==='#admin'){location.replace('admin.html');return}const v=views[location.hash.slice(1)];home.hidden=!!v;for(const k in views)views[k].hidden=views[k]!==v;
+function route(){if(location.hash==='#admin'){location.replace('/admin');return}const v=views[location.hash.slice(1)];home.hidden=!!v;for(const k in views)views[k].hidden=views[k]!==v;
   if(v){scrollTo(0,0);document.title={privacy:'Privacy',contact:'Contact','do-not-sell':'Do not sell or share my personal information'}[v.id]+' · Dailycade'}else{document.title='Dailycade – Free Daily Arcade Games';fit();paint();const gi=panels.findIndex(p=>p.id===location.hash.slice(1));if(gi>0)setTimeout(()=>go(gi),50);}}
 addEventListener('hashchange',route);route();
 /* countdown to the next daily game: every game turns over at 12am in the player's own time zone */
@@ -478,7 +478,7 @@ function applyHidden(list){
   const key=JSON.stringify(list.slice().sort()); if(key===lastHidden)return; // the database re-sends settings now and then: only act on a real change
   const first=lastHidden===null; lastHidden=key;
   allPanels.forEach((p,i)=>{if(!p.dataset.base)return;const off=list.includes(p.id);p.hidden=off;allDots[i].hidden=off;
-    document.querySelectorAll('.games a[href="'+p.id+'.html"]').forEach(a=>a.hidden=off)});
+    document.querySelectorAll('.games a[href="/'+p.id+'"]').forEach(a=>a.hidden=off)});
   panels=allPanels.filter(p=>!p.hidden);dots=allDots.filter(d=>!d.hidden);
   try{localStorage.setItem('dc.hidden',JSON.stringify(list))}catch(e){}
   if(!first)rail.scrollTo({left:0}); // only jump back when the set of games really changed
@@ -491,7 +491,7 @@ try{applyBoards(localStorage.getItem('dc.boards')!=='0')}catch(e){}
   if(db)try{db.doc('site_config/home').onSnapshot(sn=>{const d=sn.exists?sn.data():{};applyHidden(d.hidden||[]);applyBoards(d.boards!==false)},()=>{})}catch(e){}})();
 
 /* Play game: switch the game on like a tube TV when it opens */
-document.querySelectorAll('a.btn[href$=".html"], .games a[href$=".html"]').forEach(a=>a.addEventListener('click',e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;
+document.querySelectorAll(['gambit','dropface','slice'].map(g=>`a.btn[href="/${g}"], .games a[href="/${g}"]`).join(',')).forEach(a=>a.addEventListener('click',e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;
   try{sessionStorage.setItem('dc.crton','1')}catch(err){}e.preventDefault();pressSound();setTimeout(()=>{location.href=a.getAttribute('href')},140)}));
 /* Play game: a soft TV power-switch click as the button goes down */
 function pressSound(){try{const ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state!=='running')ac.resume();const t=ac.currentTime+.005;

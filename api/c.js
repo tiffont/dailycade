@@ -3,9 +3,9 @@
 // people who tap the link are sent straight on to the game.
 
 const GAMES = {
-  gambit:   { name: 'Gambit',   page: '/gambit.html',   tag: 'Swipe, curve, stack power-ups. Survive the fall.' },
-  dropface: { name: 'Dropface', page: '/dropface.html', tag: 'Ten boards, one ball. Call where it lands.' },
-  slice:    { name: 'Slice',    page: '/slice.html',    tag: 'Things fly at you. Cut them perfectly in half.' },
+  gambit:   { name: 'Gambit',   page: '/gambit',   tag: 'Swipe, curve, stack power-ups. Survive the fall.' },
+  dropface: { name: 'Dropface', page: '/dropface', tag: 'Ten boards, one ball. Call where it lands.' },
+  slice:    { name: 'Slice',    page: '/slice',    tag: 'Things fly at you. Cut them perfectly in half.' },
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 

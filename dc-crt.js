@@ -39,7 +39,7 @@
     }catch(e){}
   }
   // any link back to the homepage switches the set off first
-  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href="index.html"]');if(!a||e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;e.preventDefault();e.stopPropagation();off('index.html')},true);
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href="/"]');if(!a||e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;e.preventDefault();e.stopPropagation();off('/')},true);
   window.DCCrt={off};
 
   /* ---------- switching on: arriving from a Play game button ---------- */

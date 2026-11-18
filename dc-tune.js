@@ -26,7 +26,7 @@
     try{db.doc('site_config/home').onSnapshot(sn=>{const off=sn.exists&&Array.isArray(sn.data().hidden)&&sn.data().hidden.includes(game);
       if(off&&!el){el=document.createElement('div');el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
         el.style.cssText='position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#0b0b0b;color:#fff;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;padding:24px;text-align:center';
-        el.innerHTML='<div><p style="font-size:1.6rem;font-weight:700;margin:0 0 8px"></p><p style="opacity:.7;margin:0 0 22px">It’s taking a break. Check back soon.</p><a href="index.html" style="display:inline-block;background:#fff;color:#0b0b0b;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:12px">Back to Dailycade</a></div>';
+        el.innerHTML='<div><p style="font-size:1.6rem;font-weight:700;margin:0 0 8px"></p><p style="opacity:.7;margin:0 0 22px">It’s taking a break. Check back soon.</p><a href="/" style="display:inline-block;background:#fff;color:#0b0b0b;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:12px">Back to Dailycade</a></div>';
         el.querySelector('p').textContent=name||game;document.body.appendChild(el)}
       else if(!off&&el){el.remove();el=null}},()=>{})}catch(e){}
   }

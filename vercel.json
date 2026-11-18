@@ -2,12 +2,22 @@
   "redirects": [
     {
       "source": "/:path*",
-      "has": [{ "type": "host", "value": "dailycade.vercel.app" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "dailycade.vercel.app"
+        }
+      ],
       "destination": "https://dailycadegames.com/:path*",
       "permanent": true
     }
   ],
   "rewrites": [
-    { "source": "/c/:game", "destination": "/api/c?game=:game" }
-  ]
+    {
+      "source": "/c/:game",
+      "destination": "/api/c?game=:game"
+    }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
 }
