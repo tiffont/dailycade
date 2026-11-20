@@ -1209,6 +1209,42 @@ const SFX=(()=>{
   }
   return {
     ensure, music,
+    /* power-up sounds. puAct(k) plays when a power card is used (each has its own); puHit(c) layers a
+       special explosion on top of the normal bang when a card carrying a hitting power-up strikes something. */
+    puAct(k){if(!ok('pa_'+k,.05))return;
+      switch(k){
+        case 'split': [660,880,1175].forEach((f,i)=>tone('triangle',f,f*1.02,.09,.32,i*.06)); break;                     // three quick blips, one per card
+        case 'firework': tone('sine',420,1900,.42,.22); noise('highpass',3000,6000,.8,.3,.08,.38); break;              // rising whistle, then a fizz
+        case 'magnet': tone('sawtooth',110,230,.45,.16); tone('sine',220,460,.45,.14,.02); break;                     // a humming pull that rises
+        case 'slow': tone('sawtooth',700,110,.7,.16); tone('sine',350,60,.7,.18); break;                              // tape winding down
+        case 'pierce': noise('highpass',1800,7000,1.2,.16,.3); tone('triangle',2100,2600,.18,.16,.06); break;         // a sharp swish and a ting
+        case 'freeze': [1760,2093,2637,3136].forEach((f,i)=>tone('sine',f,f,.35,.13,i*.05)); noise('highpass',6000,9000,.7,.45,.05); break; // ice chimes and a cold hiss
+        case 'shield': tone('square',220,440,.32,.1); tone('sine',440,880,.4,.2,.05); break;                          // a warm power-up rise
+        case 'electric': tone('square',70,95,.3,.2); noise('bandpass',3200,1800,3,.28,.35); noise('bandpass',5000,2600,4,.12,.25,.12); break; // buzz and crackle
+        case 'gunner': noise('bandpass',1400,900,2,.05,.45); [0,1,2].forEach(i=>noise('bandpass',3000,1600,2.5,.04,.32,.09+i*.07)); break; // a cock, then three ticks
+        case 'rewind': tone('sine',1200,240,.16,.18); tone('sine',240,1300,.32,.22,.14); break;                       // a quick reverse "whoop"
+        case 'clone': tone('square',523,523,.1,.12); tone('square',528,528,.1,.12); tone('square',784,784,.12,.12,.1); tone('square',790,790,.12,.12,.1); break; // two doubled tones
+        case 'blackhole': tone('sine',240,38,.7,.5); noise('lowpass',900,90,.9,.7,.4); break;                         // a deep falling rumble
+        case 'force': tone('triangle',160,360,.45,.32); tone('sine',320,720,.5,.16,.04); noise('bandpass',900,1800,1,.45,.1); break; // a dome going "bwomm"
+        case 'telekinesis': {const o=ac.createOscillator(),l=ac.createOscillator(),lg=ac.createGain(),g=ac.createGain(),t=ac.currentTime;
+          o.type='sine';o.frequency.setValueAtTime(420,t);o.frequency.exponentialRampToValueAtTime(980,t+.5);l.frequency.value=14;lg.gain.value=40;l.connect(lg);lg.connect(o.frequency);
+          env(g,t,.03,.2,.55);o.connect(g);g.connect(fx);o.start(t);l.start(t);o.stop(t+.6);l.stop(t+.6)} break;    // a wavering psychic shimmer
+        case 'tap': tone('square',1320,1320,.06,.16); tone('square',1760,1760,.08,.16,.09); break;                    // target-lock beep beep
+        case 'missile': noise('bandpass',350,2400,1.2,.5,.45); tone('sawtooth',90,180,.4,.12); break;                 // launch roar
+        case 'big': tone('sawtooth',80,40,.5,.22); tone('square',160,320,.35,.12); noise('lowpass',600,200,.8,.4,.3); break;              // a heavy growing swell
+        default: tone('square',520,1040,.18,.18);
+      }},
+    puHit(c){
+      if(c.missile&&c.child){if(!ok('ph_m',.05))return;crunch(900,.22,.5,6);tone('square',320,70,.16,.18);return}       // little rocket booms
+      if(c.elec){if(!ok('ph_e',.06))return;noise('bandpass',4200,1500,5,.18,.4);tone('square',60,45,.14,.18);return}      // an electric crackle
+      if(c.pierce){if(!ok('ph_p',.05))return;tone('triangle',2600,1900,.22,.2);noise('highpass',5000,8000,.9,.08,.15);return} // a metal ting as it punches through
+      if(c.tk){if(!ok('ph_t',.05))return;crunch(500,.3,.55,10);tone('sine',110,40,.25,.35);return}                        // a heavy smash
+      if(c.fw)return;                                                                                                       // firework already has its own burst
+      if(S.pu.freeze){if(!ok('ph_f',.05))return;[3100,3700,4300].forEach((f,i)=>tone('sine',f,f*.9,.12,.08,i*.025));noise('highpass',7000,9000,.6,.18,.2);return} // ice shatters
+      if(S.pu.big){if(!ok('ph_b',.06))return;crunch(300,.45,.7,14);tone('sine',70,30,.4,.45);return}                        // a deep, heavy boom
+      if(S.pu.gunner){if(!ok('ph_g',.04))return;noise('bandpass',2400,800,1.5,.07,.25);return}                            // a quick snap per bullet
+      if(S.pu.tap){if(!ok('ph_tap',.05))return;tone('square',1760,880,.07,.12)}                                           // a bullseye ping
+    },
     setMuted(m){muted=m;if(out)out.gain.setTargetAtTime(m?0:.55,ac.currentTime,.02)},
     setMix(){if(!ac)return;const t=ac.currentTime;fx.gain.setTargetAtTime(sfxOn?1:0,t,.03);mg.gain.setTargetAtTime(musicVol,t,.08)},
     throw(n=1){if(!ok('throw',.04))return;noise('bandpass',2600,700,1.4,.13,.32);if(n>1)noise('bandpass',3400,900,1.6,.11,.18,.03)},
@@ -1483,6 +1519,7 @@ function explode(c,target){
   const s=scale(), R=(c.fw?TF.fw:30)*s, dmg=c.fw?2:1;
   if(c.fw){SFX.firework();fireworkBurst(c.x,c.y,R)}
   else{SFX.bang(target?target.r/scale():20);burst(c.x,c.y,COL.mint,14,260)}
+  SFX.puHit(c);
   S.rings.push({x:c.x,y:c.y,r:4,max:R,life:c.fw?.5:.35,maxl:c.fw?.5:.35,col:c.fw?PU.firework.hue:COL.mint,w:c.fw?3:2.5});
   let pts=0,kills=0;
   const hitList=[target];
@@ -2600,7 +2637,7 @@ $('#slots').addEventListener('click',e=>{ // spend one from the stack
   if(!COLLECT||S.mode!=='play')return; // filled slots still work while a Wild Card pick is open
   const el=e.target.closest('.slot'); const k=Object.keys(slotEls).find(x=>slotEls[x]===el); if(!k)return;
   S.bank=S.bank||{}; if(!S.bank[k])return;
-  S.bank[k]--; S.pu[k]=(S.pu[k]||0)+PU[k].dur; S.cd=S.cd||{}; S.cd[k]=S.t+S.pu[k]+REFALL_SECS; puFx(k); SFX.power();
+  S.bank[k]--; S.pu[k]=(S.pu[k]||0)+PU[k].dur; S.cd=S.cd||{}; S.cd[k]=S.t+S.pu[k]+REFALL_SECS; puFx(k); SFX.puAct(k);
 });
 function spawnWild(){roll('wild');const r=19*scale();S.objs.push({kind:'pu',pu:'wild',r,hp:1,max:1,sp:.65,pts:0,x:wrand(r+10,W-r-10),y:-r-4,vx:0,ph:wr()*6.28,rot:0,vr:0,flash:0,bx:0})}
 function wildOptions(){ return COLLECT?PU_KEYS.filter(k=>((S.bank||{})[k]||0)<BANK_MAX):PU_KEYS.slice() }
@@ -2628,7 +2665,7 @@ function closeWildBar(){
 $('#slots').addEventListener('click',e=>{
   if(S.wild!=='bar')return;
   const el=e.target.closest('.slot'); const k=Object.keys(slotEls).find(x=>slotEls[x]===el); if(!k||!el.classList.contains('pick'))return;
-  closeWildBar(); if(!wildGive(k,PU[k])){S.pu[k]=Math.max(S.pu[k]||0,WILD_SECS); puFx(k); SFX.power()}
+  closeWildBar(); if(!wildGive(k,PU[k])){S.pu[k]=Math.max(S.pu[k]||0,WILD_SECS); puFx(k); SFX.puAct(k)}
 });
 $('#pauseBtn').addEventListener('click',()=>{SFX.click(); S.mode==='pause'?resume():pause()});
 $('#resumeBtn').addEventListener('click',()=>{SFX.click(); resume()});
