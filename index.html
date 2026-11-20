@@ -4,10 +4,18 @@
 .touch h2{margin:0 0 24px;font-size:28px;font-weight:500;letter-spacing:-.025em;line-height:1.2}
 .touch .tiles{display:flex;gap:16px} /* .wrap.touch: beats the page's .wrap{margin:0 auto} so the gap shows */
 .tile{width:100px;height:100px;border-radius:22px;border:0;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-  font:600 13px/1 var(--sans);cursor:pointer;text-decoration:none;transition:transform .08s,filter .15s}
+  font:600 13px/1 var(--sans);cursor:pointer;text-decoration:none;transition:transform .08s,filter .15s,box-shadow .2s}
 .tile svg{width:30px;height:30px}
-.tile:hover{filter:brightness(1.08)}
-.tile:active{transform:scale(.96)}
+.tile svg{transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+@media (hover:hover){
+  .tile{transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,filter .15s}
+  .tile:hover{transform:translateY(-4px);box-shadow:0 10px 20px -8px rgba(0,0,0,.35)}
+  .tile.x:hover svg{transform:rotate(-12deg) scale(1.12)}
+  .tile.fb:hover svg{animation:bubble .6s ease-in-out}
+}
+@keyframes bubble{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg) scale(1.08)}50%{transform:rotate(9deg) scale(1.08)}75%{transform:rotate(-5deg)}}
+.tile:active{transform:scale(.96);box-shadow:none}
+@media (prefers-reduced-motion:reduce){.tile,.tile svg{transition:none!important;animation:none!important}.tile:hover{transform:none}}
 .tile.x{background:#0d0d0d;color:#fff}
 .tile.fb{background:#c49bff;color:#0d0d0d}
 html[data-theme="dark"] .tile.x{background:#f2f2f0;color:#0d0d0d}
