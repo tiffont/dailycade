@@ -1525,6 +1525,10 @@ function explode(c,target){
   const hitList=[target];
   for(const o of S.objs) if(o!==target&&o.kind!=='bomb'&&!c.hit.has(o)&&seen(o)&&Math.hypot(o.x-c.x,o.y-c.y)<R+o.r*.6) hitList.push(o);
   for(const o of hitList){ if(!S.objs.includes(o))continue; c.hit.add(o); const p=damage(o,o===target&&c.big&&o.kind==='boulder'?o.hp:(o===target||c.fw?dmg:1)); if(p){pts+=p;kills++} } // Big smashes a 3-hit stone in one go
+  if(c.fw){ // a firework blast also catches the two halves of any splitter it just broke
+    const before=new Set(hitList);
+    for(const o of S.objs.slice()) if(!before.has(o)&&!c.hit.has(o)&&o.kind==='stone'&&seen(o)&&Math.hypot(o.x-c.x,o.y-c.y)<R+o.r*.6){ c.hit.add(o); const p=damage(o,dmg); if(p){pts+=p;kills++} }
+  }
   if(c.elec&&target&&target.kind!=='pu'&&target.kind!=='bomb')startZap(target);
   if(c.missile&&!c.child&&target&&target.kind!=='pu'){ // three cards fan out at even 120° angles
     const base=Math.random()*6.283;
