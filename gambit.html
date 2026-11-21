@@ -789,8 +789,13 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
 /* phones: Choose your hand is a full page like How to play, so its title and X sit below the status bar instead of under it */
 @media (max-width:600px){
   #hand.modal{width:100%;max-width:none;height:100dvh;max-height:100dvh;margin:0;border-radius:0;box-shadow:none}
-  #hand.modal .mhead{padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+  #hand .shead{padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
 }
+
+/* Choose your hand: same header as How to play; the intro line scrolls with the cards */
+#hand .shead{flex:none;background:#0a0a0a;padding-left:14px;padding-right:14px}
+#hand .handscroll .intro{margin:4px 0 4px;max-width:none}
+#handT:focus{outline:none}
 </style>
 
 <div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
@@ -932,12 +937,13 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
 
 
 <dialog class="modal" id="hand" aria-labelledby="handT">
-  <div class="mhead"><h2 id="handT">Choose your hand</h2><button class="x" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="shead">
+    <h2 id="handT" tabindex="-1" autofocus>Choose your hand</h2>
+    <button class="sbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
   <div class="howbody">
-    <div class="handtop">
-      <p class="intro">Pick 5 power cards to use during this game.</p>
-    </div>
     <div class="handscroll">
+      <p class="intro">Pick 5 power cards to use during this game.</p>
       <div class="handgrid" id="handGrid"></div>
       <div class="hsoon"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg></i><div><b>More coming soon</b><span>New power cards will join this list over time. Check back for new ways to play.</span></div></div>
     </div>
