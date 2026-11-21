@@ -732,6 +732,8 @@ body.dropping .barspace{height:16px} /* the controls are off screen, so the boar
 
 
 @media (min-width:600px) and (min-aspect-ratio:4/5){.crt,.crt:popover-open{border-radius:16px;overflow:hidden;clip-path:inset(0 round 16px)}}
+
+.modal .mhead::before{display:none!important} /* no grab handle on any Dropface sheet (How to play, Leaderboard, summary) */
 </style>
 
 <div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
