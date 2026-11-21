@@ -936,7 +936,7 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
 </dialog>
 
 
-<dialog class="modal" id="hand" aria-labelledby="handT">
+<dialog data-nomore class="modal" id="hand" aria-labelledby="handT">
   <div class="shead">
     <h2 id="handT" tabindex="-1" autofocus>Choose your hand</h2>
     <button class="sbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -984,6 +984,7 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
 <script src="dc-tune.js"></script>
 <script src="dc-initials.js"></script>
 <script src="dc-feedback.js"></script>
+<script src="dc-more.js"></script>
 <script>
 /* play stats: count visits that came from a Challenge a friend link */
 (()=>{try{const u=new URL(location.href);if(u.searchParams.get('via')!=='challenge')return;u.searchParams.delete('via');history.replaceState(null,'',u.pathname+(u.search||'')+u.hash);
