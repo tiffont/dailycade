@@ -989,7 +989,7 @@ body.is-playing .scrim.b{display:none} /* nothing to read at the bottom during a
     <p class="snote" id="oNote" hidden></p>
     <button class="drop go2" id="practiceBtn" hidden>Play again</button>
     <button class="drop go2" id="dailyBtn" hidden>Daily challenge</button>
-    <div class="dcrow"><div id="oIni"></div>
+    <div class="dcrow stack"><div id="oIni"></div>
     <button class="drop go2 white" id="challengeBtn" hidden>Challenge a friend</button></div>
     <div id="oFb"></div>
   </div>
@@ -1461,7 +1461,7 @@ function fillOver(m){
   const isDaily=!m.practice;
   $('#overT').textContent=m.practice?'Game Summary':'Daily Summary';
   // daily: leaderboard initials sit left of Challenge a friend (saved on this device; posted to the leaderboard when it's reachable)
-  {const iw=$('#oIni');iw.replaceChildren();if(isDaily&&!PREVIEW&&window.DCIni)iw.append(DCIni.block(async v=>{if(!(dbNS&&myId&&!postBlocked))return;const ref=dbNS.doc('slice_scores/'+myId),sn=await ref.get();await ref.set(Object.assign({},sn.exists?sn.data():{},{ini:v}))},{compact:true}))}
+  {const iw=$('#oIni');iw.replaceChildren();if(isDaily&&!PREVIEW&&window.DCIni)iw.append(DCIni.block(async v=>{if(!(dbNS&&myId&&!postBlocked))return;const ref=dbNS.doc('slice_scores/'+myId),sn=await ref.get();await ref.set(Object.assign({},sn.exists?sn.data():{},{ini:v}))},{feature:true}))}
   $('#oSub').textContent=m.practice?'Single player':'Daily challenge No. '+m.day;
   $('#oScore').textContent=fmtN(m.score);
   $('#oNb').hidden=!m.nb;

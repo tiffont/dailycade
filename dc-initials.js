@@ -29,24 +29,26 @@
    +'.dcini.compact button{width:40px;height:42px;padding:0;margin-left:2px;display:grid;place-items:center}'
    +'.dcini.compact button svg{width:20px;height:20px}'
    +'.dcini.compact p{display:none}'
-   +'.dcrow{display:flex;align-items:flex-end;gap:12px}.dcrow>.drop{flex:1 1 auto!important;width:auto!important;min-width:0;margin-top:0!important;margin-bottom:4px;white-space:nowrap;font-size:15px!important;padding-inline:10px!important}';
+   +'.dcini.feature{margin:0;padding:18px;border-radius:16px;background:rgba(157,235,168,.07);box-shadow:inset 0 0 0 1.5px rgba(157,235,168,.35);gap:14px}'+'.dcini.feature .t{display:flex;align-items:center;gap:10px}'+'.dcini.feature .t b{font-size:1.08rem;font-weight:700;letter-spacing:-.01em;line-height:1.2}'+'.dcini.feature .t svg{width:22px;height:22px;flex:none;color:#9deba8}'+'.dcini.feature .t span{margin-left:auto;font-size:.78rem;font-weight:700;color:#9deba8}'+'.dcini.feature .t span.err{color:#ff8a7a}'+'.dcini.feature .s{margin:-8px 0 0;font-size:.86rem;opacity:.72;line-height:1.4}'+'.dcini.feature .r{gap:8px}'+'.dcini.feature input{width:50px;height:58px;font-size:1.8rem}'+'.dcini.feature button{height:50px;padding:0 22px;font-size:1rem}'+'.dcrow.stack{flex-direction:column;align-items:stretch;gap:16px}.dcrow.stack>.drop{width:100%!important;flex:none!important}'+'.dcrow{display:flex;align-items:flex-end;gap:12px}.dcrow>.drop{flex:1 1 auto!important;width:auto!important;min-width:0;margin-top:0!important;margin-bottom:4px;white-space:nowrap;font-size:15px!important;padding-inline:10px!important}';
     document.head.appendChild(s)}
   function block(save,o){
-    style();const compact=!!(o&&o.compact);
-    const wrap=document.createElement('div');wrap.className='dcini'+(compact?' compact':'');
-    wrap.innerHTML='<div class="h">'+(compact?'Your initials':'Leaderboard initials')+'<span></span></div><div class="r"></div><p>Shown next to your score on the leaderboard.</p>';
-    const row=wrap.querySelector('.r'), tag=wrap.querySelector('.h span'), note=wrap.querySelector('p');
+    style();const compact=!!(o&&o.compact), feature=!!(o&&o.feature);
+    const wrap=document.createElement('div');wrap.className='dcini'+(compact?' compact':'')+(feature?' feature':'');
+    const TROPHY='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg>';
+    if(feature) wrap.innerHTML='<div class="t">'+TROPHY+'<b>Get on today\'s leaderboard</b><span></span></div><p class="s">Add your initials so everyone can see your score.</p><div class="r"></div><p class="n" hidden></p>';
+    else wrap.innerHTML='<div class="h">'+(compact?'Your initials':'Leaderboard initials')+'<span></span></div><div class="r"></div><p>Shown next to your score on the leaderboard.</p>';
+    const row=wrap.querySelector('.r'), tag=wrap.querySelector(feature?'.t span':'.h span'), note=wrap.querySelector(feature?'p.n':'p'), title=wrap.querySelector('.t b'), sub=wrap.querySelector('p.s');
     let saved=get();
     const boxes=[0,1,2].map(i=>{const b=document.createElement('input');b.type='text';b.maxLength=1;b.autocomplete='off';b.autocapitalize='characters';b.spellcheck=false;
       b.inputMode='text';b.setAttribute('aria-label','Initial '+(i+1));b.value=saved[i]||'';row.appendChild(b);return b});
     const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
     const btn=document.createElement('button');btn.type='button';row.appendChild(btn);
     const label=t=>{if(compact){btn.innerHTML=t==='Save'?CHECK:'…';btn.setAttribute('aria-label',t==='Save'?'Save initials':t)}else btn.textContent=t};label('Save');
-    const say=(t,err)=>{if(compact){tag.textContent=t;tag.className=err?'err':''}else{note.className=err?'err':'';note.textContent=t}};
+    const say=(t,err)=>{if(compact||feature){tag.textContent=t;tag.className=err?'err':''}else{note.className=err?'err':'';note.textContent=t}};
     const val=()=>boxes.map(b=>b.value).join('');
-    const paint=()=>{const v=val();btn.disabled=!v||v===saved;if(tag.className!=='err')tag.textContent=saved?(v===saved?'Saved':''):''};
+    const paint=()=>{const v=val();btn.disabled=!v||v===saved;if(tag.className!=='err')tag.textContent=saved?(v===saved?'Saved':''):'';if(title){const on=saved&&v===saved;title.textContent=on?'You\'re on the leaderboard':'Get on today\'s leaderboard';if(tag.className!=='err')tag.textContent='';sub.textContent=on?'Your initials show next to your score. Change them any time.':'Add your initials so everyone can see your score.'}};
     boxes.forEach((b,i)=>{
-      b.addEventListener('input',()=>{const c=clean(b.value);b.value=c.slice(-1);if(c&&i<2)boxes[i+1].focus();say(compact?'':'Shown next to your score on the leaderboard.');paint()});
+      b.addEventListener('input',()=>{const c=clean(b.value);b.value=c.slice(-1);if(c&&i<2)boxes[i+1].focus();say(compact||feature?'':'Shown next to your score on the leaderboard.');paint()});
       b.addEventListener('keydown',e=>{
         if(e.key==='Backspace'&&!b.value&&i>0){boxes[i-1].focus();boxes[i-1].value='';e.preventDefault();paint()}
         else if(e.key==='ArrowLeft'&&i>0){boxes[i-1].focus();e.preventDefault()}
@@ -58,10 +60,10 @@
     });
     btn.addEventListener('click',async()=>{
       const v=clean(val());
-      if(!ok(v)){say(compact?'Try others':'Try different initials.',true);return}
+      if(!ok(v)){say(compact||feature?'Try others':'Try different initials.',true);return}
       btn.disabled=true;label('Saving…');
-      try{set(v);await save(v);saved=v;say(compact?'':'Saved. Your initials now show on the leaderboard.')}
-      catch(e){say(compact?"Couldn't save":"Couldn't save right now. Try again in a moment.",true)}
+      try{set(v);await save(v);saved=v;say(compact||feature?'':'Saved. Your initials now show on the leaderboard.')}
+      catch(e){say(compact||feature?"Couldn't save":"Couldn't save right now. Try again in a moment.",true)}
       label('Save');paint();
     });
     paint();
