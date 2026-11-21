@@ -785,6 +785,12 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
 @media (prefers-reduced-motion: reduce){.hcard{transition:none}}
 
 @media (min-width:600px) and (min-aspect-ratio:4/5){.crt,.crt:popover-open{border-radius:16px;overflow:hidden;clip-path:inset(0 round 16px)}}
+
+/* phones: Choose your hand is a full page like How to play, so its title and X sit below the status bar instead of under it */
+@media (max-width:600px){
+  #hand.modal{width:100%;max-width:none;height:100dvh;max-height:100dvh;margin:0;border-radius:0;box-shadow:none}
+  #hand.modal .mhead{padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+}
 </style>
 
 <div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
