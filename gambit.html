@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Gambit – Free Daily Arcade Game | Dailycade</title><meta name="description" content="Swipe to throw cards, curve your shots and stack power-ups before the falling stones reach the line. A new Gambit challenge every day, free to play in your browser."><link rel="canonical" href="https://dailycadegames.com/gambit"><meta property="og:url" content="https://dailycadegames.com/gambit"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "VideoGame", "name": "Gambit", "url": "https://dailycadegames.com/gambit", "description": "Swipe to throw cards, curve your shots and stack power-ups before the falling stones reach the line. A new Gambit challenge every day, free to play in your browser.", "genre": "Arcade", "gamePlatform": "Web browser", "applicationCategory": "Game", "operatingSystem": "Any", "image": "https://dailycadegames.com/api/og?game=gambit&v=3", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "publisher": {"@type": "Organization", "name": "Dailycade", "url": "https://dailycadegames.com/"}}</script><meta property="og:type" content="website"><meta property="og:site_name" content="Dailycade"><meta property="og:title" content="Gambit on Dailycade"><meta property="og:description" content="Swipe, curve, stack power-ups. Survive the fall."><meta property="og:image" content="https://dailycadegames.com/api/og?game=gambit&amp;v=3"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://dailycadegames.com/api/og?game=gambit&amp;v=3"><script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script><script defer src="/_vercel/insights/script.js"></script><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon-v3.png"><link rel="manifest" href="/site.webmanifest"><meta name="apple-mobile-web-app-title" content="Dailycade"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}#oFb .dcquick{margin-top:-5px} /* half the old space under the buttons (28px gap + 18px margin → 23px) */
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Gambit – Free Daily Arcade Game | Dailycade</title><meta name="description" content="Swipe to throw cards, curve your shots and stack power-ups before the falling stones reach the line. A new Gambit challenge every day, free to play in your browser."><link rel="canonical" href="https://dailycadegames.com/gambit"><meta property="og:url" content="https://dailycadegames.com/gambit"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "VideoGame", "name": "Gambit", "url": "https://dailycadegames.com/gambit", "description": "Swipe to throw cards, curve your shots and stack power-ups before the falling stones reach the line. A new Gambit challenge every day, free to play in your browser.", "genre": "Arcade", "gamePlatform": "Web browser", "applicationCategory": "Game", "operatingSystem": "Any", "image": "https://dailycadegames.com/api/og?game=gambit&v=3", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "publisher": {"@type": "Organization", "name": "Dailycade", "url": "https://dailycadegames.com/"}}</script><meta property="og:type" content="website"><meta property="og:site_name" content="Dailycade"><meta property="og:title" content="Gambit on Dailycade"><meta property="og:description" content="Swipe, curve, stack power-ups. Survive the fall."><meta property="og:image" content="https://dailycadegames.com/api/og?game=gambit&amp;v=3"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://dailycadegames.com/api/og?game=gambit&amp;v=3"><script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script><script defer src="/_vercel/insights/script.js"></script><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon-v3.png"><link rel="manifest" href="/site.webmanifest"><meta name="apple-mobile-web-app-title" content="Dailycade"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}#oFb .dcquick{margin-top:-5px} /* half the old space under the buttons (28px gap + 18px margin → 23px) */
 </style></head><body><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="dc-db.js"></script>
 <script src="dc-crt.js"></script>
@@ -796,6 +796,9 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
 #hand .shead{flex:none;background:#0a0a0a;padding-left:14px;padding-right:14px}
 #hand .handscroll .intro{margin:4px 0 4px;max-width:none}
 #handT:focus{outline:none}
+
+/* no double-tap or pinch zoom while playing: it froze the board on phones */
+html,body{touch-action:manipulation}
 </style>
 
 <div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
@@ -1676,6 +1679,7 @@ setTimeout(async()=>{
   [userNS,dbNS]=await Promise.all([use('user'),use('db')]);
   try{myId=userNS?await userNS.id():null}catch(e){myId=null}
   try{const m=dbNS&&await myDoc(); if(m&&m.d.day===DAY_NO){dayRec=m.d;setBar()} if(m&&m.d.playedAt>playedAt){playedAt=m.d.playedAt;playedDay=m.d.playedDay||playedDay;try{localStorage.setItem('gambit.r7.playedAt',String(playedAt))}catch(e){} setBar();updateHUD()}}catch(e){}
+  recoverDaily();
   if(!dbNS){lbState='off';renderLB();return}
   DCTune.guard('gambit',dbNS,'Gambit');
   if(!PREVIEW)dbNS.doc('gambit_config/tune').onSnapshot(sn=>{const v=DCTune.pick(sn.exists?sn.data():null)||{};if(S.mode==='play'||S.mode==='count'||S.mode==='pause')TF_PENDING=v;else applyTF(v)},()=>{});
@@ -1918,7 +1922,30 @@ function hpCheck(){ // out of hit points: spend a life and refill, or end the ga
     S.mode='count'; S.count=-.6; S.countN=4; drag=null; setBar();
   }else{S.lives=0;S.life=0;gameOver()}
 }
+// a daily in progress is saved every second; if the page is closed or crashes mid-game, the score up to then still counts
+const INPROG='gambit.r7.inprog';
+function saveInprog(){if(PREVIEW||LAB||!S||S.practice||!(S.mode==='play'||S.mode==='pause'||S.mode==='count'))return;
+  try{localStorage.setItem(INPROG,JSON.stringify({day:DAY_NO,score:S.score|0,t:Math.round(S.t||0),thrown:S.thrown|0,hitCards:S.hitCards|0,at:Date.now()}))}catch(e){}}
+setInterval(saveInprog,1000);
+addEventListener('pagehide',saveInprog);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)saveInprog()});
+// on the next visit: turn an unfinished daily into today's result (score, summary and leaderboard)
+function recoverDaily(){
+  let p=null;try{p=JSON.parse(localStorage.getItem(INPROG)||'null')}catch(e){}
+  if(!p)return;
+  if(p.day!==DAY_NO||(daily&&daily.day===DAY_NO&&!daily.partial)){try{localStorage.removeItem(INPROG)}catch(e){}return}
+  if(S&&(S.mode==='play'||S.mode==='pause'||S.mode==='count'))return; // a game is running in this page: not abandoned
+  const nb=p.score>best&&p.score>0;
+  if(nb){best=p.score;try{localStorage.setItem('gambit.r7.best',String(best))}catch(e){}}
+  daily={day:DAY_NO,practice:false,partial:true,unfinished:true,score:p.score,t:p.t,thrown:p.thrown,hitCards:p.hitCards,best,nb};
+  try{localStorage.setItem('gambit.r7.daily',JSON.stringify(daily))}catch(e){}
+  if(!playedToday())markPlayed();
+  postScore(p.score,p.t);
+  try{localStorage.removeItem(INPROG)}catch(e){}
+  try{setBar();paintDailyBtn();updateHUD()}catch(e){}
+}
 function gameOver(){
+  try{localStorage.removeItem(INPROG)}catch(e){}
   if(S.wild)closeWildBar();
   S.mode='over'; drag=null; S.ambT=1.2; SFX.over();
   holdBoard=!LAB;
@@ -1995,7 +2022,7 @@ function fillOver(m){
     box.innerHTML=list.length?`<p class="oeyebrow">Achievements</p><div class="achgrid">${list.map(a=>`<div class="acard" style="--c:${a.c}"><div class="atop"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${a.g}</svg></span></div><b>${a.name}</b><small>${a.rule}</small></div>`).join('')}</div>`:''; }
   // beta: a quick 👍/👎 under the summary, once a day
   { const w=$('#oFb'); w.replaceChildren(); if(!LAB&&!PREVIEW&&window.DCFeedback){ const q=DCFeedback.quick('gambit',{mode:m.practice?'practice':'daily',day:m.practice?null:m.day,score:m.score},{dark:true}); if(q) w.append(q); } }
-  const note=m.partial?'Detailed stats were not saved for this game.':'';
+  const note=m.unfinished?'This game was cut short when the page closed, so your score up to that point counts.':m.partial?'Detailed stats were not saved for this game.':'';
   $('#oNote').hidden=!note; $('#oNote').textContent=note;
   shareSum=m;
   shareText=(m.practice?'Gambit':'Gambit No. '+m.day)+': '+fmtN(m.score)+(rate==null?'':' · '+rate+'% hit')+(m.streak?' · '+m.streak+' streak':'')+(m.nb?' · new best':'');
@@ -2793,4 +2820,5 @@ requestAnimationFrame(frame);
 })();
 </script>
 
+<script>/* iPhone: block pinch-zoom gestures (Safari ignores the viewport setting for pinches) */['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));</script>
 </body></html>
