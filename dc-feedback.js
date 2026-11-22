@@ -44,6 +44,14 @@
 .dcquick span{opacity:.75}
 .dcquick.dcquick button{all:unset;box-sizing:border-box;border:0;border-radius:999px;padding:7px 14px;font:inherit;font-size:18px;line-height:1;cursor:pointer;background:rgba(127,127,127,.16);color:inherit;transition:transform .12s}
 .dcquick button:active{transform:scale(.92)}
+.dcquick.ask{flex-direction:column;align-items:stretch;gap:10px;text-align:left}
+.dcquick.ask .q{font-size:15px;font-weight:700;opacity:1}
+.dcquick.ask textarea{box-sizing:border-box;width:100%;min-height:76px;resize:vertical;border:0;border-radius:12px;padding:12px 14px;font:inherit;font-size:16px;font-weight:500;line-height:1.4;color:inherit;background:rgba(127,127,127,.14);box-shadow:inset 0 0 0 1.5px rgba(127,127,127,.28)}
+.dcquick.ask textarea:focus{outline:none;box-shadow:inset 0 0 0 2px #9deba8}
+.dcquick.ask .acts{display:flex;justify-content:flex-end;align-items:center;gap:14px}
+.dcquick.dcquick.ask button.skip{font-size:14px;font-weight:600;background:none;padding:8px 4px;opacity:.7}
+.dcquick.dcquick.ask button.send{font-size:15px;font-weight:700;padding:11px 22px;border-radius:10px;background:#9deba8;color:#0b2a12;box-shadow:0 4px 0 #4f9a5c;transform:translateY(-2px)}
+.dcquick.dcquick.ask button.send:disabled{background:rgba(127,127,127,.22);color:inherit;opacity:.55;box-shadow:none;transform:none;cursor:default}
 .dcquick.dcquick button.more{all:unset;cursor:pointer;font-size:14px;font-weight:700;background:none;padding:4px 2px;text-decoration:underline;text-underline-offset:3px}
 button.dcfblink.dcfblink{all:unset;box-sizing:border-box;width:auto;background:none;border:0;padding:0;margin:16px auto 0;display:table;font:inherit;font-size:13px;font-weight:600;color:inherit;opacity:.7;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 button.dcfblink.dcfblink:hover{opacity:1}`;
@@ -117,8 +125,19 @@ button.dcfblink.dcfblink:hover{opacity:1}`;
     w.querySelectorAll('button').forEach(b=>b.onclick=()=>{
       const up=b.dataset.t==='up';try{localStorage.setItem(key,today())}catch(e){}
       save(Object.assign(context(game,ctx),{kind:'quick',thumb:b.dataset.t})).catch(()=>{});
-      w.innerHTML='<span>Thanks!</span><button type="button" class="more">Tell us more</button>';
-      w.querySelector('.more').onclick=()=>open({game,ctx,dark:o.dark,rating:up?'3':'1'});
+      // right after the tap, ask why while they're still here: a short note box opens in place
+      w.classList.add('ask');
+      w.innerHTML='<label class="q" for="dcq'+game+'">'+(up?'Nice! What did you like?':'Sorry! What went wrong?')+'</label>'
+        +'<textarea id="dcq'+game+'" rows="2" maxlength="2000" placeholder="'+(up?'Tell us what made it fun…':'Tell us what happened…')+'"></textarea>'
+        +'<div class="acts"><button type="button" class="skip">No thanks</button><button type="button" class="send" disabled>Send</button></div>';
+      const tx=w.querySelector('textarea'),send=w.querySelector('.send');
+      tx.addEventListener('input',()=>{send.disabled=!tx.value.trim()});
+      w.querySelector('.skip').onclick=()=>{w.classList.remove('ask');w.innerHTML='<span>Thanks for the '+(up?'👍':'👎')+'</span>'};
+      send.onclick=async()=>{const t=tx.value.trim();if(!t)return;send.disabled=true;send.textContent='Sending…';
+        try{await save(Object.assign(context(game,ctx),{kind:'note',thumb:b.dataset.t,rating:up?3:1,text:t.slice(0,2000),email:''}));
+          w.classList.remove('ask');w.innerHTML='<span>Thanks, got it! 💌</span>'}
+        catch(e){send.disabled=false;send.textContent='Try again'}};
+      setTimeout(()=>{try{tx.focus({preventScroll:true})}catch(e){}},50);
     });
     return w;
   }
