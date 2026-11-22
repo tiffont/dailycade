@@ -35,7 +35,7 @@
     style();const compact=!!(o&&o.compact), feature=!!(o&&o.feature);
     const wrap=document.createElement('div');wrap.className='dcini'+(compact?' compact':'')+(feature?' feature':'');
     const TROPHY='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg>';
-    if(feature) wrap.innerHTML='<div class="t">'+TROPHY+'<b>Claim your spot</b><span></span></div><p class="s">Show everyone who scored this.</p><div class="r"></div><p class="n" hidden></p>';
+    if(feature) wrap.innerHTML='<div class="t">'+TROPHY+'<b>Claim your spot</b><span></span></div><p class="s">Add your initials to join the leaderboard.</p><div class="r"></div><p class="n" hidden></p>';
     else wrap.innerHTML='<div class="h">'+(compact?'Your initials':'Leaderboard initials')+'<span></span></div><div class="r"></div><p>Shown next to your score on the leaderboard.</p>';
     const row=wrap.querySelector('.r'), tag=wrap.querySelector(feature?'.t span':'.h span'), note=wrap.querySelector(feature?'p.n':'p'), title=wrap.querySelector('.t b'), sub=wrap.querySelector('p.s');
     let saved=get();
@@ -46,7 +46,7 @@
     const label=t=>{if(compact){btn.innerHTML=t==='Save'?CHECK:'…';btn.setAttribute('aria-label',t==='Save'?'Save initials':t)}else btn.textContent=t};label('Save');
     const say=(t,err)=>{if(compact||feature){tag.textContent=t;tag.className=err?'err':''}else{note.className=err?'err':'';note.textContent=t}};
     const val=()=>boxes.map(b=>b.value).join('');
-    const paint=()=>{const v=val();btn.disabled=!v||v===saved;if(tag.className!=='err')tag.textContent=saved?(v===saved?'Saved':''):'';if(title){const on=saved&&v===saved;title.textContent=on?'Spot claimed':'Claim your spot';if(tag.className!=='err')tag.textContent='';sub.textContent=on?'Change your initials any time.':'Show everyone who scored this.'}};
+    const paint=()=>{const v=val();btn.disabled=!v||v===saved;if(tag.className!=='err')tag.textContent=saved?(v===saved?'Saved':''):'';if(title){const on=saved&&v===saved;title.textContent=on?'Spot claimed':'Claim your spot';if(tag.className!=='err')tag.textContent='';sub.textContent=on?'You\'re on the board, but you can change your initials at any time.':'Add your initials to join the leaderboard.'}};
     boxes.forEach((b,i)=>{
       b.addEventListener('input',()=>{const c=clean(b.value);b.value=c.slice(-1);if(c&&i<2)boxes[i+1].focus();say(compact||feature?'':'Shown next to your score on the leaderboard.');paint()});
       b.addEventListener('keydown',e=>{
