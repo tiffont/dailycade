@@ -827,7 +827,7 @@ body.is-playing .scrim.b{display:none} /* nothing to read at the bottom during a
 .ocuts div{transition:box-shadow .15s}
 .ocuts div.sel{box-shadow:inset 0 0 0 1.5px var(--k)}
 #oCuts{display:none!important} /* the bars show each cut now */
-#practiceBtn:not([hidden])~.dcrow{margin-top:-12px}
+#practiceBtn:not([hidden])~.dcrow{margin-top:2px} /* lands at 20px, minus Play again's 4px raised edge = 16px of space */
 #over .dcrow #challengeBtn{margin-top:0!important} /* 4px under Play again + 28px gap - 12px = 20px edge to edge, minus its 4px raised edge = 16px of space */ /* Challenge a friend tucks under Play again, same gap as the home buttons */
 .count>span.go{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.02em} /* "Slice" after the countdown: the title's bold extended type */
 .hsteps li{--c:var(--mint)!important} /* How to play numbers in green */
@@ -877,21 +877,21 @@ html,body{touch-action:manipulation}
 .oshots{margin:4px -24px 0}
 .shotrow{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:24px;padding:2px 24px 6px;scrollbar-width:none;overscroll-behavior-x:contain}
 .shotrow::-webkit-scrollbar{display:none}
-.shot{flex:0 0 132px;margin:0;scroll-snap-align:start}
-.shot .ph{position:relative;width:132px;height:132px;border-radius:14px;overflow:hidden;background:#0d0d0d;box-shadow:inset 0 0 0 2px var(--k)}
+.shot{flex:0 0 156px;margin:0;scroll-snap-align:start}
+.shot .ph{position:relative;width:156px;height:156px;border-radius:14px;overflow:hidden;background:#0d0d0d;box-shadow:inset 0 0 0 2px var(--k)}
 .shot .ph img{display:block;width:100%;height:100%;object-fit:cover}
 .shot .ph i{position:absolute;top:6px;left:6px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font:700 11px/20px inherit;font-style:normal;text-align:center}
 .shot .ph span{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.4);font-weight:700;font-size:13px}
 .shot.miss .ph{box-shadow:inset 0 0 0 2px rgba(255,255,255,.14)}
-.shot figcaption{display:flex;flex-direction:column;gap:1px;padding:8px 2px 0}
-.shot figcaption b{font-size:14px;font-weight:700;color:var(--k)}
-.shot.miss figcaption b{color:rgba(255,255,255,.55)}
-.shot figcaption span{font-size:13px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.shot figcaption small{font-size:12px;opacity:.6;font-variant-numeric:tabular-nums}
-.shot .pts{display:flex;align-items:baseline;justify-content:center;gap:4px;margin-top:8px;padding:8px 0;border-radius:12px;background:color-mix(in srgb,var(--k) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--k) 35%,transparent);font-style:normal;font-size:12px;font-weight:600;color:rgba(255,255,255,.7)}
-.shot .pts strong{font-size:22px;font-weight:800;line-height:1;color:var(--k);font-variant-numeric:tabular-nums}
-.shot.miss .pts{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
-.shot.miss .pts strong{color:rgba(255,255,255,.55)}
+.shot figcaption{display:flex;align-items:flex-start;gap:8px;padding:10px 0 0}
+.shot .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.shot .tx b{font-size:14px;font-weight:700;color:var(--k)}
+.shot.miss .tx b{color:rgba(255,255,255,.55)}
+.shot .tx span{font-size:13px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shot .tx small{font-size:12px;opacity:.6;font-variant-numeric:tabular-nums;white-space:nowrap}
+.shot .pts{flex:none;width:56px;height:56px;border-radius:12px;background:var(--k);color:#0b0b0b;display:flex;flex-direction:column;align-items:center;justify-content:center;font-style:normal;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:1}
+.shot .pts strong{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:3px;font-variant-numeric:tabular-nums}
+.shot.miss .pts{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6)}
 .shint{margin:6px 24px 0;font-size:12px;opacity:.5}
 </style>
 
@@ -1521,7 +1521,7 @@ function fillOver(m){
     box.hidden=!has;$('#oTicks').parentElement.classList.toggle('noticks',!!has);
     if(has)box.innerHTML='<div class="shotrow">'+cuts.map((r,i)=>{const gr=r.miss?null:gradeOf(r.off),c=cutColor(r),nm=NAMES[r.name]||r.name||'';
       return '<figure class="shot'+(r.miss?' miss':'')+'" style="--k:'+c+'"><div class="ph">'+(sh[i]&&!r.miss?'<img alt="'+nm+' cut '+r.pa+' / '+(100-r.pa).toFixed(1)+'" src="'+sh[i]+'">':'<span>'+(r.miss?'Missed':'')+'</span>')+'<i>'+(i+1)+'</i></div>'
-        +'<figcaption><b>'+(r.miss?'Missed':gr[1])+'</b><span>'+nm+'</span>'+'<small>'+(!r.miss&&r.pa!=null?r.pa.toFixed(1)+' / '+(100-r.pa).toFixed(1):'&nbsp;')+'</small>'+'<em class="pts"><strong>'+(r.miss?'0':'+'+r.score)+'</strong> pts</em></figcaption></figure>'}).join('')+'</div>';}
+        +'<figcaption><div class="tx"><b>'+(r.miss?'Missed':gr[1])+'</b><span>'+nm+'</span>'+(!r.miss&&r.pa!=null?'<small>'+r.pa.toFixed(1)+' / '+(100-r.pa).toFixed(1)+'</small>':'')+'</div><em class="pts"><strong>'+(r.miss?'0':'+'+r.score)+'</strong>pts</em></figcaption></figure>'}).join('')+'</div>';}
   $('#oCuts').hidden=!cuts.length;
   $('#oCuts').innerHTML=cuts.map(r=>'<div style="--k:'+cutColor(r)+'"><i></i><b>'+(r.miss?'–':r.score)+'</b><small>'+(r.miss?'Missed':NAMES[r.name]||r.name)+'</small></div>').join('');
   // tap or slide across the bars: a label pops over the bar under your finger and its card lights up in the row below
