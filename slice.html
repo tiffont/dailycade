@@ -871,6 +871,24 @@ html,body{touch-action:manipulation}
 #over .sbody .omore>:not(summary):last-child{margin-bottom:0}
 #over .sbody .omore[open]{padding-bottom:16px}
 #over #challengeBtn{margin-bottom:28px} /* its 4px raised edge + 24px */
+
+/* summary: one card per cut, scrolling sideways (replaces the bars when pictures exist) */
+.shit.noticks .cutsticks,.shit.noticks .tickpop{display:none!important}
+.oshots{margin:4px -24px 0}
+.shotrow{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:24px;padding:2px 24px 6px;scrollbar-width:none;overscroll-behavior-x:contain}
+.shotrow::-webkit-scrollbar{display:none}
+.shot{flex:0 0 132px;margin:0;scroll-snap-align:start}
+.shot .ph{position:relative;width:132px;height:132px;border-radius:14px;overflow:hidden;background:#0d0d0d;box-shadow:inset 0 0 0 2px var(--k)}
+.shot .ph img{display:block;width:100%;height:100%;object-fit:cover}
+.shot .ph i{position:absolute;top:6px;left:6px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font:700 11px/20px inherit;font-style:normal;text-align:center}
+.shot .ph span{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.4);font-weight:700;font-size:13px}
+.shot.miss .ph{box-shadow:inset 0 0 0 2px rgba(255,255,255,.14)}
+.shot figcaption{display:flex;flex-direction:column;gap:1px;padding:8px 2px 0}
+.shot figcaption b{font-size:14px;font-weight:700;color:var(--k)}
+.shot.miss figcaption b{color:rgba(255,255,255,.55)}
+.shot figcaption span{font-size:13px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shot figcaption small{font-size:12px;opacity:.6;font-variant-numeric:tabular-nums}
+.shint{margin:6px 24px 0;font-size:12px;opacity:.5}
 </style>
 
 <div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
@@ -1004,6 +1022,7 @@ html,body{touch-action:manipulation}
       <div class="srate"><i>Avg off center</i><span><span id="oThrown"></span><b id="oHit">0%</b></span></div>
     </div>
     <div class="ocuts" id="oCuts"></div>
+    <div class="oshots" id="oShots" hidden></div>
     <details class="omore" id="oMore"><summary><span class="omlab"><svg class="omic" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="9" width="2.8" height="9.5" rx="1.2" fill="#f2c14e"/><rect x="4.8" y="5.5" width="2.8" height="13" rx="1.2" fill="#ff8ad8"/><rect x="8.6" y="11" width="2.8" height="7.5" rx="1.2" fill="#c49bff"/><rect x="12.4" y="7" width="2.8" height="11.5" rx="1.2" fill="#7cc8ff"/><rect x="16.2" y="2.5" width="2.8" height="16" rx="1.2" fill="#9deba8"/></svg>More stats</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
       <ul class="slist" id="oFacts"></ul>
       <div class="oach" id="oAch" hidden></div>
@@ -1266,7 +1285,7 @@ Object.assign(NAMES,OBJ_NAMES);
 
 /* ---------- state ---------- */
 let practice=false;
-const fresh=()=>({mode:'idle',practice:false,run:[],idx:0,cur:null,results:[],score:0,count:0,gapT:0,prev:null,tickT:0});
+const fresh=()=>({mode:'idle',practice:false,run:[],idx:0,cur:null,results:[],shots:[],score:0,count:0,gapT:0,prev:null,tickT:0});
 let S=fresh();
 let stroke=null, trail=[], pieces=[], sparks=[], flashA=0, shake=0, slowmo=1, cutLine=null;
 let best=0, abest=0; try{best=+localStorage.getItem('slice.best')||0;abest=+localStorage.getItem('slice.abest')||0}catch(e){}
@@ -1456,6 +1475,7 @@ function gameOver(){
   const sum={day:DAY_NO,practice:S.practice,score:S.score,cuts:S.results.map(r=>({off:+r.off.toFixed(2),pa:r.pa!=null?+r.pa.toFixed(1):null,score:r.score,name:r.name,miss:!!r.miss})),
     perf,avg,misses,bestCut:bestCut?{name:bestCut.name,pa:+bestCut.pa.toFixed(1),off:bestCut.off}:null,pb,nb,ach,best:S.practice?abest:best};
   if(!S.practice&&!PREVIEW)postScore(sum);
+  sum.shots=(S.shots||[]).slice(0,10); // pictures stay on this device
   lastSum=sum; if(S.practice)lastPractice=sum;
   if(!S.practice){daily=sum;try{localStorage.setItem('slice.daily',JSON.stringify(sum))}catch(e){}}
   fillOver(sum); setBar(); updateHUD();
@@ -1493,6 +1513,11 @@ function fillOver(m){
   const done=cuts.filter(r=>!r.miss);
   $('#oThrown').textContent=m.partial?'':(10-(m.misses||0))+' of 10 cut · ';
   $('#oHit').textContent=m.partial||!done.length?'–':(m.avg).toFixed(1)+'%';
+  {const sh=m.shots||[],has=cuts.length&&sh.some(Boolean),box=$('#oShots');
+    box.hidden=!has;$('#oTicks').parentElement.classList.toggle('noticks',!!has);
+    if(has)box.innerHTML='<div class="shotrow">'+cuts.map((r,i)=>{const gr=r.miss?null:gradeOf(r.off),c=cutColor(r),nm=NAMES[r.name]||r.name||'';
+      return '<figure class="shot'+(r.miss?' miss':'')+'" style="--k:'+c+'"><div class="ph">'+(sh[i]&&!r.miss?'<img alt="'+nm+' cut '+r.pa+' / '+(100-r.pa).toFixed(1)+'" src="'+sh[i]+'">':'<span>'+(r.miss?'Missed':'')+'</span>')+'<i>'+(i+1)+'</i></div>'
+        +'<figcaption><b>'+(r.miss?'Missed':gr[1])+'</b><span>'+nm+'</span><small>'+(r.miss?'0 pts':(r.pa!=null?r.pa.toFixed(1)+' / '+(100-r.pa).toFixed(1)+' · ':'')+'+'+r.score)+'</small></figcaption></figure>'}).join('')+'</div><p class="shint">Swipe to see all 10 cuts</p>';}
   $('#oCuts').hidden=!cuts.length;
   $('#oCuts').innerHTML=cuts.map(r=>'<div style="--k:'+cutColor(r)+'"><i></i><b>'+(r.miss?'–':r.score)+'</b><small>'+(r.miss?'Missed':NAMES[r.name]||r.name)+'</small></div>').join('');
   // tap or slide across the bars: a label pops over the bar under your finger and its card lights up in the row below
@@ -1578,6 +1603,17 @@ function move(q){
     pp=pt;pin=ins}
   stroke.prevIn=pin;
 }
+// a small picture of a cut (the two halves just after the swipe), shown in the summary's row of cuts
+function snapCut(i,halves){try{
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const p of halves)for(const f of p.polys)for(const [x,y] of f.pts){const c=Math.cos(p.r),sn=Math.sin(p.r),X=p.x+x*c-y*sn,Y=p.y+x*sn+y*c;x0=Math.min(x0,X);y0=Math.min(y0,Y);x1=Math.max(x1,X);y1=Math.max(y1,Y)}
+  if(!(x1>x0))return;
+  const cxm=(x0+x1)/2,cym=(y0+y1)/2,side=Math.max(x1-x0,y1-y0)*1.18+24,OUT=160;
+  const o=document.createElement('canvas');o.width=o.height=OUT;const g=o.getContext('2d');
+  g.fillStyle='#0d0d0d';g.fillRect(0,0,OUT,OUT);
+  g.drawImage(cv,(cxm-side/2)*DPR,(cym-side/2)*DPR,side*DPR,side*DPR,0,0,OUT,OUT);
+  (S.shots||(S.shots=[]))[i]=o.toDataURL('image/webp',.72);
+}catch(e){}}
 function doCut(g,A,B){
   if(Math.hypot(B[0]-A[0],B[1]-A[1])<6)return false;
   // the swipe line and the eye define the cutting plane; split the object's volume by it
@@ -1596,6 +1632,7 @@ function doCut(g,A,B){
       const ce=centroid(c);wa+=ar;wx+=ce[0]*ar;wy+=ce[1]*ar;polys.push({pts:c,fill:f.fill,cap:f.cap})}
     if(!wa)continue;const px=wx/wa,py=wy/wa;
     pieces.push({polys:polys.map(f=>({...f,pts:f.pts.map(([x,y])=>[x-px,y-py])})),x:px,y:py,vx:nx*sgn*260+ux*60,vy:ny*sgn*260-120,r:0,vr:(Math.random()-.5)*4,life:1,lw:Math.max(1,g.s*.018)})}
+  {const halves=pieces.slice(-2),i=S.idx;setTimeout(()=>snapCut(i,halves),170)} // a picture of the halves for the summary
   cutLine={a:[A[0]-ux*30,A[1]-uy*30],b:[B[0]+ux*30,B[1]+uy*30],life:1};
   for(let i=0;i<26;i++){const t=Math.random(),p=lerp(A,B,t),sp=120+Math.random()*320,an=Math.random()*Math.PI*2;sparks.push({x:p[0],y:p[1],vx:Math.cos(an)*sp,vy:Math.sin(an)*sp,life:1,c:i%3?cur.color:'#fff'})}
   SFX.swish();const f={Perfect:1046,Clean:880,Close:740,Off:587,'Way off':440}[gr[1]];setTimeout(()=>{SFX.tone(f,.35,'triangle',.14);if(gr[1]==='Perfect')setTimeout(()=>SFX.tone(f*1.5,.4,'triangle',.12),90)},40);
