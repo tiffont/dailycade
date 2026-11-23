@@ -751,6 +751,13 @@ html,body{touch-action:manipulation}
 .sumv2 .ssub{margin:0}
 .sumv2 .omore .eyebrow{margin:6px 0 10px}
 .sumv2 .omore .slist+.eyebrow{margin-top:16px}
+
+/* summary: a multicoloured stats icon before More stats; 16px under the last stat; 24px more room under Challenge a friend */
+.sumv2 .omore summary .omlab{display:flex;align-items:center;gap:10px}
+.sumv2 .omore summary svg.omic{width:18px;height:18px;color:inherit;transition:none;transform:none}
+.sumv2 .omore>:not(summary):last-child{margin-bottom:0}
+.sumv2 .omore[open]{padding-bottom:16px}
+.sumv2 #sumChallenge,.sumv2 #sumShareBtn{margin-bottom:28px} /* its 4px raised edge + 24px */
 </style>
 
 <div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
@@ -1772,7 +1779,7 @@ function openSummary(){
     if(fn){ li.classList.add('link'); li.tabIndex=0; li.setAttribute('role','button'); li.setAttribute('aria-label',`${l}: ${v}. See all achievements`); li.onclick=fn; li.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fn(); } }; }
     ul.appendChild(li); });
   // the stats list (and today's achievements) fold away under More stats, closed each time
-  const more=el('details','omore'), msum=el('summary',null,'More stats'); msum.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
+  const more=el('details','omore'), msum=el('summary'); msum.insertAdjacentHTML('beforeend','<span class="omlab"><svg class="omic" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="9" width="2.8" height="9.5" rx="1.2" fill="#f2c14e"/><rect x="4.8" y="5.5" width="2.8" height="13" rx="1.2" fill="#ff8ad8"/><rect x="8.6" y="11" width="2.8" height="7.5" rx="1.2" fill="#c49bff"/><rect x="12.4" y="7" width="2.8" height="11.5" rx="1.2" fill="#7cc8ff"/><rect x="16.2" y="2.5" width="2.8" height="16" rx="1.2" fill="#9deba8"/></svg>More stats</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
   more.append(msum,ul); body.appendChild(more);
   // today's achievements as cards in a row that scrolls sideways
   if(todays.length){
