@@ -799,6 +799,18 @@ body.is-playing .scrim.t{display:none} /* no dark band over the top during a gam
 
 /* no double-tap or pinch zoom while playing: it froze the board on phones */
 html,body{touch-action:manipulation}
+
+/* summary: a tighter top block, and the stats list folded away under More info (closed each time the summary opens) */
+#over .sbody{gap:14px}
+#over .sbody .omore{flex:none;margin:6px -24px 10px;padding:0 24px;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
+#over .sbody .omore summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--fg)}
+#over .sbody .omore summary::-webkit-details-marker{display:none}
+#over .sbody .omore summary svg{width:18px;height:18px;flex:none;color:var(--muted);transition:transform .2s}
+#over .sbody .omore[open] summary svg{transform:rotate(180deg)}
+#over .sbody .omore summary:focus-visible{outline:2px solid var(--mint);outline-offset:2px;border-radius:4px}
+#over .sbody .omore>:not(summary):last-child{margin-bottom:18px}
+#over .stitle p{margin:0}
 </style>
 
 <div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
@@ -971,10 +983,10 @@ html,body{touch-action:manipulation}
       <div class="sticks" id="oTicks" aria-hidden="true"></div>
       <div class="srate"><i>Hit rate</i><span><span id="oThrown"></span><b id="oHit">0%</b></span></div>
     </div>
-    <hr class="sdiv">
-    <ul class="slist" id="oFacts"></ul>
-    <div class="oach" id="oAch" hidden></div>
-    <hr class="sdiv">
+    <details class="omore" id="oMore"><summary>More info<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <ul class="slist" id="oFacts"></ul>
+      <div class="oach" id="oAch" hidden></div>
+    </details>
     <p class="snote" id="oNote" hidden></p>
     <button class="drop go2" id="practiceBtn" hidden>Play again</button>
     <button class="drop go2" id="dailyBtn" hidden>Daily challenge</button>
@@ -2008,6 +2020,7 @@ function fillOver(m){
     dia:'<path d="M12 7l4 5-4 5-4-5z" fill="currentColor" stroke="none"/>',up:'<path d="M12 18V6M7 11l5-5 5 5"/>',ok:'<path d="M6 12.5l4 4 8-9"/>',target:'<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/>',clock:'<circle cx="12" cy="12" r="7.5"/><path d="M12 8v4.2l2.8 1.8"/>',star:'<path d="M12 5l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7L5.2 10l4.7-.7z"/>'};
   const row=(c,i,label,val)=>`<li style="--c:${c}"><span class="sic2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic[i]}</svg></span><span class="sl">${label}</span><b>${val}</b></li>`;
   const bestNow=Math.max(m.best||0,m.practice?abest:best);
+  $('#oMore').open=false; // More info starts closed
   $('#oFacts').innerHTML=m.partial?row('var(--fg)','clock','Time lasted',fmtT(m.t))+row('var(--fg)','star','Personal best',fmtN(bestNow)):[
     row('var(--violet)','clock','Time lasted',fmtT(m.t)),
     m.streak!=null?row('var(--amber)','x','Best streak',fmtN(m.streak)):'',
