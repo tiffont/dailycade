@@ -864,6 +864,13 @@ html,body{touch-action:manipulation}
 #over .sbody .omore summary:focus-visible{outline:2px solid var(--mint);outline-offset:2px;border-radius:4px}
 #over .sbody .omore>:not(summary):last-child{margin-bottom:18px}
 #over .stitle p{margin:0}
+
+/* summary: a multicoloured stats icon before More stats; 16px under the last stat; 24px more room under Challenge a friend */
+#over .sbody .omore summary .omlab{display:flex;align-items:center;gap:10px}
+#over .sbody .omore summary svg.omic{width:18px;height:18px;color:inherit;transition:none;transform:none}
+#over .sbody .omore>:not(summary):last-child{margin-bottom:0}
+#over .sbody .omore[open]{padding-bottom:16px}
+#over #challengeBtn{margin-bottom:28px} /* its 4px raised edge + 24px */
 </style>
 
 <div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
@@ -997,7 +1004,7 @@ html,body{touch-action:manipulation}
       <div class="srate"><i>Avg off center</i><span><span id="oThrown"></span><b id="oHit">0%</b></span></div>
     </div>
     <div class="ocuts" id="oCuts"></div>
-    <details class="omore" id="oMore"><summary>More stats<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <details class="omore" id="oMore"><summary><span class="omlab"><svg class="omic" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="9" width="2.8" height="9.5" rx="1.2" fill="#f2c14e"/><rect x="4.8" y="5.5" width="2.8" height="13" rx="1.2" fill="#ff8ad8"/><rect x="8.6" y="11" width="2.8" height="7.5" rx="1.2" fill="#c49bff"/><rect x="12.4" y="7" width="2.8" height="11.5" rx="1.2" fill="#7cc8ff"/><rect x="16.2" y="2.5" width="2.8" height="16" rx="1.2" fill="#9deba8"/></svg>More stats</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
       <ul class="slist" id="oFacts"></ul>
       <div class="oach" id="oAch" hidden></div>
     </details>
