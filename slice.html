@@ -883,6 +883,7 @@ html,body{touch-action:manipulation}
 .shot .ph i{position:absolute;top:6px;left:6px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font:700 11px/20px inherit;font-style:normal;text-align:center}
 .shot .ph span{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.4);font-weight:700;font-size:13px}
 .shot.miss .ph{box-shadow:inset 0 0 0 2px rgba(255,255,255,.14)}
+.shot .ph span.mo{background:rgba(0,0,0,.62);color:#fff;font-size:15px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:inherit;box-shadow:inset 0 0 0 2px rgba(255,255,255,.14)}
 .shot figcaption{display:flex;align-items:flex-start;gap:8px;padding:10px 0 0}
 .shot .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .shot .tx b{font-size:14px;font-weight:700;color:var(--k)}
@@ -1520,7 +1521,7 @@ function fillOver(m){
   {const sh=m.shots||[],has=cuts.length&&sh.some(Boolean),box=$('#oShots');
     box.hidden=!has;$('#oTicks').parentElement.classList.toggle('noticks',!!has);
     if(has)box.innerHTML='<div class="shotrow">'+cuts.map((r,i)=>{const gr=r.miss?null:gradeOf(r.off),c=cutColor(r),nm=NAMES[r.name]||r.name||'';
-      return '<figure class="shot'+(r.miss?' miss':'')+'" style="--k:'+c+'"><div class="ph">'+(sh[i]&&!r.miss?'<img alt="'+nm+' cut '+r.pa+' / '+(100-r.pa).toFixed(1)+'" src="'+sh[i]+'">':'<span>'+(r.miss?'Missed':'')+'</span>')+'<i>'+(i+1)+'</i></div>'
+      return '<figure class="shot'+(r.miss?' miss':'')+'" style="--k:'+c+'"><div class="ph">'+(sh[i]?'<img alt="'+nm+(r.miss?' missed':' cut '+r.pa+' / '+(100-r.pa).toFixed(1))+'" src="'+sh[i]+'">':'')+(r.miss?'<span class="mo">Missed</span>':'')+'<i>'+(i+1)+'</i></div>'
         +'<figcaption><div class="tx"><b>'+(r.miss?'Missed':gr[1])+'</b><span>'+nm+'</span>'+(!r.miss&&r.pa!=null?'<small>'+r.pa.toFixed(1)+' / '+(100-r.pa).toFixed(1)+'</small>':'')+'</div><em class="pts"><strong>'+(r.miss?'0':'+'+r.score)+'</strong>pts</em></figcaption></figure>'}).join('')+'</div>';}
   $('#oCuts').hidden=!cuts.length;
   $('#oCuts').innerHTML=cuts.map(r=>'<div style="--k:'+cutColor(r)+'"><i></i><b>'+(r.miss?'–':r.score)+'</b><small>'+(r.miss?'Missed':NAMES[r.name]||r.name)+'</small></div>').join('');
@@ -1611,6 +1612,10 @@ function move(q){
 function snapCut(i,halves){try{
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
   for(const p of halves)for(const f of p.polys)for(const [x,y] of f.pts){const c=Math.cos(p.r),sn=Math.sin(p.r),X=p.x+x*c-y*sn,Y=p.y+x*sn+y*c;x0=Math.min(x0,X);y0=Math.min(y0,Y);x1=Math.max(x1,X);y1=Math.max(y1,Y)}
+  snapBox(i,x0,y0,x1,y1);
+}catch(e){}}
+/* whole object mid-flight; a cut later replaces it, a miss keeps it */
+function snapBox(i,x0,y0,x1,y1){try{
   if(!(x1>x0))return;
   const cxm=(x0+x1)/2,cym=(y0+y1)/2,side=Math.max(x1-x0,y1-y0)*1.18+24,OUT=160;
   const o=document.createElement('canvas');o.width=o.height=OUT;const g=o.getContext('2d');
@@ -1708,6 +1713,7 @@ function frame(now){
     if(S.mode==='play')S.cur.t+=gdt;
     const g=geom(S.cur);
     drawObj(g,S.cur.hit?.6:Math.min(1,g.p*6));
+    if(S.mode==='play'&&!S.cur.snap&&S.cur.t>=S.cur.dur*.7){S.cur.snap=1;snapBox(S.idx,...g.bb)}
     if(danger>0)drawWarn(g,danger,now);
     if(S.mode==='play'&&S.cur.t>=S.cur.dur)miss();
   }
