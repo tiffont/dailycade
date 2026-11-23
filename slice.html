@@ -853,7 +853,7 @@ body.is-playing .scrim.b{display:none} /* nothing to read at the bottom during a
 /* no double-tap or pinch zoom while playing: it froze the board on phones */
 html,body{touch-action:manipulation}
 
-/* summary: a tighter top block, and the stats list folded away under More info (closed each time the summary opens) */
+/* summary: a tighter top block, and the stats list folded away under More stats (closed each time the summary opens) */
 #over .sbody{gap:14px}
 #over .sbody .omore{flex:none;margin:6px -24px 10px;padding:0 24px;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
 #over .sbody .omore summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;
@@ -997,7 +997,7 @@ html,body{touch-action:manipulation}
       <div class="srate"><i>Avg off center</i><span><span id="oThrown"></span><b id="oHit">0%</b></span></div>
     </div>
     <div class="ocuts" id="oCuts"></div>
-    <details class="omore" id="oMore"><summary>More info<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <details class="omore" id="oMore"><summary>More stats<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
       <ul class="slist" id="oFacts"></ul>
       <div class="oach" id="oAch" hidden></div>
     </details>
@@ -1506,7 +1506,7 @@ function fillOver(m){
     target:'<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/>'};
   const row=(c,i,label,val)=>`<li style="--c:${c}"><span class="sic2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic[i]}</svg></span><span class="sl">${label}</span><b>${val}</b></li>`;
   const bestNow=Math.max(m.best||0,m.practice?abest:best);
-  $('#oMore').open=false; // More info starts closed
+  $('#oMore').open=false; // More stats starts closed
   $('#oFacts').innerHTML=m.partial?row('var(--fg)','star','Personal best',fmtN(bestNow)):[
     row('var(--gold-solid)','target','Perfect cuts',m.perf),
     m.bestCut?row('var(--mint)','cut','Best cut',m.bestCut.pa.toFixed(1)+' / '+(100-m.bestCut.pa).toFixed(1)):'',

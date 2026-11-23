@@ -738,7 +738,7 @@ body.dropping .barspace{height:16px} /* the controls are off screen, so the boar
 /* no double-tap or pinch zoom while playing: it froze the board on phones */
 html,body{touch-action:manipulation}
 
-/* summary: a tighter top block, and the stats list folded away under More info (closed each time the summary opens) */
+/* summary: a tighter top block, and the stats list folded away under More stats (closed each time the summary opens) */
 .sumv2{gap:14px}
 .sumv2 .omore{flex:none;margin:6px -24px 10px;padding:0 24px;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
 .sumv2 .omore summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;
@@ -1771,8 +1771,8 @@ function openSummary(){
     li.append(sq,el('span','sl',l),el('b',null,v));
     if(fn){ li.classList.add('link'); li.tabIndex=0; li.setAttribute('role','button'); li.setAttribute('aria-label',`${l}: ${v}. See all achievements`); li.onclick=fn; li.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fn(); } }; }
     ul.appendChild(li); });
-  // the stats list (and today's achievements) fold away under More info, closed each time
-  const more=el('details','omore'), msum=el('summary',null,'More info'); msum.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
+  // the stats list (and today's achievements) fold away under More stats, closed each time
+  const more=el('details','omore'), msum=el('summary',null,'More stats'); msum.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
   more.append(msum,ul); body.appendChild(more);
   // today's achievements as cards in a row that scrolls sideways
   if(todays.length){
