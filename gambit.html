@@ -113,6 +113,8 @@ h1 .modetag{font-family:var(--font-body);font-size:.7rem;font-weight:600;letter-
 .pausebox b{font-size:1.4rem;font-weight:700}
 .pausebox .drop,.pausebox .sumbtn{flex:none;width:100%}
 .pausebox{gap:10px!important}
+.pausebox #exitBtn{margin-top:6px} /* 16px of space under Resume's raised edge */
+#go+#arcadeBtn{margin-top:8px} /* 16px between Daily challenge and Single player */
 .pausebox .pnote{color:var(--muted);font-size:.8rem;text-align:center;line-height:1.4;margin-top:4px}
 .paused[hidden]{display:none}
 .app.ispaused .dock{visibility:hidden} /* nothing to tap behind the pause card */
@@ -389,7 +391,7 @@ body:not(.is-playing) .scrim.b{display:none}
 .drop.go2.daily:not(:disabled):active{transform:translateY(3px);height:61px;margin-bottom:-1px;border-bottom-width:4px;box-shadow:none}
 @keyframes dailyRing{to{--ang:360deg}}
 #oIni:empty{display:none}
-#practiceBtn:not([hidden])~.dcrow{margin-top:-12px} /* 16px of space under Play again's raised edge, same as Slice and Dropface */
+#practiceBtn:not([hidden])~.dcrow{margin-top:2px} /* 16px of space under Play again's raised edge, same as Slice and Dropface */
 #over .dcrow #challengeBtn{margin-top:0!important} /* Challenge a friend tucks under Play again */
 /* locked daily (timer): same shape as the active button, in greyscale */
 #go.daily:disabled{height:64px;margin-bottom:-4px;border:3px solid transparent;border-bottom-width:7px;box-shadow:none;color:#5c5c5c;opacity:1;
