@@ -888,6 +888,10 @@ html,body{touch-action:manipulation}
 .shot.miss figcaption b{color:rgba(255,255,255,.55)}
 .shot figcaption span{font-size:13px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .shot figcaption small{font-size:12px;opacity:.6;font-variant-numeric:tabular-nums}
+.shot .pts{display:flex;align-items:baseline;justify-content:center;gap:4px;margin-top:8px;padding:8px 0;border-radius:12px;background:color-mix(in srgb,var(--k) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--k) 35%,transparent);font-style:normal;font-size:12px;font-weight:600;color:rgba(255,255,255,.7)}
+.shot .pts strong{font-size:22px;font-weight:800;line-height:1;color:var(--k);font-variant-numeric:tabular-nums}
+.shot.miss .pts{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.shot.miss .pts strong{color:rgba(255,255,255,.55)}
 .shint{margin:6px 24px 0;font-size:12px;opacity:.5}
 </style>
 
@@ -1517,7 +1521,7 @@ function fillOver(m){
     box.hidden=!has;$('#oTicks').parentElement.classList.toggle('noticks',!!has);
     if(has)box.innerHTML='<div class="shotrow">'+cuts.map((r,i)=>{const gr=r.miss?null:gradeOf(r.off),c=cutColor(r),nm=NAMES[r.name]||r.name||'';
       return '<figure class="shot'+(r.miss?' miss':'')+'" style="--k:'+c+'"><div class="ph">'+(sh[i]&&!r.miss?'<img alt="'+nm+' cut '+r.pa+' / '+(100-r.pa).toFixed(1)+'" src="'+sh[i]+'">':'<span>'+(r.miss?'Missed':'')+'</span>')+'<i>'+(i+1)+'</i></div>'
-        +'<figcaption><b>'+(r.miss?'Missed':gr[1])+'</b><span>'+nm+'</span><small>'+(r.miss?'0 pts':(r.pa!=null?r.pa.toFixed(1)+' / '+(100-r.pa).toFixed(1)+' · ':'')+'+'+r.score)+'</small></figcaption></figure>'}).join('')+'</div><p class="shint">Swipe to see all 10 cuts</p>';}
+        +'<figcaption><b>'+(r.miss?'Missed':gr[1])+'</b><span>'+nm+'</span>'+'<small>'+(!r.miss&&r.pa!=null?r.pa.toFixed(1)+' / '+(100-r.pa).toFixed(1):'&nbsp;')+'</small>'+'<em class="pts"><strong>'+(r.miss?'0':'+'+r.score)+'</strong> pts</em></figcaption></figure>'}).join('')+'</div>';}
   $('#oCuts').hidden=!cuts.length;
   $('#oCuts').innerHTML=cuts.map(r=>'<div style="--k:'+cutColor(r)+'"><i></i><b>'+(r.miss?'–':r.score)+'</b><small>'+(r.miss?'Missed':NAMES[r.name]||r.name)+'</small></div>').join('');
   // tap or slide across the bars: a label pops over the bar under your finger and its card lights up in the row below
