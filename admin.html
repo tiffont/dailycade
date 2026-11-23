@@ -137,27 +137,119 @@ body.locked .dock{display:none!important}
 .offline{background:#fff4e5;color:#7a4d00;border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:14px}
 footer{height:20px}
 @media (max-width:640px){.tune{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr);gap:8px}.stat b{font-size:22px}h1{font-size:28px}}
+
+/* ================= dashboard layout ================= */
+body.locked .side nav{display:none}
+html,body{background:#f1f1ee}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;padding:22px 14px 18px;background:#fff;border-right:1px solid var(--line)}
+.side .brand{display:flex;align-items:center;gap:10px;padding:0 10px 18px}
+.side .logo{font-size:17px}
+.side nav{display:flex;flex-direction:column;gap:2px}
+.nv{display:flex;align-items:center;gap:11px;width:100%;border:0;background:none;border-radius:12px;padding:10px 12px;font-weight:600;font-size:14px;color:#4a4a48;cursor:pointer;text-align:left}
+.nv svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nv:hover{background:var(--soft);color:var(--ink)}
+.nv[aria-current="true"]{background:var(--ink);color:#fff}
+.nv .gdot{width:10px;height:10px;border-radius:50%;margin:0 4px;flex:none}
+.nv em{margin-left:auto;font-style:normal}
+.nv .badge{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#c49bff;color:#14062e;font-size:11px;font-weight:800;display:grid;place-items:center}
+.nv .dot{width:8px;height:8px;border-radius:50%;background:#e5a50a}.nv .dot.bad{background:#e5484d}
+.nvh{margin:18px 12px 6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sidefoot{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding:14px 10px 0;border-top:1px solid var(--line);font-size:13px}
+.sidefoot .whoami{margin:0;color:var(--muted);word-break:break-all}
+.sidefoot .whoami button{border:0;background:none;padding:0;color:var(--ink);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
+.sidefoot .back{color:var(--muted);text-decoration:none;font-weight:600}.sidefoot .back:hover{color:var(--ink)}
+.content{min-width:0;display:flex;flex-direction:column}
+.content .wrap{max-width:1180px;width:100%;margin:0;padding:0 32px}
+.content main{flex:1}
+.content h1{margin:30px 0 4px;font-size:30px}
+.card{background:#fff;border-radius:18px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+.card .knob,.card .lbrow,.card .fbitem,.card .usvc,.card .sttable td,.card .fbsum div,.card .chip{background:var(--soft)}
+.card .chip[aria-pressed="true"]{background:var(--ink)}
+.card .ubar{background:#e7e7e4}
+.dock{background:rgba(241,241,238,.94)}
+.dock .wrap{max-width:1180px;padding:12px 32px}
+/* overview */
+body.ovmode main>section:not(#ovCard){display:none!important}
+body.ovmode .dock{display:none!important}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.kpi{background:#fff;border-radius:18px;padding:18px 20px}
+.kpi span{display:block;font-size:13px;font-weight:600;color:var(--muted)}
+.kpi b{display:block;font-size:32px;font-weight:700;letter-spacing:-.02em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.kpi small{font-size:12px;color:var(--muted)}
+.ovgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ovgrid .card{margin:0;padding:20px}
+.ovgrid .wide{grid-column:span 2}
+.lnk{margin-left:auto;border:0;background:none;padding:0;font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.lnk:hover{color:var(--ink)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;font-weight:600;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.chart svg{display:block;width:100%;height:auto}
+.chart .lab{font-size:11px;fill:#8a8a86;font-family:var(--sans)}
+.chart .tot{font-size:11px;font-weight:700;fill:#4a4a48;font-family:var(--sans)}
+.empty{color:var(--muted);font-size:14px;margin:6px 0 0}
+.ovu{margin-top:12px}.ovu:first-child{margin-top:0}
+.ovu .ut{display:flex;justify-content:space-between;gap:8px;font-size:13px}.ovu .ut span{color:var(--muted);font-variant-numeric:tabular-nums}
+.ovrow{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line);font-size:14px}
+.ovrow:first-child{border-top:0;padding-top:2px}
+.ovrow .gd{width:10px;height:10px;border-radius:50%;flex:none}
+.ovrow b{font-weight:700}
+.ovrow .m{color:var(--muted);font-size:12px}
+.ovrow .r{margin-left:auto;text-align:right;font-variant-numeric:tabular-nums}
+.ovrow .r small{display:block;color:var(--muted);font-size:12px}
+.ovfb{padding:11px 0;border-top:1px solid var(--line)}.ovfb:first-child{border-top:0;padding-top:2px}
+.ovfb .t{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.ovfb .t .e{font-size:16px}
+.ovfb p{margin:4px 0 0;font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ovrow .btn.small{margin-left:8px}
+.ovrow .pill{background:var(--soft)}
+@media (max-width:1100px){.ovgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.ovgrid .wide{grid-column:span 2}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* phones and small tablets: the sidebar becomes a bar across the top */
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{position:sticky;top:0;z-index:15;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px 16px 10px;border-right:0;border-bottom:1px solid var(--line)}
+  .side .brand{padding:0}
+  .side nav{order:3;flex-direction:row;width:100%;overflow-x:auto;scrollbar-width:none;gap:4px;margin:8px -16px 0;padding:0 16px}
+  .side nav::-webkit-scrollbar{display:none}
+  .nv{width:auto;flex:none;padding:8px 12px}
+  .nvh{display:none}
+  .sidefoot{margin:0 0 0 auto;padding:0;border:0;flex-direction:row;align-items:center}
+  .sidefoot .whoami{display:none}
+  .content .wrap{padding:0 16px}
+  .dock .wrap{padding:12px 16px}
+  .ovgrid{grid-template-columns:1fr}.ovgrid .wide{grid-column:auto}
+}
 </style>
 </head>
 <body>
-<header><div class="wrap">
-  <a class="logo" href="/" aria-label="Dailycade home"><svg viewBox="0 0 53 69" aria-hidden="true"><path d="M4.03865 58.5444L28.7422 58.4145C32.5052 58.5538 35.6995 56.1602 36.9927 53.1536C37.5344 51.894 37.6625 50.7215 37.359 49.7708C37.3251 49.1516 37.1874 48.5274 36.9324 47.9231L32.7664 38.051L40.2475 38.07C50.5051 38.3367 55.1171 45.5211 51.5191 53.6912C48.1059 61.8232 37.5355 68.4919 27.3734 68.0026L0 67.9357L4.03865 58.5444Z"/><path d="M24.7505 47.5023L8.75173 47.5868L12.8741 38.0031L20.749 38.0218L24.7505 47.5023Z"/><path d="M16.5587 0.738192C8.75457 3.285 4.48766 11.6712 7.02349 19.4788C9.55916 27.2863 17.9392 31.5651 25.7505 29.0404C33.5774 26.5107 37.8665 18.1101 35.3257 10.2869C32.785 2.4635 24.3783 -1.8137 16.5587 0.738192Z"/></svg>Dailycade</a>
-  <span class="tag">Admin</span>
-  <a class="back" href="/">Back to site</a>
-</div></header>
+<div class="app">
+<aside class="side" aria-label="Admin">
+  <div class="brand"><a class="logo" href="/" aria-label="Dailycade home"><svg viewBox="0 0 53 69" aria-hidden="true"><path d="M4.03865 58.5444L28.7422 58.4145C32.5052 58.5538 35.6995 56.1602 36.9927 53.1536C37.5344 51.894 37.6625 50.7215 37.359 49.7708C37.3251 49.1516 37.1874 48.5274 36.9324 47.9231L32.7664 38.051L40.2475 38.07C50.5051 38.3367 55.1171 45.5211 51.5191 53.6912C48.1059 61.8232 37.5355 68.4919 27.3734 68.0026L0 67.9357L4.03865 58.5444Z"/><path d="M24.7505 47.5023L8.75173 47.5868L12.8741 38.0031L20.749 38.0218L24.7505 47.5023Z"/><path d="M16.5587 0.738192C8.75457 3.285 4.48766 11.6712 7.02349 19.4788C9.55916 27.2863 17.9392 31.5651 25.7505 29.0404C33.5774 26.5107 37.8665 18.1101 35.3257 10.2869C32.785 2.4635 24.3783 -1.8137 16.5587 0.738192Z"/></svg>Dailycade</a><span class="tag">Admin</span></div>
+  <nav id="nav" aria-label="Admin sections"></nav>
+  <div class="sidefoot"><p class="whoami" id="whoami" hidden></p><a class="back" href="/">← Back to site</a></div>
+</aside>
+<div class="content">
 
 <main class="wrap">
-  <h1>Game tuning</h1>
-  <p class="sub">Change how each game plays. Publish right away or schedule it for a day. Only you can publish.</p>
+  <h1 id="pageT">Overview</h1>
+  <p class="sub" id="pageS">How Dailycade is doing today.</p>
   <div class="offline" id="offline" hidden>Can't reach the game database right now. Check your connection and reload.</div>
   <section class="card login" id="loginCard" hidden>
     <h2 style="margin:0">Sign in</h2>
     <p id="loginMsg">Admin only. Enter your email and we'll send you a sign-in link.</p>
     <form id="loginForm" style="display:flex;gap:8px;flex-wrap:wrap"><input type="email" id="loginEmail" required placeholder="you@example.com" autocomplete="email" style="flex:1;min-width:200px"><button class="btn" type="submit" id="loginGo">Email me a link</button></form>
   </section>
-  <p class="whoami" id="whoami" hidden></p>
   <div id="usageWarn" hidden></div>
-  <div class="tabs" role="tablist" id="tabs"></div>
+  <section id="ovCard" hidden aria-label="Overview">
+    <div class="kpis" id="ovKpis"></div>
+    <div class="ovgrid">
+      <div class="card wide"><h2>Players by day <span class="note">Last 14 days</span></h2><div class="chart" id="ovChart"></div><div class="legend" id="ovLegend"></div></div>
+      <div class="card"><h2>Usage <button class="lnk" type="button" data-go="usage">Details</button></h2><div id="ovUsage"><p class="empty">Checking…</p></div></div>
+      <div class="card"><h2>Today's dailies <button class="lnk" type="button" data-go="leaderboards">Leaderboards</button></h2><div id="ovToday"><p class="empty">Loading…</p></div></div>
+      <div class="card"><h2>Latest feedback <button class="lnk" type="button" data-go="feedback">See all</button></h2><div id="ovFb"><p class="empty">Loading…</p></div></div>
+      <div class="card"><h2>Homepage</h2><div id="ovHome"></div></div>
+    </div>
+  </section>
 
   <section class="card" aria-labelledby="todayH">
     <h2 id="todayH">Today <span class="note" id="todayNote"></span></h2>
@@ -172,7 +264,7 @@ footer{height:20px}
       <span class="hint" style="margin:0">Starts the game over from scratch: deletes every score and best, and today becomes Game No. 1. The new day starts at 12am in each player's time zone.</span></div>
   </section>
 
-  <section class="card" aria-labelledby="siteH">
+  <section class="card" id="siteSec" hidden aria-labelledby="siteH">
     <h2 id="siteH">On the site</h2>
     <div class="row"><span class="pill" id="visPill"></span><span id="visTxt"></span><button class="btn ghost small" id="visBtn" type="button" style="margin-left:auto"></button></div>
   </section>
@@ -201,7 +293,7 @@ footer{height:20px}
   <section class="card" id="lbCard" aria-labelledby="lbH" hidden>
     <h2 id="lbH">Leaderboards <span class="note" id="lbNote"></span></h2>
     <p class="hint" style="margin:0 0 14px">Impossible scores are rejected automatically. Remove anything that still looks wrong: it deletes that player's score and blocks them from posting again.</p>
-    <div class="row" style="margin:0 0 16px"><span class="pill" id="bdPill"></span><span id="bdTxt"></span><button class="btn ghost small" id="bdBtn" type="button" style="margin-left:auto"></button></div>
+    <div class="row" hidden style="margin:0 0 16px"><span class="pill" id="bdPill"></span><span id="bdTxt"></span><button class="btn ghost small" id="bdBtn" type="button" style="margin-left:auto"></button></div>
     <div class="chips" id="lbGames"></div>
     <div class="lbcols"><div><h3>Today</h3><div id="lbToday"></div></div><div><h3>All time</h3><div id="lbAll"></div></div></div>
     <h3 style="margin:22px 0 4px;font-size:14px">Blocked players</h3><div id="lbBlocked"></div>
@@ -224,6 +316,7 @@ footer{height:20px}
     <label><input type="radio" name="when" value="date"> On <input type="date" id="whenDate" aria-label="Start date"></label>
   </div>
   <button class="btn" id="publishBtn" type="button">Publish</button>
+</div></div>
 </div></div>
 <footer></footer>
 
@@ -283,6 +376,8 @@ const GAMES={
 };
 
 /* ---------- state ---------- */
+let ovOn=false, fbNew=0, fbSeen=0; try{fbSeen=+localStorage.getItem('dc.admin.fbSeen')||0}catch(e){}
+let ovQ=0;
 let db=null, game='gambit', doc=null, draft=null, unsub=[], scoresRows=[], epochs={gambit:'2026-11-09',dropface:'2026-11-09',slice:'2026-11-14'};
 const G=()=>GAMES[game];
 const clone=o=>JSON.parse(JSON.stringify(o));
@@ -294,18 +389,32 @@ function ask(title,body,yes){return new Promise(res=>{$('mT').textContent=title;
   const done=v=>{$('modal').hidden=true;$('mYes').onclick=$('mNo').onclick=null;res(v)};$('mYes').onclick=()=>done(true);$('mNo').onclick=()=>done(false)})}
 
 /* ---------- tabs ---------- */
-function paintTabs(){const t=$('tabs');t.replaceChildren();
-  for(const [k,g] of Object.entries(GAMES)){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===game&&!fbOn&&!lbOn&&!stOn&&!usOn));
-    b.style.setProperty('--c',g.color);b.innerHTML='<i></i>'+g.name;b.onclick=()=>{fbOn=false;lbOn=false;stOn=false;usOn=false;setFb();try{localStorage.setItem('dc.admin.tab',k)}catch(e){}if(k!==game){game=k;load()}else paintTabs()};t.append(b)}
-  const f=document.createElement('button');f.type='button';f.setAttribute('role','tab');f.setAttribute('aria-selected',String(fbOn&&!stOn&&!usOn));f.style.setProperty('--c','linear-gradient(120deg,#ff8ad8,#c49bff,#7cc8ff,#9deba8)');
-  f.innerHTML='<i></i>Feedback';f.onclick=()=>{fbOn=true;lbOn=false;stOn=false;usOn=false;try{localStorage.setItem('dc.admin.tab','feedback')}catch(e){}setFb();paintTabs();watchFb()};t.prepend(f);
-  const l=document.createElement('button');l.type='button';l.setAttribute('role','tab');l.setAttribute('aria-selected',String(lbOn&&!stOn&&!usOn));l.style.setProperty('--c','#f2c14e');
-  l.innerHTML='<i></i>Leaderboards';l.onclick=()=>{lbOn=true;fbOn=false;stOn=false;usOn=false;try{localStorage.setItem('dc.admin.tab','leaderboards')}catch(e){}setFb();paintTabs();watchLb()};f.after(l);
-  const st=document.createElement('button');st.type='button';st.setAttribute('role','tab');st.setAttribute('aria-selected',String(stOn&&!usOn));st.style.setProperty('--c','#7cc8ff');
-  st.innerHTML='<i></i>Stats';st.onclick=()=>{stOn=true;fbOn=false;lbOn=false;usOn=false;try{localStorage.setItem('dc.admin.tab','stats')}catch(e){}setFb();paintTabs();loadSt()};l.after(st);
-  const us=document.createElement('button');us.type='button';us.setAttribute('role','tab');us.setAttribute('aria-selected',String(usOn));us.style.setProperty('--c',usLevel>=2?'#e5484d':usLevel===1?'#e5a50a':'#5bbf6a');
-  us.innerHTML='<i></i>Usage';us.onclick=()=>openUsage();st.after(us);
-  const on=t.querySelector('[aria-selected="true"]');if(on&&t.scrollWidth>t.clientWidth)t.scrollTo({left:Math.max(0,on.offsetLeft-t.offsetLeft-20),behavior:'smooth'})}
+const IC={
+  grid:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>',
+  chat:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>',
+  trophy:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  gauge:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 17a9 9 0 1 1 17 0"/><path d="M12 13l4-4"/><circle cx="12" cy="13" r="1.2"/></svg>'};
+const PAGES=[['overview','Overview',IC.grid,'How Dailycade is doing today.'],['feedback','Feedback',IC.chat,'Notes and reactions from players.'],
+  ['leaderboards','Leaderboards',IC.trophy,'Review scores and remove anything that looks wrong.'],['stats','Activity',IC.chart,'Plays counted by Dailycade, by day (New York time).'],
+  ['usage','Usage',IC.gauge,'How close each service is to its free plan limits.']];
+const curPage=()=>ovOn?'overview':fbOn?'feedback':lbOn?'leaderboards':stOn?'stats':usOn?'usage':game;
+function paintTabs(){const nav=$('nav');if(!nav)return;nav.replaceChildren();const cur=curPage();
+  const item=(k,label,icon,extra)=>{const b=document.createElement('button');b.type='button';b.className='nv';b.setAttribute('aria-current',String(k===cur));b.innerHTML=icon+'<span>'+label+'</span>'+(extra||'');b.onclick=()=>goPage(k);return b};
+  for(const [k,l,ic] of PAGES){let ex='';if(k==='feedback'&&fbNew)ex='<em class="badge">'+fbNew+'</em>';if(k==='usage'&&usLevel)ex='<em class="dot'+(usLevel>=2?' bad':'')+'"></em>';nav.append(item(k,l,ic,ex))}
+  nav.append(Object.assign(document.createElement('p'),{className:'nvh',textContent:'Game tuning'}));
+  for(const [k,g] of Object.entries(GAMES))nav.append(item(k,g.name,'<i class="gdot" style="background:'+g.color+'"></i>'));
+  const pg=PAGES.find(p=>p[0]===cur);$('pageT').textContent=pg?pg[1]:GAMES[cur].name;
+  $('pageS').textContent=pg?pg[3]:'Change how '+GAMES[cur].name+' plays. Publish right away or schedule it for a day. Only you can publish.';
+  document.title=(pg?pg[1]:GAMES[cur].name)+' · Admin · Dailycade';
+  const on=nav.querySelector('[aria-current="true"]');if(on&&nav.scrollWidth>nav.clientWidth)nav.scrollTo({left:Math.max(0,on.offsetLeft-20),behavior:'smooth'})}
+function goPage(k){ovOn=k==='overview';fbOn=k==='feedback';lbOn=k==='leaderboards';stOn=k==='stats';usOn=k==='usage';
+  try{localStorage.setItem('dc.admin.tab',k)}catch(e){}
+  setFb();
+  if(GAMES[k]&&k!==game){game=k;load()}else paintTabs();
+  if(ovOn)openOv();if(fbOn){watchFb();markFbSeen()}if(lbOn)watchLb();if(stOn)loadSt();if(usOn)loadUsage();
+  scrollTo(0,0)}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-go]');if(t)goPage(t.dataset.go)});
 
 /* ---------- knobs ---------- */
 function paintKnobs(){const box=$('knobs');box.replaceChildren();const def=G().defaults;
@@ -382,7 +491,7 @@ function load(){
 
 /* ---------- show or hide a game on the site ---------- */
 let hiddenList=[];
-function paintVis(){const off=hiddenList.includes(game),g=G().name;
+function paintVis(){queueOv();const off=hiddenList.includes(game),g=G().name;
   $('visPill').textContent=off?'Hidden':'Live';$('visPill').className='pill '+(off?'sched':'live');
   $('visTxt').textContent=off?' '+g+' is off the homepage, and its page shows "taking a break". Scores and settings are kept.':' '+g+' is on the homepage and playable.';
   $('visBtn').textContent=off?'Put back on the site':'Hide from the site'}
@@ -396,7 +505,7 @@ $('visBtn').onclick=async()=>{
 
 /* ---------- homepage "Today's daily challenge" cards on or off ---------- */
 let boardsOn=true;
-function paintBoards(){$('bdPill').textContent=boardsOn?'Showing':'Hidden';$('bdPill').className='pill '+(boardsOn?'live':'sched');
+function paintBoards(){queueOv();$('bdPill').textContent=boardsOn?'Showing':'Hidden';$('bdPill').className='pill '+(boardsOn?'live':'sched');
   $('bdTxt').textContent=boardsOn?" The homepage shows each game's Today's daily challenge card (top player and top score).":" The Today's daily challenge cards are off the homepage. Scores still save and the leaderboards below keep working.";
   $('bdBtn').textContent=boardsOn?'Hide homepage cards':'Show homepage cards'}
 paintBoards();
@@ -461,12 +570,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidd
 /* ---------- beta feedback ---------- */
 let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
 let lbOn=false, lbGame='gambit', lbData={gambit:[],dropface:[],slice:[]}, lbBlocked=[], lbSubs=null;
-function setFb(){document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn}
+function setFb(){document.body.classList.toggle('ovmode',ovOn);$('ovCard').hidden=!ovOn;document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn}
 /* ---------- stats: daily counts from the track() function ---------- */
 let stOn=false, stRows=[], stGame='all', stT=0;
 /* ---------- usage: how close each service is to its free plan ---------- */
 let usOn=false, usLevel=0, usData=null, usT=0;
-function openUsage(){usOn=true;fbOn=false;lbOn=false;stOn=false;try{localStorage.setItem('dc.admin.tab','usage')}catch(e){}setFb();paintTabs();loadUsage()}
+function openUsage(){goPage('usage')}
 const MB=1024*1024;
 const SERVICES=()=>{const d=usData||{};return[
   {name:'Supabase',what:'Database, sign-ins and live leaderboards',plan:'Free plan',up:'Pro, from $25/month',upUrl:'https://supabase.com/dashboard/org/_/billing',
@@ -489,7 +598,7 @@ async function loadUsage(){if(!window.DCSB)return;if(usOn)$('usNote').textConten
   try{const r=await DCSB.rpc('usage_summary');if(r.error)throw r.error;usData=r.data||{};paintUsage()}
   catch(e){if(usOn)$('usNote').textContent="Couldn't check usage: "+(e.message||e)}
   clearTimeout(usT);usT=setTimeout(()=>{if(document.visibilityState==='visible')loadUsage()},5*60*1000)}
-function paintUsage(){
+function paintUsage(){queueOv();
   const svcs=SERVICES();let worst=0,worstSvc=null;
   const list=$('usList');list.replaceChildren();
   for(const sv of svcs){let lv=0;
@@ -518,7 +627,7 @@ function paintUsage(){
 async function loadSt(){if(!window.DCSB)return;$('stNote').textContent='Loading…';
   try{const r=await DCSB.rpc('stats_summary',{p_days:30});if(r.error)throw r.error;stRows=r.data||[];paintSt()}catch(e){$('stNote').textContent="Couldn't load stats: "+(e.message||e)}
   clearTimeout(stT);stT=setTimeout(()=>{if(stOn&&document.visibilityState==='visible')loadSt()},60000)}
-function paintSt(){$('stNote').textContent='Last 30 days';
+function paintSt(){queueOv();$('stNote').textContent='Last 30 days';
   const ch=$('stGames');ch.replaceChildren();for(const [k,l] of [['all','All games'],['gambit','Gambit'],['dropface','Dropface'],['slice','Slice']]){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',String(k===stGame));b.onclick=()=>{stGame=k;paintSt()};ch.append(b)}
   const F=['players','start_daily','finish_daily','start_practice','challenge_shared','challenge_opened'];
   const byDay={};for(const r of stRows){if(stGame!=='all'&&r.game!==stGame)continue;const d=byDay[r.day]||(byDay[r.day]={});for(const f of F)d[f]=(d[f]||0)+Number(r[f]||0)}
@@ -548,7 +657,7 @@ async function lbRemove(k,r){const who=r.ini||'Nameless';
   try{await db.doc('blocked/'+r._id).set({ini:r.ini||'',game:k,best:LB[k].best(r)||0,day:LB[k].day(r)||0,at:Date.now()});await db.doc(LB[k].col+'/'+r._id).delete();msg('Removed '+who+' and blocked them.','ok')}
   catch(e){msg("Couldn't remove: "+(e.message||e),'err')}}
 async function lbUnblock(b){try{await db.doc('blocked/'+b._id).delete();msg('Unblocked '+(b.ini||'player')+'.','ok')}catch(e){msg("Couldn't unblock: "+(e.message||e),'err')}}
-function paintLb(){const g=LB[lbGame],rows=lbData[lbGame],t=g.today();$('lbNote').textContent=rows.length+' players';
+function paintLb(){queueOv();const g=LB[lbGame],rows=lbData[lbGame],t=g.today();$('lbNote').textContent=rows.length+' players';
   const ch=$('lbGames');ch.replaceChildren();for(const k of Object.keys(LB)){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=LB[k].name;b.setAttribute('aria-pressed',String(k===lbGame));b.onclick=()=>{lbGame=k;paintLb()};ch.append(b)}
   const list=(el,items,score,daily)=>{el.replaceChildren();if(!items.length){el.append(Object.assign(document.createElement('p'),{className:'hint',textContent:'No scores yet.'}));return}
     items.slice(0,25).forEach((r,i)=>{const d=document.createElement('div');d.className='lbrow';
@@ -567,7 +676,8 @@ function device(ua){ua=ua||'';const os=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua
   const br=/CriOS|Chrome\//.test(ua)&&!/Edg/.test(ua)?'Chrome':/FxiOS|Firefox/.test(ua)?'Firefox':/Edg/.test(ua)?'Edge':/Safari/.test(ua)?'Safari':'Browser';return os+' · '+br}
 function watchFb(){if(fbUnsub||!db)return;$('fbNote').textContent='Loading…';
   try{fbUnsub=db.collection('feedback').orderBy('at','desc').limit(500).onSnapshot(r=>{fbRows=r.docs.map(d=>Object.assign({_id:d.id},d.data()));paintFb()},e=>{$('fbNote').textContent="Couldn't load feedback: "+(e&&e.message||e)})}catch(e){$('fbNote').textContent="Couldn't load feedback."}}
-function paintFb(){
+function paintFb(){queueOv();
+  {const n=fbRows.filter(r=>r.kind!=='quick'&&(r.at||0)>fbSeen).length;if(fbOn&&n){markFbSeen()}else if(n!==fbNew){fbNew=n;paintTabs()}}
   const notes=fbRows.filter(r=>r.kind!=='quick'), quick=fbRows.filter(r=>r.kind==='quick'), rated=notes.filter(r=>r.rating);
   const up=quick.filter(r=>r.thumb==='up').length, down=quick.length-up;
   $('fbNote').textContent=fbRows.length?'Newest first':'Nothing yet';
@@ -582,9 +692,9 @@ function paintFb(){
   for(const r of rows){
     const it=document.createElement('div');it.className='fbitem';const top=document.createElement('div');top.className='top';
     const g=FB_GAME[r.game]||[r.game||'Dailycade','var(--line)'];
-    top.append(Object.assign(document.createElement('span'),{className:'r',textContent:r.kind==='quick'?(r.thumb==='up'?'👍':'👎'):(FB_RATE[r.rating]||'💬')}));
+    top.append(Object.assign(document.createElement('span'),{className:'r',textContent:r.thumb?(r.thumb==='up'?'👍':'👎'):(FB_RATE[r.rating]||'💬')}));
     const gp=Object.assign(document.createElement('span'),{className:'g',textContent:g[0]});gp.style.setProperty('--c',g[1]);top.append(gp);
-    const bits=[r.kind==='quick'?'Quick reaction':'Note', r.mode==='practice'?'Single player':r.day?'Daily No. '+r.day:'', r.score!=null?'Score '+fmtN(r.score):'', r.at?when(r.at):''].filter(Boolean);
+    const bits=[r.kind==='quick'?'Quick reaction':r.thumb?'Note after a '+(r.thumb==='up'?'👍':'👎'):'Note', r.mode==='practice'?'Single player':r.day?'Daily No. '+r.day:'', r.score!=null?'Score '+fmtN(r.score):'', r.at?when(r.at):''].filter(Boolean);
     top.append(bits.join(' · '));
     const del=Object.assign(document.createElement('button'),{className:'del',type:'button',textContent:'Delete'});
     del.onclick=async()=>{if(!await ask('Delete this feedback?','It will be removed for good.','Delete'))return;try{await db.doc('feedback/'+r._id).delete();msg('Feedback deleted.','ok')}catch(e){msg("Couldn't delete: "+(e.message||e),'err')}};
@@ -595,7 +705,76 @@ function paintFb(){
     ctx.append([device(r.ua),r.viewport,r.standalone?'Home screen app':'',r.theme==='dark'?'Dark mode':'',r.page].filter(Boolean).join(' · '));
     ctx.title=r.ua||'';it.append(ctx);list.append(it)}
 }
-try{const t=localStorage.getItem('dc.admin.tab');if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true;if(t==='usage')usOn=true}catch(e){}
+
+/* ---------- overview dashboard ---------- */
+function queueOv(){if(!ovOn||ovQ)return;ovQ=requestAnimationFrame(()=>{ovQ=0;paintOv()})}
+function markFbSeen(){fbSeen=Date.now();try{localStorage.setItem('dc.admin.fbSeen',String(fbSeen))}catch(e){}if(fbNew){fbNew=0;paintTabs()}}
+function openOv(){watchFb();watchLb();loadSt();if(!usData)loadUsage();paintOv()}
+const GHEX={gambit:'#9de6a3',dropface:'#b48cff',slice:'#ff8ad8'};
+const nyDay=(d=new Date())=>d.toLocaleDateString('en-CA',{timeZone:'America/New_York'});
+const ago=ms=>{const m=Math.round((Date.now()-ms)/6e4);return m<1?'just now':m<60?m+'m ago':m<1440?Math.round(m/60)+'h ago':Math.round(m/1440)+'d ago'};
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function paintOv(){if(!ovOn)return;
+  // KPI tiles
+  const td=nyDay(),wkAgo=nyDay(new Date(Date.now()-6*864e5));
+  const sum=(f,from,to)=>stRows.filter(r=>r.day>=from&&r.day<=to).reduce((a,r)=>a+Number(r[f]||0),0);
+  const notes=fbRows.filter(r=>r.kind!=='quick'),quick=fbRows.filter(r=>r.thumb);
+  const wkNotes=notes.filter(r=>(r.at||0)>Date.now()-7*864e5).length,ups=quick.filter(r=>r.thumb==='up').length;
+  const k=(l,v,sm)=>{const d=el('div','kpi');d.append(el('span',null,l),el('b',null,v),el('small',null,sm||''));return d};
+  const u=usData||{};
+  $('ovKpis').replaceChildren(
+    k('Players today',u.players_today!=null?fmtN(u.players_today):'–',u.mau!=null?fmtN(u.mau)+' this month':''),
+    k('Dailies finished today',stRows.length?fmtN(sum('finish_daily',td,td)):'–',stRows.length?fmtN(sum('start_daily',td,td))+' started':''),
+    k('Challenges sent',stRows.length?fmtN(sum('challenge_shared',wkAgo,td)):'–',stRows.length?'Last 7 days · '+fmtN(sum('challenge_opened',wkAgo,td))+' opened':''),
+    k('Feedback notes',fmtN(wkNotes),'Last 7 days'+(quick.length?' · '+Math.round(ups/quick.length*100)+'% 👍':'')));
+  // players by day, stacked by game
+  const days=[];for(let i=13;i>=0;i--)days.push(nyDay(new Date(Date.now()-i*864e5)));
+  const per=days.map(d=>{const o={};for(const g of Object.keys(GHEX))o[g]=stRows.filter(r=>r.day===d&&r.game===g).reduce((a,r)=>a+Number(r.players||0),0);return o});
+  const tot=per.map(o=>Object.values(o).reduce((a,b)=>a+b,0)),max=Math.max(1,...tot);
+  const W=700,H=220,pb=26,pt=18,bw=W/days.length,ch=H-pb-pt;
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Players by day, last 14 days">';
+  for(let i=0;i<4;i++){const y=pt+ch*i/3;svg+='<line x1="0" x2="'+W+'" y1="'+y+'" y2="'+y+'" stroke="#ececea" stroke-width="1"/>'}
+  days.forEach((d,i)=>{let y=pt+ch;const x=i*bw+bw*.18,w=bw*.64;
+    for(const g of Object.keys(GHEX)){const h=per[i][g]/max*ch;if(h>0){y-=h;svg+='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="3" fill="'+GHEX[g]+'"/>'}}
+    if(!tot[i])svg+='<rect x="'+x+'" y="'+(pt+ch-3)+'" width="'+w+'" height="3" rx="1.5" fill="#e4e4e1"/>';
+    else svg+='<text class="tot" x="'+(x+w/2)+'" y="'+(y-5)+'" text-anchor="middle">'+tot[i]+'</text>';
+    const [yy,mm,dd]=d.split('-').map(Number),dt=new Date(yy,mm-1,dd);
+    svg+='<text class="lab" x="'+(x+w/2)+'" y="'+(H-8)+'" text-anchor="middle">'+(i===13?'Today':dt.toLocaleDateString('en-US',{weekday:'short'}).slice(0,2)+' '+dd)+'</text>'});
+  svg+='</svg>';$('ovChart').innerHTML=stRows.length||tot.some(Boolean)?svg:'<p class="empty">Loading…</p>';
+  $('ovLegend').innerHTML=Object.keys(GHEX).map(g=>'<span><i style="background:'+GHEX[g]+'"></i>'+GAMES[g].name+'</span>').join('');
+  // usage meters (just the ones Dailycade can measure)
+  const ub=$('ovUsage');ub.replaceChildren();
+  if(usData){for(const sv of SERVICES())for(const r of sv.rows){if(r.check)continue;const v=Number(r.v||0),p=r.max?v/r.max:0,l=lvlOf(p);
+      const row=el('div','ovu');const t=el('div','ut');t.append(el('div',null,sv.name+' · '+r.l),el('span',null,r.v==null?'–':Math.round(p*100)+'%'));
+      const bar=el('div','ubar');const f=el('i',['','warn','bad'][l]);f.style.width=Math.min(100,Math.max(r.v?1.5:0,p*100))+'%';bar.append(f);row.append(t,bar);ub.append(row)}}
+  else ub.append(el('p','empty','Checking…'));
+  // today's dailies
+  const tb=$('ovToday');tb.replaceChildren();
+  for(const g of Object.keys(LB)){const L=LB[g],rows=(lbData[g]||[]).filter(r=>L.dayOk(r,L.today())).sort((a,b)=>L.day(b)-L.day(a)),top=rows[0];
+    const row=el('div','ovrow');const dot=el('i','gd');dot.style.background=GHEX[g];
+    const nm=el('div');nm.append(el('b',null,L.name),el('div','m','No. '+dayFrom(epochs[g])+(hiddenList.includes(g)?' · hidden':'')));
+    const r=el('div','r');r.append(el('b',null,top?fmtN(L.day(top)):'–'),el('small',null,top?(top.ini||'Nameless')+' · '+rows.length+' player'+(rows.length===1?'':'s'):'No scores yet'));
+    row.append(dot,nm,r);tb.append(row)}
+  // latest feedback
+  const fb=$('ovFb');fb.replaceChildren();const latest=fbRows.filter(r=>r.text).slice(0,4);
+  if(!latest.length)fb.append(el('p','empty',fbRows.length?'No written notes yet.':'Nothing yet.'));
+  for(const r of latest){const it=el('div','ovfb');const t=el('div','t');t.append(el('span','e',r.thumb?(r.thumb==='up'?'👍':'👎'):(FB_RATE[r.rating]||'💬')),el('span',null,(FB_GAME[r.game]||[r.game||'Dailycade'])[0]+(r.at?' · '+ago(r.at):'')));
+    it.append(t,el('p',null,r.text));it.onclick=()=>goPage('feedback');it.style.cursor='pointer';fb.append(it)}
+  // homepage: which games are on the site, and the daily cards
+  const hb=$('ovHome');hb.replaceChildren();
+  for(const g of Object.keys(GAMES)){const off=hiddenList.includes(g),row=el('div','ovrow');const dot=el('i','gd');dot.style.background=GHEX[g];
+    const p=el('span','pill '+(off?'sched':'live'),off?'Hidden':'Live');const b=el('button','btn ghost small',off?'Show':'Hide');b.type='button';b.onclick=()=>toggleGame(g);
+    const nm=el('b',null,GAMES[g].name);row.append(dot,nm,el('span','r'),p,b);row.querySelector('.r').style.flex='1';hb.append(row)}
+  {const row=el('div','ovrow');const p=el('span','pill '+(boardsOn?'live':'sched'),boardsOn?'Showing':'Hidden');const b=el('button','btn ghost small',boardsOn?'Hide':'Show');b.type='button';b.onclick=()=>$('bdBtn').click();
+    const nm=el('div');nm.append(el('b',null,"Today's daily cards"),el('div','m','Top player and score under each game'));row.append(nm,el('span','r'),p,b);row.querySelector('.r').style.flex='1';hb.append(row)}
+}
+async function toggleGame(g){if(!db){msg("Not connected to the database. Reload the page and sign in again.",'err');return}
+  const off=hiddenList.includes(g),n=GAMES[g].name;
+  if(!await ask(off?'Put '+n+' back?':'Hide '+n+'?',off?n+' comes back on the homepage and is playable again.':n+' comes off the homepage and its page shows a "taking a break" notice. Scores, settings and the daily count are kept.',off?'Put it back':'Hide it'))return;
+  const next=off?hiddenList.filter(x=>x!==g):[...hiddenList,g];
+  try{await db.doc('site_config/home').set({hidden:next,boards:boardsOn,updatedAt:Date.now()});msg(n+(off?' is back on the site.':' is hidden from the site.'),'ok')}
+  catch(e){msg("Couldn't save. Only the site owner can do this.",'err')}}
+try{const t=localStorage.getItem('dc.admin.tab')||'overview';if(t==='overview')ovOn=true;if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true;if(t==='usage')usOn=true}catch(e){ovOn=true}
 setFb();
 try{const t=localStorage.getItem('dc.admin.tab');if(GAMES[t])game=t}catch(e){}
 load();
@@ -625,9 +804,10 @@ load();
     try{if(window.claude&&window.claude.use)db=await window.claude.use('db')}catch(e){}
     if(!db){$('offline').hidden=false;return}
     ready=true;
-    if(fbOn)watchFb();
+    watchFb(); // always: it powers the new-feedback badge
     if(lbOn)watchLb();
     if(stOn)loadSt();
+    if(ovOn)openOv();
     loadUsage(); // also powers the warning banner on every tab
     try{db.doc('site_config/home').onSnapshot(sn=>{hiddenList=sn.exists&&Array.isArray(sn.data().hidden)?sn.data().hidden:[];boardsOn=!(sn.exists&&sn.data().boards===false);paintVis();paintBoards()},()=>{})}catch(e){}
     load();
