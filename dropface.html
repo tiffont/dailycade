@@ -737,6 +737,20 @@ body.dropping .barspace{height:16px} /* the controls are off screen, so the boar
 
 /* no double-tap or pinch zoom while playing: it froze the board on phones */
 html,body{touch-action:manipulation}
+
+/* summary: a tighter top block, and the stats list folded away under More info (closed each time the summary opens) */
+.sumv2{gap:14px}
+.sumv2 .omore{flex:none;margin:6px -24px 10px;padding:0 24px;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
+.sumv2 .omore summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--fg)}
+.sumv2 .omore summary::-webkit-details-marker{display:none}
+.sumv2 .omore summary svg{width:18px;height:18px;flex:none;color:var(--muted);transition:transform .2s}
+.sumv2 .omore[open] summary svg{transform:rotate(180deg)}
+.sumv2 .omore summary:focus-visible{outline:2px solid var(--mint);outline-offset:2px;border-radius:4px}
+.sumv2 .omore>:not(summary):last-child{margin-bottom:18px}
+.sumv2 .ssub{margin:0}
+.sumv2 .omore .eyebrow{margin:6px 0 10px}
+.sumv2 .omore .slist+.eyebrow{margin-top:16px}
 </style>
 
 <div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
@@ -1757,17 +1771,18 @@ function openSummary(){
     li.append(sq,el('span','sl',l),el('b',null,v));
     if(fn){ li.classList.add('link'); li.tabIndex=0; li.setAttribute('role','button'); li.setAttribute('aria-label',`${l}: ${v}. See all achievements`); li.onclick=fn; li.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fn(); } }; }
     ul.appendChild(li); });
-  body.appendChild(el('hr','sdiv')); body.appendChild(ul); // light gray line between sections
+  // the stats list (and today's achievements) fold away under More info, closed each time
+  const more=el('details','omore'), msum=el('summary',null,'More info'); msum.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
+  more.append(msum,ul); body.appendChild(more);
   // today's achievements as cards in a row that scrolls sideways
   if(todays.length){
-    body.appendChild(el('p','eyebrow',`Bonus points · +${achPts().toLocaleString()} pts`));
+    more.appendChild(el('p','eyebrow',`Bonus points · +${achPts().toLocaleString()} pts`));
     const grid=el('div','achgrid');
     todays.forEach(({b,n})=>{ const c=el('div','acard'); c.style.setProperty('--c',`var(${b.c})`);
       const top=el('div','atop'); const ic=el('span','ai',b.g); ic.setAttribute('aria-hidden','true'); top.append(ic,el('span','ap',`+${b.pts.toLocaleString()}`));
       c.append(top,el('b',null,b.name),el('small',null,`Drop ${n+1}`)); grid.appendChild(c); });
-    body.appendChild(grid);
+    more.appendChild(grid);
   }
-  body.appendChild(el('hr','sdiv')); // the stats list and bonus points are one section; the line goes under it
   // drop by drop: one list per drop, a row for every landing
   const where=e=>typeof e.v==='number'?(e.v===100?'Your pick':e.v===25?'Next to your pick':'Other slot'):(EVN[e.v]||e.v);
   // daily: leaderboard initials sit right above Challenge a friend
