@@ -643,7 +643,7 @@ function paintSt(){queueOv();$('stNote').textContent='Last 30 days';
     const vals=[new Date(y,m-1,dd).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),fmtN(v.players),fmtN(v.start_daily),null,fmtN(v.start_practice),fmtN(v.challenge_shared),fmtN(v.challenge_opened)];
     vals.forEach((x,i)=>{const td=document.createElement('td');if(i===3){td.textContent=fmtN(v.finish_daily);const sm=document.createElement('small');sm.textContent=pct(v.finish_daily,v.start_daily);td.append(sm)}else td.textContent=x;tr.append(td)});tb.append(tr)}}
 /* ---------- leaderboards: review and remove scores ---------- */
-const LB={gambit:{name:'Gambit',col:'gambit_scores',today:()=>{const b=new Date(2026,10,9),n=new Date();return Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-b)/864e5)},
+const LB={gambit:{name:'Gambit',col:'gambit_scores',today:()=>dayFrom(epochs.gambit), // numbered from the game's current start day (moves on "Reset all data")
     day:r=>r.dayBest,dayOk:(r,t)=>r.day===t&&r.dayBest>0,best:r=>r.best,meta:(r,d)=>{const t=d?r.dayTime:r.bestTime;return t?Math.round(t)+'s':''},at:r=>r.updatedAt||r.playedAt},
   dropface:{name:'Dropface',col:'dropface_scores',today:()=>{const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')},
     day:r=>r.dayScore,dayOk:(r,t)=>r.day===t&&r.dayScore!=null,best:r=>r.best,meta:()=>'',at:r=>r.at},
@@ -651,6 +651,8 @@ const LB={gambit:{name:'Gambit',col:'gambit_scores',today:()=>{const b=new Date(
     day:r=>r.dayBest,dayOk:(r,t)=>r.day===t&&r.dayBest>0,best:r=>r.best,meta:(r,d)=>{const p=d?r.dayPerf:r.bestPerf;return p?p+' Perfect':''},at:r=>r.updatedAt||r.playedAt}};
 function watchLb(){if(lbSubs||!db)return;lbSubs=[];$('lbNote').textContent='Loading…';
   for(const k of Object.keys(LB))lbSubs.push(db.collection(LB[k].col).orderBy('best','desc').limit(500).onSnapshot(r=>{lbData[k]=r.docs.map(d=>Object.assign({_id:d.id},d.data()));paintLb()},e=>{$('lbNote').textContent="Couldn't load: "+(e&&e.message||e)}));
+  // each game's start day, so "today" and the No. match what players see (a reset moves it)
+  for(const k of Object.keys(LB))lbSubs.push(db.doc(k+'_config/game').onSnapshot(sn=>{const e=sn.exists&&sn.data().epoch;if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)&&e!==epochs[k]){epochs[k]=e;paintLb();if(k===game)paintToday()}},()=>{}));
   lbSubs.push(db.collection('blocked').onSnapshot(r=>{lbBlocked=r.docs.map(d=>Object.assign({_id:d.id},d.data()));paintLb()},()=>{}));}
 async function lbRemove(k,r){const who=r.ini||'Nameless';
   if(!await ask('Remove '+who+"'s score?","This deletes their "+LB[k].name+' score and blocks this player from posting scores again. You can unblock them below.','Remove and block'))return;
