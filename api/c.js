@@ -9,6 +9,7 @@ const GAMES = {
   trace:    { name: 'Trace',    page: '/trace',    tag: 'Ten shapes made of cubes. Stay on the line, grow your pile.' },
   spiral:   { name: 'Spiral',   page: '/spiral',   tag: 'Ten throws, one target. Throw the perfect spiral.' },
   frames:   { name: 'Frames',   page: '/frames',   tag: 'One lane, ten pins. Knock them all down.' },
+  rings:    { name: 'Rings',    page: '/rings',    tag: 'Ten balls, six rings. Make them count.' },
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
