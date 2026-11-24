@@ -12,7 +12,8 @@
     t.style.cssText='position:fixed;right:8px;bottom:8px;z-index:2147483647;padding:4px 9px;border-radius:999px;background:#ff8a1f;color:#1a0d02;font:800 11px/1.2 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.4)';
     const br=document.querySelector('.side .brand'); // admin: sits above the logo in the sidebar
     if(br){t.style.position='static';t.style.alignSelf='flex-start';t.style.display='inline-block';t.style.margin='0 0 12px';t.style.boxShadow='none';br.parentNode.insertBefore(t,br)}
-    else document.body.appendChild(t)};document.body?tag():document.addEventListener('DOMContentLoaded',tag);
+    else{if(/^\/(index(\.html)?)?$/.test(location.pathname)){t.style.bottom='auto';t.style.right='auto';t.style.top='4px';t.style.left='6px'} // homepage: top-left
+      document.body.appendChild(t)}};document.body?tag():document.addEventListener('DOMContentLoaded',tag);
     try{const m=document.createElement('meta');m.name='robots';m.content='noindex,nofollow';document.head.appendChild(m)}catch(e){}}
   const SB_URL='https://qtcxlnchxztinnzbuwmd.supabase.co';
   const SB_KEY='sb_publishable_Mh7eThLTfeBTyY_8lRWv3w_OLI7KriP'; // publishable key: safe in the page, the database rules do the guarding
