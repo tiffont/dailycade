@@ -152,6 +152,8 @@ footer{height:20px}
 
 /* ================= dashboard layout ================= */
 body.locked .side nav{display:none}
+/* signed out: the sign-in card always shows, whichever page was open last (the page rules above would hide it) */
+html body.locked main>section#loginCard:not([hidden]),html body main>#offline:not([hidden]){display:block!important}
 html,body{background:#f1f1ee}
 .app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
 .side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;padding:22px 14px 18px;background:#fff;border-right:1px solid var(--line)}
