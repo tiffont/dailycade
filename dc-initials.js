@@ -29,7 +29,19 @@
    +'.dcini.compact button{width:40px;height:42px;padding:0;margin-left:2px;display:grid;place-items:center}'
    +'.dcini.compact button svg{width:20px;height:20px}'
    +'.dcini.compact p{display:none}'
-   +'.dcini.feature{margin:0;padding:18px;border-radius:16px;background:rgba(157,235,168,.07);box-shadow:inset 0 0 0 1.5px rgba(157,235,168,.35);gap:14px}'+'.dcini.feature .t{display:flex;align-items:center;gap:10px}'+'.dcini.feature .t b{font-family:var(--font-wide,"Archivo","Archivo Black",sans-serif);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:.88rem;letter-spacing:.01em;line-height:1.15}'+'.dcini.feature .t svg{width:22px;height:22px;flex:none;color:#9deba8}'+'.dcini.feature .t span{margin-left:auto;font-size:.78rem;font-weight:700;color:#9deba8}'+'.dcini.feature .t span.err{color:#ff8a7a}'+'.dcini.feature .s{margin:-8px 0 0;font-size:.86rem;opacity:.72;line-height:1.4}'+'.dcini.feature .r{gap:8px}'+'.dcini.feature input{width:50px;height:58px;font-size:1.8rem}'+'.dcini.feature button{height:50px;padding:0 22px;font-size:1rem}'+'.dcrow.stack{flex-direction:column;align-items:stretch;gap:28px}.dcrow.stack>.drop{width:100%!important;flex:none!important}'+'.dcrow{display:flex;align-items:flex-end;gap:12px}.dcrow>.drop{flex:1 1 auto!important;width:auto!important;min-width:0;margin-top:0!important;margin-bottom:4px;white-space:nowrap;font-size:15px!important;padding-inline:10px!important}';
+   +'.dcini.feature{margin:0;padding:18px;border-radius:16px;background:rgba(157,235,168,.07);box-shadow:inset 0 0 0 1.5px rgba(157,235,168,.35);gap:14px}'+'.dcini.feature .t{display:flex;align-items:center;gap:10px}'+'.dcini.feature .t b{font-family:var(--font-wide,"Archivo","Archivo Black",sans-serif);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:.88rem;letter-spacing:.01em;line-height:1.15}'+'.dcini.feature .t svg{width:22px;height:22px;flex:none;color:#9deba8}'+'.dcini.feature .t span{margin-left:auto;font-size:.78rem;font-weight:700;color:#9deba8}'+'.dcini.feature .t span.err{color:#ff8a7a}'+'.dcini.feature .s{margin:-8px 0 0;font-size:.86rem;opacity:.72;line-height:1.4}'+'.dcini.feature .r{gap:8px}'+'.dcini.feature input{width:50px;height:58px;font-size:1.8rem}'+'.dcini.feature button{height:50px;padding:0 22px;font-size:1rem}'+'.dcrow.stack{flex-direction:column;align-items:stretch;gap:28px}.dcrow.stack>.drop{width:100%!important;flex:none!important}'+'.dcrow{display:flex;align-items:flex-end;gap:12px}.dcrow>.drop{flex:1 1 auto!important;width:auto!important;min-width:0;margin-top:0!important;margin-bottom:4px;white-space:nowrap;font-size:15px!important;padding-inline:10px!important}'
+   /* Claim your spot: filled brand green until initials are saved; bigger heading; checkmark and Saved once claimed */
+   +'.dcini.feature .t b{font-size:1.12rem;line-height:1.1}'
+   +'.dcini.feature .t svg{width:24px;height:24px}'
+   +'.dcini.feature:not(.claimed){background:#9deba8;box-shadow:none;color:#0b2a12}'
+   +'.dcini.feature:not(.claimed) .t,.dcini.feature:not(.claimed) .t b,.dcini.feature:not(.claimed) p{color:#0b2a12;opacity:1}'
+   +'.dcini.feature:not(.claimed) p.s{opacity:.8}'
+   +'.dcini.feature:not(.claimed) .t svg{color:#0b2a12;stroke:#0b2a12}'
+   +'.dcini.feature:not(.claimed) input{background:rgba(255,255,255,.4);box-shadow:inset 0 0 0 1.5px rgba(11,42,18,.35);color:#0b2a12}'
+   +'.dcini.feature:not(.claimed) input:focus{box-shadow:inset 0 0 0 2px #0b2a12}'
+   +'.dcini.feature:not(.claimed) button{background:#0b2a12;color:#9deba8;box-shadow:0 4px 0 #000}'
+   +'.dcini.feature:not(.claimed) button:not(:disabled):active{box-shadow:0 1px 0 #000}'
+   +'.dcini.feature:not(.claimed) button:disabled{background:rgba(11,42,18,.2);color:rgba(11,42,18,.55);box-shadow:0 4px 0 rgba(11,42,18,.25)}';
     document.head.appendChild(s)}
   function block(save,o){
     style();const compact=!!(o&&o.compact), feature=!!(o&&o.feature);
@@ -41,12 +53,13 @@
     let saved=get();
     const boxes=[0,1,2].map(i=>{const b=document.createElement('input');b.type='text';b.maxLength=1;b.autocomplete='off';b.autocapitalize='characters';b.spellcheck=false;
       b.inputMode='text';b.setAttribute('aria-label','Initial '+(i+1));b.value=saved[i]||'';row.appendChild(b);return b});
+    const CHECKMARK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.8 2.8L16.2 9.6"/></svg>';
     const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
     const btn=document.createElement('button');btn.type='button';row.appendChild(btn);
     const label=t=>{if(compact){btn.innerHTML=t==='Save'?CHECK:'…';btn.setAttribute('aria-label',t==='Save'?'Save initials':t)}else btn.textContent=t};label('Save');
     const say=(t,err)=>{if(compact||feature){tag.textContent=t;tag.className=err?'err':''}else{note.className=err?'err':'';note.textContent=t}};
     const val=()=>boxes.map(b=>b.value).join('');
-    const paint=()=>{const v=val();btn.disabled=!v||v===saved;if(tag.className!=='err')tag.textContent=saved?(v===saved?'Saved':''):'';if(title){const on=saved&&v===saved;title.textContent=on?'Spot claimed':'Claim your spot';if(tag.className!=='err')tag.textContent='';sub.textContent=on?'You\'re on the board, but you can change your initials at any time.':'Add your initials to join the leaderboard.'}};
+    const paint=()=>{const v=val();wrap.classList.toggle('claimed',!!saved&&v===saved);btn.disabled=!v||v===saved;if(tag.className!=='err')tag.textContent=saved?(v===saved?'Saved':''):'';if(title){const on=saved&&v===saved;title.textContent=on?'Spot claimed':'Claim your spot';const ic=wrap.querySelector('.t svg');if(ic&&ic.dataset.k!==(on?'c':'t')){ic.outerHTML=(on?CHECKMARK:TROPHY).replace('<svg','<svg data-k="'+(on?'c':'t')+'"')}if(btn.textContent!=='Saving…')label(on?'Saved':'Save');if(tag.className!=='err')tag.textContent='';sub.textContent=on?'You\'re on the board, but you can change your initials at any time.':'Add your initials to join the leaderboard.'}};
     boxes.forEach((b,i)=>{
       b.addEventListener('input',()=>{const c=clean(b.value);b.value=c.slice(-1);if(c&&i<2)boxes[i+1].focus();say(compact||feature?'':'Shown next to your score on the leaderboard.');paint()});
       b.addEventListener('keydown',e=>{
@@ -64,7 +77,7 @@
       btn.disabled=true;label('Saving…');
       try{set(v);await save(v);saved=v;say(compact||feature?'':'Saved. Your initials now show on the leaderboard.')}
       catch(e){say(compact||feature?"Couldn't save":"Couldn't save right now. Try again in a moment.",true)}
-      label('Save');paint();
+      btn.textContent='';label('Save');paint();
     });
     paint();
     return wrap;
