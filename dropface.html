@@ -798,7 +798,7 @@ html,body{touch-action:manipulation}
     <div class="mhead"><h2 id="howtoh">How to play</h2><button class="x" data-close aria-label="Close">×</button></div>
     <div class="howbody howv">
       <ol class="hlist"><li><span class="hn">1</span><span class="sl">Pick your slots<small>All 10 boards, top to bottom. Tap Random to pick for you.</small></span></li><li><span class="hn">2</span><span class="sl">Tap Drop<small>The ball starts from a hidden spot and falls through every board</small></span></li><li><span class="hn">3</span><span class="sl">Score where it lands<small>Your pick is 100, the slots beside it 25, the rest 10</small></span></li><li><span class="hn">4</span><span class="sl">Three drops a game<small>Your score is all three added up. The Daily challenge uses the same boards for everyone.</small></span></li></ol>
-      <div class="hwatch"><p class="eyebrow">Watch for</p><ul class="hlist"><li style="--c:var(--red)"><span class="slot bomb wslot" aria-hidden="true"><b>💣</b></span><span class="sl">Bomb<small>Explodes: score to 0, drop over</small></span></li><li style="--c:var(--violet)"><span class="slot x10 wslot" aria-hidden="true"><b>10x</b></span><span class="sl">10x<small>Score times 10</small></span></li><li style="--c:var(--sky)"><span class="slot split wslot" aria-hidden="true"><b>Split</b></span><span class="sl">Split<small>One ball becomes two</small></span></li><li style="--c:var(--pink)"><span class="slot portal wslot" aria-hidden="true"><b>Portal</b></span><span class="sl">Portal<small>Drop again from the top</small></span></li><li style="--c:var(--orange)"><span class="slot rewind wslot" aria-hidden="true"><b>Rewind</b></span><span class="sl">Rewind<small>Replay the same board</small></span></li><li style="--c:var(--lime)"><span class="slot trip wslot" aria-hidden="true"><b>Trip</b></span><span class="sl">Trip<small>Skip the next level</small></span></li><li style="--c:var(--teal)"><span class="slot half wslot" aria-hidden="true"><b>½</b></span><span class="sl">Half<small>Score cut in half</small></span></li><li style="--c:var(--fg)"><span class="slot freefall wslot" aria-hidden="true"><b>Void</b></span><span class="sl">Void<small>Drops straight through the next board</small></span></li><li style="--c:var(--blue)"><span class="slot aim wslot" aria-hidden="true"><b>Aim</b></span><span class="sl">Aim<small>You pick where the next drop starts</small></span></li><li style="--c:var(--gold-solid)"><span class="slot bonus wslot" aria-hidden="true"><b>+1</b></span><span class="sl">Bonus<small>Replay the board, your score keeps adding</small></span></li><li style="--c:var(--steel)"><span class="slot magnet wslot" aria-hidden="true"><b>Magnet</b></span><span class="sl">Magnet<small>Pulls the ball into your 100</small></span></li></ul></div>
+      <div class="hwatch"><p class="eyebrow">Watch for</p><ul class="hlist"><li style="--c:var(--red)"><span class="slot bomb wslot" aria-hidden="true"><b>💣</b></span><span class="sl">Bomb<small>Explodes: score to 0, drop over</small></span></li><li style="--c:var(--violet)"><span class="slot x10 wslot" aria-hidden="true"><b>10x</b></span><span class="sl">10x<small>Score times 10</small></span></li><li style="--c:var(--sky)"><span class="slot split wslot" aria-hidden="true"><b>Split</b></span><span class="sl">Split<small>One ball becomes two</small></span></li><li style="--c:var(--pink)"><span class="slot portal wslot" aria-hidden="true"><b>Portal</b></span><span class="sl">Portal<small>Drop again from the top</small></span></li><li style="--c:var(--orange)"><span class="slot rewind wslot" aria-hidden="true"><b>Rewind</b></span><span class="sl">Rewind<small>Replay the same board. Three in a row: +500</small></span></li><li style="--c:var(--lime)"><span class="slot trip wslot" aria-hidden="true"><b>Trip</b></span><span class="sl">Trip<small>Skip the next level</small></span></li><li style="--c:var(--teal)"><span class="slot half wslot" aria-hidden="true"><b>½</b></span><span class="sl">Half<small>Score cut in half</small></span></li><li style="--c:var(--fg)"><span class="slot freefall wslot" aria-hidden="true"><b>Void</b></span><span class="sl">Void<small>Drops straight through the next board</small></span></li><li style="--c:var(--blue)"><span class="slot aim wslot" aria-hidden="true"><b>Aim</b></span><span class="sl">Aim<small>You pick where the next drop starts</small></span></li><li style="--c:var(--gold-solid)"><span class="slot bonus wslot" aria-hidden="true"><b>+1</b></span><span class="sl">Bonus<small>Replay the board, your score keeps adding</small></span></li><li style="--c:var(--steel)"><span class="slot magnet wslot" aria-hidden="true"><b>Magnet</b></span><span class="sl">Magnet<small>Pulls the ball into your 100</small></span></li></ul></div>
       <button class="drop sumprac white" data-close>Got it</button>
       <button class="dcfblink" id="howFb" type="button">Send feedback</button>
     </div>
@@ -864,6 +864,7 @@ const SHAPES=[
   ['hex','Hexagon pins'],['star','Star pins'],['plus','Cross pins'],['ring','Ring pins'],
   ['pent','Pentagon pins'],['bar','Bar pins']
 ];
+const REWIND3=500; // bonus for a ball that lands on Rewind three times in a row
 const LABEL={bomb:'💣', x10:'10x', split:'Split', portal:'Portal', rewind:'Rewind', trip:'Trip', half:'½', freefall:'Void', aim:'Aim', bonus:'+1', magnet:'Magnet'};
 let splitUsed=false, portalUsed=false;
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1225,7 +1226,7 @@ function run(){
     i=Math.min(...tokens.map(t=>t.next));
     const act=tokens.filter(t=>t.next===i); waiting=tokens.filter(t=>t.next!==i);
     landed[i]=[]; // a board can be played more than once; show only this pass
-    ballLevel=i; balls=act.map(t=>({...(t.back?rewindPath(t):t.free?fallPath(t.x):t.mag?magnetPath(t.x,picks[i]):pathFor(t.x,t.id)),id:t.id,free:!!t.free,mag:!!t.mag,x:t.x,y:-ballR*2,trail:[]}));
+    ballLevel=i; balls=act.map(t=>({...(t.back?rewindPath(t):t.free?fallPath(t.x):t.mag?magnetPath(t.x,picks[i]):pathFor(t.x,t.id)),id:t.id,rw:t.rw||0,free:!!t.free,mag:!!t.mag,x:t.x,y:-ballR*2,trail:[]}));
     // balls on one board step together, so a shorter path (one that isn't rewinding) waits at the top until the others catch up
     const len=Math.max(...balls.map(b=>b.pts.length));
     balls.forEach(b=>{ while(b.pts.length<len) b.pts.unshift({x:b.pts[0].x,y:b.pts[0].y}); });
@@ -1245,12 +1246,14 @@ function run(){
       p++; t0=now;
       if(balls[0].pts[p]?.peg) SFX.peg(p-1);
       if(balls[0].pts[p].bin){ // the balls on this board land at the same moment; tally in order
-        let lost=0, gained=0, halved=0;
+        let lost=0, gained=0, halved=0, rw3=0;
         balls.forEach(b=>{
           const v=value(i,b.k), before=score; landed[i].push(b.k); results[i].push({v});
           if(v==='bonus') earnBonus();
           if(v==='bomb'){ lost+=score; score=0; } else if(v==='half'){ const cut=score-Math.floor(score/2); halved+=cut; score-=cut; } else if(v==='x10'){ gained+=score*9; score*=10; } else if(typeof v==='number') score+=PTS(v);
           runLog.push({lv:i,v,d:score-before});
+          // three Rewinds in a row by the same ball pay a hefty bonus (and every third one after that)
+          if(v==='rewind'){ b.rw=(b.rw||0)+1; if(b.rw%3===0){ score+=REWIND3; rw3++; const e=runLog[runLog.length-1]; e.d+=REWIND3; e.r3=1; } } else b.rw=0;
           badgeLand(i,v);
         });
         const hit=['bomb','half','x10','split','rewind','trip','freefall','aim','bonus','magnet'].find(t=>balls.some(b=>value(i,b.k)===t));
@@ -1259,6 +1262,7 @@ function run(){
         else if(hit==='half') flashText(i,'−'+halved.toLocaleString(),'--teal'); // show what the halving took
         else if(hit==='x10') flashText(i,'+'+gained.toLocaleString(),'--violet'); // show what the multiplier added
         else if(hit==='bonus'){ const nb=balls.filter(b=>value(i,b.k)==='bonus').length; flashText(i,`+${nb} DROP${nb>1?'S':''}`,'gold'); } // one per ball that landed on +1
+        else if(rw3) flashText(i,'+'+(REWIND3*rw3).toLocaleString(),'--orange'); // 3 rewinds in a row
         else if(hit) flash(i,hit);
         else if(!balls.some(b=>value(i,b.k)==='portal')){ // plain points: show what this board paid
           const nums=balls.map(b=>value(i,b.k)).filter(v=>typeof v==='number');
@@ -1278,7 +1282,7 @@ function run(){
         balls.forEach(b=>{
           const v=value(i,b.k);
           if(v==='portal'){ moved.push({id:b.id,x:slotX(rr(SLOTS)),next:0}); warp=true; }       // back to the top board
-          else if(v==='rewind'){ const fell=b.pts.slice(-(ROWS+3)); moved.push({id:b.id,x:fell[0].x,next:i,back:fell}); } // climb back up its last fall only (top, 8 pins, bin, exit), then fall again from where it entered
+          else if(v==='rewind'){ const fell=b.pts.slice(-(ROWS+3)); moved.push({id:b.id,x:fell[0].x,next:i,back:fell,rw:b.rw}); } // climb back up its last fall only (top, 8 pins, bin, exit), then fall again from where it entered
           else if(v==='trip'){ moved.push({id:b.id,x:slotX(b.k),next:i+2}); tripped=true; } // jump over the next board
           else if(v==='freefall') moved.push({id:b.id,x:slotX(b.k),next:i+1,free:true});
           else if(v==='aim') moved.push({id:b.id,x:slotX(b.k),next:i+1,aim:true});
@@ -1713,7 +1717,7 @@ $('openBadges').onclick=()=>{ renderBadges(); $('badgeModal').showModal(); };
 // today's summary: every drop, every pass (bonus replays included), and what each landing did
 const EVC={100:'--mint',25:'--amber',10:'--muted',bomb:'--red',half:'--teal',x10:'--violet',split:'--sky',portal:'--pink',rewind:'--orange',trip:'--lime',freefall:'--fg',aim:'--blue',magnet:'--steel',bonus:'--gold-solid'};
 const EVN={bomb:'Bomb',half:'½',x10:'10x',split:'Split',portal:'Portal',rewind:'Rewind',trip:'Trip',freefall:'Void',aim:'Aim',magnet:'Magnet',bonus:'+1'};
-function evText(e){ const sign=e.d>0?'+':e.d<0?'\u2212':''; const amt=e.d?sign+Math.abs(e.d).toLocaleString():''; return typeof e.v==='number'?amt:(EVN[e.v]||e.v)+(amt?' '+amt:''); }
+function evText(e){ const sign=e.d>0?'+':e.d<0?'\u2212':''; const amt=e.d?sign+Math.abs(e.d).toLocaleString():''; return typeof e.v==='number'?amt:(EVN[e.v]||e.v)+(e.r3?' ×3':'')+(amt?' '+amt:''); }
 // summary icons: 2px line icons drawn in each row's colour
 const SICONS={
   drop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="15" r="5"/><path d="M12 3v4"/></svg>',
