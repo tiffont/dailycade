@@ -1,0 +1,1879 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Trace – Free Daily Tracing Game | Dailycade</title><meta name="description" content="Trace ten shapes made of tiny cubes. Every cube you hit falls into your pile, every one you miss stays behind. A new set every day, free to play in your browser."><link rel="canonical" href="https://dailycadegames.com/trace"><meta property="og:url" content="https://dailycadegames.com/trace"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "VideoGame", "name": "Trace", "url": "https://dailycadegames.com/trace", "description": "Trace ten shapes made of tiny cubes. Every cube you hit falls into your pile, every one you miss stays behind. A new set every day, free to play in your browser.", "genre": "Arcade", "gamePlatform": "Web browser", "applicationCategory": "Game", "operatingSystem": "Any", "image": "https://dailycadegames.com/api/og?game=trace&v=7", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "publisher": {"@type": "Organization", "name": "Dailycade", "url": "https://dailycadegames.com/"}}</script><meta property="og:type" content="website"><meta property="og:site_name" content="Dailycade"><meta property="og:title" content="Trace on Dailycade"><meta property="og:description" content="Trace each shape fast and true. Stay on the line, grow your pile."><meta property="og:image" content="https://dailycadegames.com/api/og?game=trace&amp;v=7"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://dailycadegames.com/api/og?game=trace&amp;v=7"><script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script><script defer src="/_vercel/insights/script.js"></script><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon-v3.png"><link rel="manifest" href="/site.webmanifest"><meta name="apple-mobile-web-app-title" content="Dailycade"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}#oFb .dcquick{margin-top:-5px} /* half the old space under the buttons (28px gap + 18px margin → 23px) */
+
+/* Challenge a friend: paper plane, placed like the start buttons' icons */
+#challengeBtn::after{content:"";position:absolute;left:18px;top:50%;margin-top:-11px;width:22px;height:22px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 14 21 3'/%3E%3Cpath d='M21 3l-6.5 18a.55.55 0 0 1-1 0L10 14 3 10.5a.55.55 0 0 1 0-1L21 3z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 14 21 3'/%3E%3Cpath d='M21 3l-6.5 18a.55.55 0 0 1-1 0L10 14 3 10.5a.55.55 0 0 1 0-1L21 3z'/%3E%3C/svg%3E") center/contain no-repeat;pointer-events:none}
+#challengeBtn{position:relative}
+</style></head><body><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="dc-db.js"></script>
+<script src="dc-crt.js"></script>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wdth,wght@125,800;125,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: Dropface one-column game board. Header + stats panel, the play board fills the middle,
+   power-up slots sit under the board like Dropface slot chips, tally + primary button at the bottom.
+   Single dark look by choice (Dropface tokens). Mint means "you": your cards, your score. */
+:root{
+  --bg:#0e0f0f; --panel:#1c1e1e; --panel2:#2a2c2c; --fg:#f2f4f3; --muted:#8b908e;
+  --mint:#9deba8; --mint-ink:#0b2a12; --pip-ready:#3e4241; --toggle-on:#ffffff;
+  --slot-100:#2d3b30; --slot-25:#332d1c; --slot-bomb:#3a1a1c;
+  --amber:#f2c14e; --amber-ink:#2b2103; --red:#e5484d; --violet:#c49bff; --sky:#7cc8ff;
+  --teal:#4fd8c8; --orange:#ff9f5a; --pink:#ff8ad8; --lime:#d6f25b; --btn:var(--mint); --btn-ink:var(--mint-ink); --btn-edge:#4f9a5c; --sec-edge:#191b1b; --blue:#6e8bff; --steel:#a9bccf; --gold-solid:#f6d77a;
+  --peg:#5a605d; --grid:#232625;
+  --gold:linear-gradient(115deg,#B8862B 0%,#F6D77A 30%,#FFF1C2 45%,#E2B24C 62%,#9C6E1E 100%);
+  --font-display:"Archivo Black","Arial Black",Impact,system-ui,sans-serif;
+  --font-body:"Inter",-apple-system,system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+:root{--appw:100vw} /* the game's width: the whole screen on phones, the phone frame on desktop */
+/* desktop: the game sits in a phone-shaped frame in the middle of the screen. The transform makes every fixed layer
+   (board, header, dock, overlays, toasts) live inside the frame instead of the whole window. */
+@media (min-width:600px) and (min-aspect-ratio:4/5){
+  :root{--apph:min(calc(100dvh - 48px),932px);--appw:calc(var(--apph) * 9 / 19.5)}
+  html{background:#2b2c2c!important} /* mid-grey surround, like a card sitting on a table */
+  body{position:relative;width:var(--appw)!important;height:var(--apph)!important;margin:calc((100dvh - var(--apph)) / 2) auto 0!important;
+    border-radius:16px;overflow:hidden;transform:translateZ(0);box-shadow:0 18px 50px rgba(0,0,0,.45),0 4px 12px rgba(0,0,0,.25)}
+}
+html{height:100%;box-sizing:border-box;background:var(--bg);overflow:hidden}
+*,*::before,*::after{box-sizing:inherit}
+body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:14px;line-height:1.4;overscroll-behavior:none;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+/* Layout: the board is the whole screen; the header and the bottom dock float over it.
+   Only the controls take touches, so a swipe anywhere else reaches the board. */
+.app{position:fixed;inset:0;z-index:3;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;
+  padding-top:calc(env(safe-area-inset-top,0px) + 12px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.app>*{width:100%;max-width:440px;margin-inline:auto}
+.app button{pointer-events:auto}
+.dock{display:flex;flex-direction:column;gap:10px}
+.scrim{position:fixed;left:0;right:0;z-index:2;pointer-events:none}
+.scrim.t{top:0;height:calc(env(safe-area-inset-top,0px) + 84px);background:linear-gradient(var(--bg) 30%,transparent)}
+.scrim.b{bottom:0;height:calc(env(safe-area-inset-bottom,0px) + 130px);background:linear-gradient(transparent,color-mix(in srgb,var(--bg) 92%,transparent) 55%)}
+.pips.lifebar{flex:none;height:6px}
+.app:not(.playing) .lifebar{visibility:hidden}
+.app.playing .daybar,.app.playing .droprow{display:none}
+.app .daybar{display:none} /* start screen: just Play */
+.app:not(.playing) .slots,.app:not(.playing) .liferow{display:none}
+.liferow{display:flex;align-items:center;gap:12px}
+.liferow .bars{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.liferow .bars .pips{flex:none;width:100%}
+.pips.lifecount{height:6px}
+.liferow .pips,.liferow .pips .fill{border-radius:0} /* square ends on both health bars */
+.pips.lifecount .fill{background:var(--amber)}
+.liferow b{flex:none;min-width:2ch;text-align:left;font-size:1.15rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+/* Slopai mark: back to all games */
+.gtitle{display:flex;align-items:center;gap:10px;min-width:0}
+.hubmark{display:block;width:30px;height:30px;flex:none;border-radius:8px;pointer-events:auto;transition:opacity .2s}
+.app.playing .hubmark{pointer-events:none;opacity:.4} /* no leaving mid-game by accident */
+.hubmark svg{display:block;width:100%;height:100%}
+.hubmark:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+h1{font-family:var(--font-display);font-weight:400;font-size:24px;line-height:1;margin:0;letter-spacing:-.01em}
+#modeBtn:disabled{opacity:1} /* keep the practice icon white even while a game is running */
+h1 .modetag{font-family:var(--font-body);font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);background:var(--slot-25);border-radius:999px;padding:4px 8px;vertical-align:middle;margin-left:4px}
+.nav{display:flex;gap:8px}
+.icon{width:38px;height:38px;border:0;border-radius:50%;background:var(--panel);color:var(--fg);cursor:pointer;display:grid;place-items:center;padding:0}
+.icon svg{width:20px;height:20px}
+.icon:disabled{opacity:.4;cursor:default}
+
+/* stats panel */
+.daybar{display:flex;flex-direction:column;gap:10px;background:var(--panel);border-radius:14px;padding:10px 12px}
+.daystats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--bg);border-radius:10px}
+.daystats>div{position:relative;display:flex;flex-direction:column;gap:2px;padding:8px 10px;min-width:0}
+.daystats>div+div::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:1px;background:var(--panel2)}
+.daystats small{white-space:nowrap;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.daystats strong{font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums}
+.barrow{display:flex;align-items:center;gap:10px;padding:0 2px}
+.barrow>span{font-size:.75rem;font-weight:500;color:var(--muted);flex:none;min-width:38px}
+.pips{position:relative;flex:1;min-width:0;height:8px;border-radius:4px;background:var(--panel2);overflow:hidden}
+.pips .fill{position:absolute;inset:0 auto 0 0;border-radius:4px;background:var(--mint);transition:width .5s cubic-bezier(.2,.8,.2,1),background-color .3s}
+.pips .fill.bonus{background:var(--gold);transition:width .5s cubic-bezier(.2,.8,.2,1),left .5s cubic-bezier(.2,.8,.2,1)}
+.pips .tick{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--panel)}
+.pips.hurt .fill{background:var(--red)}
+
+/* board */
+/* full-screen board */
+.board{position:fixed;inset:0;z-index:0;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;
+  background-image:none} /* plain board, no dot grid */
+.board canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+@keyframes boomshake{0%,100%{transform:none}20%{transform:translate(-5px,2px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,-1px)}80%{transform:translate(2px,2px)}}
+.board.boom{animation:boomshake .45s ease}
+.count{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:2}
+.count>span{font-size:5.5rem;font-weight:700;color:var(--c,var(--mint));line-height:1;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 28px color-mix(in srgb,var(--c,var(--mint)) 55%,transparent);animation:pop .85s ease-out both}
+.count>span.go{font-size:min(3.2rem,11vw);letter-spacing:.04em;white-space:nowrap;text-align:center}
+.count>span.goldc{background-image:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 16px rgba(246,215,122,.5))}
+@keyframes pop{0%{transform:scale(1.8);opacity:0}25%{transform:scale(1);opacity:1}75%{opacity:1}100%{transform:scale(.85);opacity:0}}
+.idle{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 13%);z-index:1;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;pointer-events:none;padding:22px 16px;background:radial-gradient(closest-side,var(--bg) 62%,transparent)}
+.idle p{margin:0;font-size:.88rem;line-height:1.5;color:var(--muted);max-width:30ch;text-wrap:balance}
+.idle p b{color:var(--fg);font-weight:600}
+.idle .chip{pointer-events:auto}
+.pausebox{display:flex;flex-direction:column;align-items:center;gap:14px;width:min(260px,70vw)}
+.pausebox b{font-size:1.4rem;font-weight:700}
+.pausebox .drop,.pausebox .sumbtn{flex:none;width:100%}
+.pausebox{gap:10px!important}
+.pausebox #exitBtn{margin-top:6px} /* 16px of space under Resume's raised edge */
+#go+#arcadeBtn{margin-top:8px} /* 16px between Daily challenge and Single player */
+.pausebox .pnote{color:var(--muted);font-size:.8rem;text-align:center;line-height:1.4;margin-top:4px}
+.paused[hidden]{display:none}
+.app.ispaused .dock{visibility:hidden} /* nothing to tap behind the pause card */
+.drop.noarrow::before{display:none}
+.paused{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);font-weight:600;font-size:1rem;color:var(--fg)}
+
+/* power-up slots (Dropface slot chips) */
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.slot.scorecell{margin-right:4px} /* 8px after the score, 4px between power-ups */
+.slot{position:relative;overflow:hidden;background:var(--panel);color:var(--muted);border-radius:4.5px;min-height:40px;min-width:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 2px}
+.slot b{font-weight:600;font-size:.6rem;letter-spacing:-.02em;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.slot small{font-size:.66rem;color:var(--muted);opacity:.7;font-variant-numeric:tabular-nums;font-family:var(--font-mono)}
+.slot{background:var(--t)!important}
+.slot.on{box-shadow:0 0 14px color-mix(in srgb,var(--c) 40%,transparent)}
+/* power-up slot: tinted icon square over the name, always in its own colour; the bar along the bottom runs down while it is on */
+.slot .sic{width:28px;height:28px;display:grid;place-items:center;flex:none}
+.slot .sic img{width:23px;height:23px;display:block}
+.slot:not(.on){opacity:.6}
+.slot{padding:6px 1px 8px;gap:4px;border-radius:8px}
+.slot.scorecell{background:var(--panel);align-items:center;justify-content:center;padding:4px 6px}
+.slot.scorecell b{font-size:1.05rem;line-height:1;color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:0;text-align:center}
+.bigsum{height:56px;font-size:1.15rem;border-radius:10px;padding:0 14px}
+.sumbtn.bigsum{font-size:1.15rem;font-weight:600}
+.slot b{color:var(--c)}
+.slot.on b{opacity:1}
+/* while a power-up runs, its border is the timer: a ring that empties as time runs out */
+.slot i{position:absolute;inset:0;border-radius:inherit;padding:2px;pointer-events:none;opacity:0;
+  background:conic-gradient(var(--c) calc(var(--p,0)*1%),transparent 0);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.slot.on i{opacity:1}
+
+/* bottom bar */
+.bar{display:flex;flex-direction:column;gap:10px}
+.tally{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.tally .label{font-size:.85rem;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tally b{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+.droprow{display:flex;gap:10px}
+.drop{flex:1;min-width:0;height:60px;font:inherit;font-weight:600;font-size:1.15rem;border:0;border-radius:10px;padding:0 14px;
+  background:var(--btn);color:var(--btn-ink);cursor:pointer;display:flex;gap:10px;align-items:center;justify-content:center;
+  box-shadow:0 4px 0 var(--btn-edge);transform:translateY(0);transition:transform .08s,box-shadow .08s;margin-bottom:4px}
+.drop::before{content:"";display:none;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--mint-ink);color:var(--mint);font-size:.85rem;font-weight:700}
+.drop:not(:disabled):active,.sumbtn:not(:disabled):active,.dicebtn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--btn-edge)}
+.sumbtn.sec:active{box-shadow:0 1px 0 var(--sec-edge)}
+.dicebtn:active{box-shadow:0 1px 0 #2a2d2d}
+.drop:disabled{opacity:.4;cursor:default}
+.howbody .drop{flex:none;width:100%} /* in a column the flex:1 from the bar collapsed its height */
+.howbody .droprow{flex:none}
+.howbody .droprow .drop{flex:1;width:auto}
+.drop.readyglow{animation:dropGlow 1.6s ease-in-out infinite}
+@keyframes dropGlow{50%{box-shadow:0 4px 0 var(--btn-edge),0 0 0 4px color-mix(in srgb,var(--btn) 25%,transparent),0 0 22px color-mix(in srgb,var(--btn) 40%,transparent)}}
+.dicebtn{flex:none;width:56px;height:56px;display:grid;place-items:center;border:0;border-radius:10px;background:#3a3d3d;color:var(--fg);cursor:pointer;padding:0;box-shadow:0 4px 0 #2a2d2d;transition:transform .08s,box-shadow .08s;margin-bottom:4px}
+.dicebtn svg{width:26px;height:26px}
+
+.chip{font:inherit;font-size:.85rem;font-weight:500;border:0;border-radius:10px;padding:8px 14px;background:var(--panel);color:var(--fg);cursor:pointer}
+.sumbtn.sec{background:var(--panel2);color:var(--fg);box-shadow:0 4px 0 var(--sec-edge)}
+.sumbtn{font:inherit;font-size:.9rem;font-weight:600;border:0;border-radius:10px;padding:12px;background:var(--btn);color:var(--btn-ink);cursor:pointer;box-shadow:0 4px 0 var(--btn-edge);transition:transform .08s,box-shadow .08s;margin-bottom:4px}
+.icon:focus-visible,.drop:focus-visible,.dicebtn:focus-visible,.chip:focus-visible,.sumbtn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+
+/* modals */
+.modal{border:0;padding:0;background:var(--panel);color:var(--fg);border-radius:18px;width:min(420px,calc(var(--appw) - 32px));max-height:calc(100dvh - 48px);overflow:auto}
+.modal::backdrop{background:rgba(0,0,0,.65)}
+.mhead{display:flex;justify-content:space-between;align-items:center;padding:16px;position:sticky;top:0;background:var(--panel);z-index:1;border-bottom:1px solid var(--panel2)}
+.mhead h2{margin:0;font-size:1.05rem;font-weight:600}
+.mhead h2 .titleno{font-size:.95rem;font-weight:400;color:var(--muted);margin-left:2px}
+.x{width:32px;height:32px;border:0;border-radius:50%;background:var(--panel2);color:var(--fg);padding:0;display:grid;place-items:center;cursor:pointer;flex:none}
+.x svg{display:block}
+.x:focus{outline:none}.x:focus-visible{background:#3A3D3C}
+.howbody{display:flex;flex-direction:column;gap:16px;padding:16px}
+.intro{margin:0;font-size:.88rem;line-height:1.5;color:var(--muted)}
+.intro b{color:var(--fg);font-weight:600}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
+.steps li{display:flex;gap:12px;align-items:flex-start}
+.steps li+li{border-top:1px solid var(--panel2);padding-top:16px}
+.steps .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--mint);color:var(--mint-ink);display:grid;place-items:center;font-size:.8rem;font-weight:700}
+.steps li>div{display:flex;flex-direction:column;gap:3px;min-width:0;font-size:.9rem;font-weight:600}
+.steps li>div>span{color:var(--muted);font-size:.82rem;line-height:1.4;font-weight:400}
+.eyebrow{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0}
+.specials{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-weight:400}
+.steps .eyebrow{margin-top:8px;font-weight:500}
+.sp{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;min-width:0;background:var(--bg);border-radius:12px;padding:12px 8px}
+.sp i{font-style:normal;font-weight:700;font-size:.85rem;min-width:44px;padding:6px 8px;border-radius:9px;background:var(--t);color:var(--c)}
+.sp i.rb{background-color:#241a36}
+.handgrid{display:flex;flex-direction:column;gap:6px}
+.hcard{position:relative;font:inherit;color:var(--fg);border:0;cursor:pointer;display:flex;align-items:center;text-align:left;gap:12px;min-width:0;background:var(--panel2);border-radius:8px;padding:10px 12px 10px 10px}
+.hcard i{flex:none;display:grid;place-items:center;width:50px;height:50px;border-radius:10px;background:var(--t);box-shadow:inset 0 0 0 2px var(--c)} /* icon tile outlined in the power-up's colour */
+.hcard i img{width:28px;height:28px}
+.hcard>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.hcard b{font-size:.88rem;font-weight:600}
+.hcard span{font-size:.75rem;color:var(--muted);line-height:1.35}
+.hcard[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--c)}
+.hcard:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.howbody>.drop{flex:none;width:100%}
+#hand .howbody{gap:12px}
+/* only the list scrolls; the dice and Play stay put at the bottom */
+#hand[open]{display:flex;flex-direction:column;overflow:hidden}
+#hand .howbody{flex:1 1 auto;min-height:0;overflow:hidden;padding-top:0}
+/* the intro and the list scroll together, starting right under the header line */
+#hand .handscroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px;padding:16px 2px 2px;margin:0 -2px}
+#hand .handscroll .intro{margin:0}
+#hand .droprow{flex:none}
+.sp i img{display:block;margin:0 auto}
+.sp i.hz{background:var(--slot-bomb);font-size:1rem}
+.sp i.rb span{background-image:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sp b{font-size:.85rem;font-weight:600}
+.sp span{font-size:.75rem;color:var(--muted);line-height:1.35}
+.sumtop{display:grid;grid-template-columns:repeat(3,1fr);background:var(--bg);border-radius:12px}
+.sumtop>div{position:relative;display:flex;flex-direction:column;gap:2px;padding:10px 12px;min-width:0}
+.sumtop>div+div::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:1px;background:var(--panel2)}
+.sumtop small{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sumtop strong{font-size:1.2rem;font-variant-numeric:tabular-nums}
+.sumtop .me strong{color:var(--mint)}
+.facts{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.res{display:inline-flex;align-items:center;font-family:var(--font-mono);font-size:.74rem;line-height:1;padding:5px 10px;border-radius:999px;background:var(--panel2);color:var(--fg);font-variant-numeric:tabular-nums}
+.res.p100{background:var(--mint);color:var(--mint-ink)}
+.res.p10{background:var(--amber);color:var(--amber-ink)}
+
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:20;display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:999px;background:var(--panel2);box-shadow:0 10px 30px rgba(0,0,0,.5);transform:translate(-50%,-150%);transition:transform .35s cubic-bezier(.2,.8,.2,1);pointer-events:none;white-space:nowrap}
+.toast.show{transform:translate(-50%,0)}
+.toast small{display:block;font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.toast b{font-size:.9rem}
+.tbadge{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;font-weight:800;font-size:.8rem;background:var(--slot-100);color:var(--mint)}
+
+@media (max-width:600px){
+  .modal{width:calc(100% - 24px);max-width:none;margin:auto auto calc(12px + env(safe-area-inset-bottom,0px));border-radius:20px;max-height:calc(92dvh - 12px)} /* floating sheet with an even gutter */
+  .modal[open]{animation:sheetUp .32s cubic-bezier(.2,.8,.2,1)}
+  .modal[open]::backdrop{animation:fadeIn .32s ease-out}
+  .modal[open].closing{animation:sheetDown .26s cubic-bezier(.4,0,1,1) forwards} /* closing slides back down */
+  .modal[open].closing::backdrop{animation:fadeOut .26s ease-in forwards}
+  .mhead{padding-top:22px}
+  .mhead::before{content:"";position:absolute;top:8px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--panel2)}
+}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes sheetDown{from{transform:none}to{transform:translateY(110%)}}
+@keyframes fadeOut{to{opacity:0}}
+/* stats panel head + Practice toggle (Dropface Toggle) */
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:2px 2px 0}
+.dayhead b{font-size:.95rem;font-weight:600;display:flex;align-items:baseline;gap:8px}
+.dayhead b span{font-size:.88rem;font-weight:400;color:var(--muted)}
+.dayhead .tag{display:inline-flex;align-items:center;line-height:1;font-size:.68rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mint);background:var(--slot-100);border-radius:999px;padding:4px 8px 4px calc(8px + .04em)}
+.toggle{flex:none;display:flex;align-items:center;gap:8px;font:inherit;font-size:.82rem;font-weight:500;color:var(--muted);background:none;border:0;padding:4px 0;cursor:pointer}
+.toggle i{position:relative;width:36px;height:20px;border-radius:10px;background:var(--panel2);transition:background .2s}
+.toggle i::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--panel);transition:transform .2s}
+.toggle[aria-checked="true"]{color:var(--fg)}
+.toggle[aria-checked="true"] i{background:var(--toggle-on)}
+.toggle[aria-checked="true"] i::after{transform:translateX(16px)}
+.toggle:disabled{opacity:.4;cursor:default}
+.toggle:focus-visible{outline:2px solid var(--mint);outline-offset:3px;border-radius:6px}
+.icon:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+/* settings */
+.setlist{display:flex;flex-direction:column;background:var(--panel2);border-radius:8px}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px}
+.setrow+.setrow{border-top:1px solid var(--panel)}
+.setrow b{display:block;font-weight:600}
+.setrow span{display:block;font-size:.8rem;color:var(--muted)}
+.setlist.muted .setrow:not(:last-child){opacity:.45}
+.setrow .toggle i{background:#454a48} /* off switches stand out from the row */
+.setrow .toggle[aria-checked="true"] i{background:var(--mint)}
+/* leaderboard (Dropface LeaderboardRow + Tabs) */
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--bg);border-radius:12px;padding:4px}
+.tabs button{font:inherit;font-size:.85rem;font-weight:600;border:0;border-radius:9px;padding:8px;background:transparent;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--panel2);color:var(--fg)}
+.tabs button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.lb{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.lb li{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;background:var(--bg);border-radius:12px;padding:10px 12px}
+.lb li.me{box-shadow:inset 0 0 0 1px var(--mint)}
+.lb .rk{font-family:var(--font-mono);font-size:.8rem;color:var(--muted);text-align:center}
+.lb li:nth-child(1) .rk{color:var(--amber);font-weight:700}
+.lb .nm{min-width:0;display:flex;flex-direction:column;gap:2px;font-size:.9rem;font-weight:500}
+.lb .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb .nm small{font-size:.72rem;color:var(--muted);font-weight:400}
+.lb .sc{font-weight:700;font-variant-numeric:tabular-nums}
+.lb li.me .sc{color:var(--mint)}
+/* confirm sheet */
+.confirmrow{display:flex;justify-content:flex-end;gap:8px}
+.chip.ghost{background:transparent}
+.chip.danger{background:var(--red);color:#fff;font-weight:600}
+@media (max-height:640px){.daybar{padding:8px}.daystats>div{padding:6px 10px}.app{gap:10px;padding-block:10px}}
+@media (prefers-reduced-motion: reduce){
+  .board.boom,.drop.readyglow,.modal[open],.modal[open]::backdrop{animation:none}
+  .count>span{animation:pop .85s steps(1,end) both}
+  .toast,.pips .fill,.toggle i,.toggle i::after{transition:none}
+}
+.slot .cnt{position:absolute;top:4px;right:5px;font-style:normal;font-family:var(--font-mono);font-size:.62rem;font-weight:700;color:var(--c);line-height:1}
+.app.collect .slot{opacity:1}
+/* score + health meter, top left under the header (the bottom style stays available for the Lab) */
+.app.hudtop .liferow{position:fixed;z-index:3;top:calc(env(safe-area-inset-top,0px) + 62px);
+  left:max(max(16px,env(safe-area-inset-left,0px)),calc((var(--appw) - 440px)/2));width:auto;max-width:none;margin:0;gap:8px}
+.app.hudtop .liferow .bars{flex:none;width:calc(min(var(--appw) - 32px,440px) * .25);gap:3px}
+.app.hudtop .liferow .pips{height:5px}
+.app.hudtop .liferow b{font-size:.95rem;min-width:0;font-variant-numeric:tabular-nums}
+/* arcade meter: 000500 with dim placeholder zeros, a thin yellow lives bar over a thin green hit-point bar, no box */
+.app.hudarc .liferow{position:fixed;z-index:3;top:calc(env(safe-area-inset-top,0px) + 62px);
+  left:max(max(16px,env(safe-area-inset-left,0px)),calc((var(--appw) - 440px)/2));width:auto;max-width:none;margin:0;
+  display:grid;grid-template-columns:auto;grid-template-rows:auto auto;row-gap:5px;align-items:center;background:none;padding:0}
+.app.hudarc .liferow b{grid-column:1;grid-row:1;font-family:var(--font-mono);font-weight:700;font-size:.82rem;letter-spacing:.06em;min-width:0;line-height:1}
+.app.hudarc .liferow b .z,.app.hudtop .liferow b .z{color:var(--peg)} /* placeholder zeros */
+.app.hudarc .liferow .bars{grid-column:1;grid-row:2;width:6.6rem;flex:none;gap:2px} /* twice the width of the score */
+.app.hudarc .liferow .pips{height:3px}
+.lifex{display:none!important}
+.app.hudarc:not(.playing) .liferow,.app.hudtop:not(.playing) .liferow{display:none} /* only during a game */
+/* power-up slots are raised 3D buttons: ready = raised, active = pressed in, empty = flat until it's filled again */
+.app:not(.flat) .slot{--edge:color-mix(in srgb,var(--c) 30%,#141515);box-shadow:0 4px 0 var(--edge);margin-bottom:4px;transition:transform .08s,box-shadow .08s}
+.app:not(.flat) .slot:active{transform:translateY(3px);box-shadow:0 1px 0 var(--edge)}
+.app.collect:not(.flat) .slot.on{transform:translateY(3px);box-shadow:0 1px 0 var(--edge),0 0 14px color-mix(in srgb,var(--c) 35%,transparent)}
+.app.collect:not(.flat) .slot:not(.on):not(.has){transform:translateY(4px);box-shadow:none}
+.app.collect .slot.has:not(.on) i{opacity:1;background:var(--c)} /* ready to use: full border */
+.app.collect .slot.on{box-shadow:0 0 14px color-mix(in srgb,var(--c) 35%,transparent)}
+.app.collect .slot.on b{color:var(--c)} /* the label stays the icon's colour while it runs */
+.app.collect.playing .slot{pointer-events:auto;cursor:pointer}
+.app.collect.playing .slot.has:active{transform:scale(.96)}
+.dock{position:relative}
+.wildhint{position:absolute;left:0;right:0;bottom:calc(100% + 12px);z-index:4;margin:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.95rem;font-weight:600;color:var(--fg);background:none;padding:0;text-shadow:0 1px 4px rgba(0,0,0,.9);pointer-events:none} /* plain text just above the power-ups, see-through, and lets swipes pass under it */
+.wildhint{display:none!important} /* replaced by the banner */
+/* wild card: a banner up where you're looking, arrows nudging down to the dock; nothing here blocks a throw */
+.wildban{position:fixed;z-index:6;left:50%;top:calc(env(safe-area-inset-top,0px) + 104px);transform:translate(-50%,-30px) scale(.9);opacity:0;pointer-events:none;
+  display:flex;align-items:center;gap:12px;padding:10px 18px 10px 10px;border-radius:16px;width:max-content;max-width:calc(var(--appw) - 32px);
+  background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 12px 32px rgba(0,0,0,.45); /* glass, like the dock */transition:transform .45s cubic-bezier(.3,1.5,.5,1),opacity .25s}
+.app.wildpick.playing .wildban{opacity:1;transform:translate(-50%,0) scale(1);animation:wbBob 2.4s .5s ease-in-out infinite}
+@keyframes wbBob{50%{transform:translate(-50%,4px) scale(1)}}
+.wildban .wbi{width:40px;height:40px;flex:none;border-radius:50%;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 2px #fff;display:grid;place-items:center}
+.wildban .wbi img{width:22px;height:22px;display:block}
+.wildban b{display:block;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:1rem;letter-spacing:.02em;line-height:1.1}
+.wildban small{display:block;font-size:.82rem;font-weight:500;color:rgba(255,255,255,.78);margin-top:2px}
+.wildarrows{position:fixed;z-index:5;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 168px);display:none;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+.app.wildpick.playing .wildarrows{display:flex}
+.wildarrows i{width:14px;height:14px;border-right:3px solid #fff;border-bottom:3px solid #fff;transform:rotate(45deg);opacity:.15;animation:wbArrow 1.2s infinite}
+.wildarrows i:nth-child(2){animation-delay:.2s}.wildarrows i:nth-child(3){animation-delay:.4s}
+@keyframes wbArrow{40%{opacity:.95}}
+@media (prefers-reduced-motion: reduce){.app.wildpick.playing .wildban{animation:none}.wildarrows i{animation:none;opacity:.7}}
+.app.wildpick .slot.pick{opacity:1!important;pointer-events:auto;cursor:pointer;background:var(--t);box-shadow:inset 0 0 0 2px var(--c);animation:wildPulse 1s ease-in-out infinite}
+.app.wildpick .slot.pick b{color:var(--c);opacity:1}
+.app.wildpick .slot:not(.pick){opacity:.6!important} /* still usable: the game keeps going while you pick */
+.app.wildpick .slot:not(.pick) i{opacity:0!important} /* only the slots you can refill keep a border */
+@keyframes wildPulse{50%{box-shadow:inset 0 0 0 2px var(--c),0 0 14px color-mix(in srgb,var(--c) 60%,transparent)}}
+@media (prefers-reduced-motion: reduce){.app.wildpick .slot.pick{animation:none}}
+
+/* ===== November refresh (Figma "Choose your hand" + start screen) =====
+   Black ground, a purple glow under the start screen, wide Archivo for titles and labels,
+   Daily / Arcade mode buttons with an arrow, full-colour selected cards in the hand picker. */
+:root{--bg:#000;--panel:#1a1a1a;--panel2:#262626;--font-wide:"Archivo","Archivo Black",system-ui,sans-serif}
+html,body{background:#000}
+h1{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:26px;letter-spacing:.01em}
+h1 .modetag{font-stretch:100%}
+.mhead h2{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:1.08rem;letter-spacing:.04em}
+.mhead h2 .titleno{font-family:var(--font-body);font-stretch:100%;text-transform:none;letter-spacing:0;font-weight:400}
+#modeBtn,#idleHelp{display:none!important} /* the mode is picked with Daily / Arcade mode now */
+.icon{background:#1c1c1c}
+/* start screen glow (behind the board; gone while playing) */
+.board{background:radial-gradient(140% 52% at 50% 108%,#8a3df0 0%,rgba(106,46,214,.78) 26%,rgba(52,22,110,.45) 50%,rgba(20,8,40,.15) 68%,transparent 80%),#000}
+body.is-playing .board{background:#000}
+body:not(.is-playing) .scrim.b{display:none}
+/* the three intro lines under the title */
+.idle{top:calc(env(safe-area-inset-top,0px) + 70px);left:max(max(16px,env(safe-area-inset-left,0px)),calc((var(--appw) - 440px)/2));right:auto;
+  align-items:flex-start;text-align:left;padding:0;background:none;gap:0}
+.idle p{font-size:1rem;line-height:1.55;color:#c8c8c8;max-width:none;text-wrap:wrap}
+/* Daily / Arcade mode */
+#droprow{flex-direction:column;gap:12px}
+#droprow .coin{margin:0 0 4px;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:.84rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fg)}
+.drop.go2{flex:none;width:100%;justify-content:center;padding:0 16px;border-radius:6px;font-size:1.05rem;animation:none}
+.drop.go2::before{display:none}
+.drop.go2:disabled{justify-content:center;opacity:1;background:#2a2a2a;color:#8a8a8a;box-shadow:0 4px 0 #1a1a1a;border-color:transparent;animation:none}
+/* Daily Challenge: white with a slowly turning multicolour border until it's played */
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.drop.go2.daily:not(:disabled){border:3px solid transparent;
+  background:linear-gradient(#fff,#fff) padding-box,conic-gradient(from var(--ang),var(--pink),var(--violet),var(--sky),var(--mint),var(--amber),var(--pink)) border-box;
+  animation:dailyRing 3s linear infinite}
+/* its 3D edge is the same turning colours, a shade darker: a thicker bottom border with a dark wash over the bottom 4px */
+.drop.go2.daily:not(:disabled){height:64px;margin-bottom:-4px;border-bottom-width:7px;box-shadow:none;
+  background:linear-gradient(#fff,#fff) padding-box,linear-gradient(to top,rgba(0,0,0,.32) 0 4px,transparent 4px) border-box,
+    conic-gradient(from var(--ang),var(--pink),var(--violet),var(--sky),var(--mint),var(--amber),var(--pink)) border-box}
+.drop.go2.daily:not(:disabled):active{transform:translateY(3px);height:61px;margin-bottom:-1px;border-bottom-width:4px;box-shadow:none}
+@keyframes dailyRing{to{--ang:360deg}}
+#oIni:empty{display:none}
+#practiceBtn:not([hidden])~#challengeBtn{margin-top:-18px} /* Challenge a friend tucks under Play again */
+/* locked daily (timer): same shape as the active button, in greyscale */
+#go.daily:disabled{height:64px;margin-bottom:-4px;border:3px solid transparent;border-bottom-width:7px;box-shadow:none;color:#5c5c5c;opacity:1;
+  background:linear-gradient(#e4e4e2,#e4e4e2) padding-box,linear-gradient(to top,rgba(0,0,0,.32) 0 4px,transparent 4px) border-box,
+    conic-gradient(from var(--ang),#f2f2f2,#8a8a8a,#c8c8c8,#5e5e5e,#b0b0b0,#f2f2f2) border-box;
+  animation:dailyRing 6s linear infinite}
+#go.daily:disabled::before{left:15px;opacity:.75}
+@media (prefers-reduced-motion: reduce){#go.daily:disabled{animation:none}}
+/* daily summary icon in the header: the same turning multicolour ring, 2px */
+#sumIcon{position:relative}
+#sumIcon::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;pointer-events:none;
+  background:conic-gradient(from var(--ang),var(--pink),var(--violet),var(--sky),var(--mint),var(--amber),var(--pink));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  animation:dailyRing 3s linear infinite}
+@media (prefers-reduced-motion: reduce){#sumIcon::before{animation:none}}
+#sumIcon.solo::before{background:var(--mint);animation:none} /* single-player summary: brand green ring; the turning multicolour ring is for the daily */
+.drop.go2.white:disabled{background:#2a2a2a;color:#8a8a8a;box-shadow:0 4px 0 #1a1a1a}
+@media (prefers-reduced-motion: reduce){.drop.go2.daily{animation:none}} /* grey, not see-through */
+.drop.go2.white{background:#fff;color:#0b0b0b;box-shadow:0 4px 0 #9a9a9a}
+/* home mode icons, pinned left with the label centred: Single player = a person; Daily Challenge = a globe (everyone plays the same hand) */
+#go,#arcadeBtn{position:relative}
+#go::before,#arcadeBtn::before{content:"";display:block;position:absolute;left:18px;top:50%;margin-top:-11px;width:22px;height:22px;color:inherit;background:currentColor!important;border-radius:0;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+#go{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z'/%3E%3C/svg%3E")}
+#arcadeBtn{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4.5 20.5c.8-3.9 3.8-6 7.5-6s6.7 2.1 7.5 6'/%3E%3C/svg%3E")}
+#go:disabled{padding-left:48px;padding-right:20px}
+#go:disabled::before{display:block;opacity:.8} /* the locked daily keeps its globe icon beside the timer */
+#go.daily:not(:disabled)::before{left:15px} /* its 3px border would push the icon in; keep both icons lined up */
+.drop.go2.white:not(:disabled):active{box-shadow:0 1px 0 #9a9a9a}
+/* choose your hand */
+.srt{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#hand .handtop .intro{max-width:none}
+#hand .handtray .randbtn{height:30px;padding:0 12px;border-radius:6px;font-size:.84rem;gap:7px}
+#hand .handtray .randbtn svg{width:15px;height:15px}
+#hand .handtray .mini>*{width:30px;height:30px;border-radius:5px}
+#hand .handtray .mini img{width:20px;height:20px}
+#hand .handtray .mini svg{width:11px;height:14px}
+#hand{background:#0a0a0a}
+#hand .mhead{background:#0a0a0a;border-bottom:0;padding:20px 16px 6px}
+#hand .mhead::before{display:none}
+#hand .mhead h2{font-size:1.15rem}
+#hand .x{background:#242424}
+#hand .howbody{gap:14px;padding-top:10px}
+.handtop{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.handtop .intro{font-size:.98rem;line-height:1.45;color:#d2d2d2;max-width:23ch}
+.randbtn{flex:none;display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:10px;border:1px solid #2c2c2c;background:#141414;color:var(--fg);font:inherit;font-size:.88rem;font-weight:600;cursor:pointer}
+.randbtn svg{width:17px;height:17px}
+.randbtn:active{transform:translateY(1px)}
+.randbtn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+#hand .handscroll{padding:0 6px 2px 2px;margin:0 -2px;scrollbar-width:thin;scrollbar-color:#3a3a3a transparent}
+.handgrid{gap:8px}
+.hcard{background:#1a1a1a;border-radius:6px;padding:12px 14px;gap:14px;transition:background-color .15s,opacity .15s}
+.hcard i{border-radius:6px;box-shadow:none;background:var(--t)}
+.hcard b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:.84rem;letter-spacing:.04em;color:var(--fg)}
+.hcard span{font-size:.84rem;color:#8f8f8f}
+/* teaser under the power list: not a pickable card */
+.hsoon{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:6px;border:1px dashed #3a3a3a;flex:none}
+.hsoon i{flex:none;display:grid;place-items:center;width:50px;height:50px;border-radius:6px;border:2px solid transparent;background:linear-gradient(#0d0d0d,#0d0d0d) padding-box,linear-gradient(135deg,#ff8ad8,#c49bff,#7cc8ff,#9deba8,#f2c14e) border-box}
+.hsoon i svg{width:24px;height:24px}
+.hsoon>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.hsoon b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:.84rem;letter-spacing:.04em;color:var(--fg)}
+.hsoon span{font-size:.84rem;color:#8f8f8f;line-height:1.35}
+.hcard[aria-pressed="true"]{background:var(--c);box-shadow:none}
+.hcard[aria-pressed="true"] b{color:#0b0b0b}
+.hcard[aria-pressed="true"] span{color:rgba(0,0,0,.72)}
+.hcard[aria-pressed="true"] i{background:color-mix(in srgb,var(--t) 88%,#000)}
+.handgrid.full .hcard[aria-pressed="false"]{opacity:.3}
+.handtray{flex:none;display:flex;align-items:center;justify-content:space-between;padding:2px 2px 0}
+.handtray .mini{display:flex;gap:8px}
+.handtray .mini>*{width:24px;height:24px;border-radius:4px;display:grid;place-items:center;background:#2a2a2a;color:#fff;border:0;padding:0;font:inherit}
+.handtray .mini>button{cursor:pointer}
+.handtray .mini>button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.handtray .mini>.on{background:var(--t);box-shadow:inset 0 0 0 1.5px var(--c)}
+.handtray .mini img{width:16px;height:16px;display:block}
+.handtray .mini svg{width:9px;height:11px;display:block}
+.handtray b{font-size:.95rem;font-weight:700}
+#handGo{border-radius:6px}
+#handGo::before{display:none}
+#handGo:disabled{opacity:1;background:#3a3c3c;color:#8a8c8c;box-shadow:0 4px 0 #262828}
+/* ===== versus HUD (adapted from the arcade build, in the current look) =====
+   score and best on top; HP bar with lives on the left, the speed level in the middle, the long-shot streak on the right */
+.duel{display:none}
+.app.hudduel .liferow{display:none!important}
+.app.hudduel.playing .duel{display:flex;flex-direction:column;gap:8px;position:fixed;z-index:3;top:calc(env(safe-area-inset-top,0px) + 60px);
+  left:max(max(16px,env(safe-area-inset-left,0px)),calc((var(--appw) - 440px)/2));width:min(calc(var(--appw) - 32px),440px);margin:0;pointer-events:none}
+.duel i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.06em;font-size:.62rem;color:var(--muted)}
+.duel .z{color:var(--peg)}
+.dtop{display:flex;justify-content:space-between;align-items:baseline}
+.dtop>span{display:flex;align-items:baseline;gap:8px}
+.dtop b{font-family:var(--font-mono);font-weight:700;font-size:.92rem;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:var(--fg)}
+.dtop span:first-child i{color:var(--mint)}
+.dtop span:last-child i{color:var(--amber)}
+.dmid{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr);gap:8px;align-items:center}
+.dside{display:flex;flex-direction:column;gap:6px;min-width:0}
+.dbar{position:relative;height:12px;border-radius:3px;background:#1a1a1a;box-shadow:inset 0 0 0 1px #2c2c2c;overflow:hidden}
+.dbar .fill,.dbar .dmg{position:absolute;top:0;bottom:0;left:0;width:0}
+.dbar .dmg{background:var(--red)}
+.dbar .fill{background:var(--mint);box-shadow:inset 0 -3px 0 rgba(0,0,0,.18),inset 0 2px 0 rgba(255,255,255,.25);transition:width .15s steps(3)}
+.dbar .fill.bonus{background:var(--gold-solid);transition:width .3s,left .15s}
+.duel.hurt .dbar.hp .fill:not(.bonus){background:var(--red);animation:hurtBlink .8s steps(1) infinite}
+@keyframes hurtBlink{50%{opacity:.45}}
+.dbar.st .fill{background:var(--amber);transition:width .25s steps(4)}
+.duel.hot .dbar.st{box-shadow:inset 0 0 0 1px var(--amber),0 0 12px color-mix(in srgb,var(--amber) 55%,transparent)}
+.dlab{display:flex;align-items:center;gap:8px}
+.dside.r .dlab{justify-content:flex-end}
+.dlab b{font-family:var(--font-mono);font-weight:700;font-size:.72rem;color:var(--amber)}
+.dlives{display:flex;gap:3px}
+.dlives span{width:7px;height:7px;border-radius:1px;background:#2c2c2c}
+.dlives span.on{background:var(--amber)}
+.dlevel{height:54px;border-radius:8px;background:#141414;box-shadow:inset 0 0 0 1px #2c2c2c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.dlevel i{font-size:.5rem}
+.dlevel b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:1.45rem;line-height:1;color:var(--fg)}
+body.is-playing .scrim.t{height:calc(env(safe-area-inset-top,0px) + 150px)}
+@media (prefers-reduced-motion: reduce){.dbar .fill,.dbar .dmg{transition:none!important}.duel.hurt .dbar.hp .fill{animation:none}}
+/* ===== home v2: icons top left, logo + lines + buttons at the bottom, 24px frame padding ===== */
+#modeTag{display:none!important} /* no Arcade bubble by the title */
+.app:not(.playing){padding:calc(env(safe-area-inset-top,0px) + 24px) max(24px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 24px) max(24px,env(safe-area-inset-left,0px))}
+.app:not(.playing) .gtitle{display:none}
+.app:not(.playing) .top{justify-content:flex-start}
+.app:not(.playing) .icon{width:60px;height:60px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)} /* same glass as the dock */
+.app:not(.playing) .icon svg{width:22px;height:22px}
+.app:not(.playing) #helpBtn{order:-2}
+.app:not(.playing) #lbBtn{order:-1}
+#droprow .home{display:flex;flex-direction:column;gap:60px;margin-bottom:60px}
+#droprow .logo{display:flex;align-items:center;gap:2px;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:42.9px;line-height:1;letter-spacing:.01em;color:var(--fg)} /* logo 275px wide */
+#droprow .logo svg{width:36px;height:46.4px;flex:none;margin-top:-4.6px;margin-left:4.6px;overflow:visible}
+#homeText{margin:0;font-size:21px;line-height:28px;color:#fff}
+#droprow .coin{font-size:.9rem;margin-bottom:2px}
+#setBtn{display:none!important}
+#sumBtn,#pauseBtn{display:none!important}
+/* 90s arcade tube TV: scanlines, colour fringe, moving grain, curved glass, a little flicker */
+.crt{display:none;position:fixed;inset:0;z-index:50;pointer-events:none;overflow:hidden;margin:0;padding:0;border:0;background:none;width:auto;height:auto}
+html.crton .crt:popover-open,html.crtstrong .crt:popover-open{display:block}
+.crt{opacity:.56} /* the whole effect lighter: 20%, then another 30% */
+.crt::before{content:"";position:absolute;inset:0; /* scanlines + a faint RGB stripe mask */
+  background:repeating-linear-gradient(to bottom,rgba(0,0,0,.28) 0 1px,transparent 1px 3px),
+    repeating-linear-gradient(to right,rgba(255,0,60,.035) 0 1px,rgba(0,255,120,.03) 1px 2px,rgba(0,90,255,.035) 2px 3px);
+  animation:crtFlicker 4s steps(60) infinite}
+.crt::after{content:"";position:absolute;inset:0; /* curved glass: dark corners, bright centre, a sheen at the top */
+  /* no darkening along the top edge: anything visible up there can be hit, so it must not look off screen */
+  background:radial-gradient(150% 120% at 50% 18%,transparent 62%,rgba(0,0,0,.5) 100%),
+    linear-gradient(170deg,rgba(255,255,255,.06),transparent 30%);
+  box-shadow:inset 70px 0 80px -50px rgba(0,0,0,.55),inset -70px 0 80px -50px rgba(0,0,0,.55),inset 0 -70px 90px -40px rgba(0,0,0,.6),
+    inset 10px 0 14px -8px rgba(0,0,0,.7),inset -10px 0 14px -8px rgba(0,0,0,.7);
+  -webkit-mask:linear-gradient(to bottom,transparent 0,transparent 12%,#000 40%);mask:linear-gradient(to bottom,transparent 0,transparent 12%,#000 40%)} /* nothing darkens the top of the board */
+.crt-grain{position:absolute;inset:-50%;opacity:.12;mix-blend-mode:screen;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:crtGrain .5s steps(6) infinite}
+html.crtstrong .crt::before{background:repeating-linear-gradient(to bottom,rgba(0,0,0,.42) 0 1px,transparent 1px 3px),
+    repeating-linear-gradient(to right,rgba(255,0,60,.06) 0 1px,rgba(0,255,120,.05) 1px 2px,rgba(0,90,255,.06) 2px 3px)}
+html.crtstrong .crt-grain{opacity:.2}
+html.crtstrong body{filter:saturate(1.15) contrast(1.05)}
+html.crtstrong .app,html.crtstrong #board{text-shadow:0 0 6px rgba(255,255,255,.25)}
+@keyframes crtGrain{0%{transform:translate(0,0)}20%{transform:translate(-8%,4%)}40%{transform:translate(5%,-6%)}60%{transform:translate(-4%,-3%)}80%{transform:translate(7%,5%)}100%{transform:translate(0,0)}}
+@keyframes crtFlicker{0%,100%{opacity:1}48%{opacity:.92}50%{opacity:1}74%{opacity:.96}}
+@media (prefers-reduced-motion: reduce){.crt::before,.crt-grain{animation:none}}
+/* summary page: back + share, wide title, big score, hit-rate ticks, stat rows */
+#overT:focus,#lbT:focus,#helpT:focus,#setT:focus{outline:none}
+/* sound: a glass circle in the top right of the board, only while playing */
+.mutebtn{display:none;position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 12px);right:max(16px,env(safe-area-inset-right,0px));width:44px;height:44px;pointer-events:auto; /* on desktop the frame is the fixed-position box, so 16px is inside it */padding:0;border:0;border-radius:50%;
+  background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+  color:var(--fg);cursor:pointer;place-items:center;transition:background .2s}
+.mutebtn:hover,.mutebtn:focus-visible{background:rgba(255,255,255,.12)}
+.mutebtn svg{width:20px;height:20px;opacity:.85}
+.mutebtn .soff,.mutebtn.off .son{display:none}
+.mutebtn.off .soff{display:block}
+body.is-playing .mutebtn{display:none} /* sound settings live in the home header now */
+#sndBtn .mx{display:none}#sndBtn.off .mx{display:inline}#sndBtn.off .w1,#sndBtn.off .w2{display:none}
+/* new-best toast: a mint card that drops in and glows, in the brand's wide type (a popover, so it shows above the summary) */
+.toast{margin:0;border:0;right:auto;bottom:auto;overflow:visible;top:calc(env(safe-area-inset-top,0px) + 16px);width:max-content;max-width:calc(var(--appw) - 32px);gap:10px;padding:8px 16px 8px 8px;border-radius:14px;color:#fff;
+  background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 12px 32px rgba(0,0,0,.45),0 0 28px rgba(157,235,168,.18); /* glass, like the dock */transform:translate(-50%,-180%);transition:transform .5s cubic-bezier(.3,1.5,.5,1)}
+.toast .tbadge{width:34px;height:34px;flex:none;border-radius:9px;background:var(--mint);color:#000;display:grid;place-items:center;font-size:0}
+.toast .tbadge svg{width:20px;height:20px}
+.toast.show .tbadge svg{animation:tStar .9s .2s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes tStar{from{transform:scale(.2) rotate(-90deg)}to{transform:none}}
+.toast small{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:.6rem;letter-spacing:.08em;color:var(--mint)}
+.toast b{display:block;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:1.15rem;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums} /* the page itself takes focus on open, so no button looks pressed */
+#over.sumv{background:var(--bg);width:min(440px,calc(var(--appw) - 32px));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.shead{display:flex;align-items:center;gap:8px;padding:16px 16px 0 24px}
+.shead{position:sticky;top:0;z-index:2;background:var(--bg);padding-bottom:10px} /* modal headers stay put while the page scrolls under them */ /* page title on the left, buttons on the right */
+.shead h2{flex:1;min-width:0;margin:0;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:1.15rem;line-height:1.05;letter-spacing:.01em;white-space:nowrap}
+.sbtn{flex:none;width:50px;height:50px;border:0;border-radius:50%;background:#1c1c1c;color:var(--fg);display:grid;place-items:center;cursor:pointer;padding:0;position:relative}
+.sbtn svg{width:22px;height:22px}
+.sbtn{transition:background .2s,color .2s}
+#shareBtn .icheck{display:none}
+#shareBtn.done{background:var(--mint);color:#000}
+#shareBtn.done .ishare{display:none}
+#shareBtn.done::after{content:attr(data-msg);position:absolute;left:50%;top:58px;transform:translateX(-50%);white-space:nowrap;font-size:.75rem;font-weight:600;color:var(--mint);pointer-events:none}
+#shareBtn.done .icheck{display:block;animation:tStar .45s cubic-bezier(.3,1.6,.5,1) both}
+.sbody{display:flex;flex-direction:column;gap:28px;padding:20px 24px 24px;container-type:inline-size}
+.stitle h2{margin:0;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:1.55rem;line-height:1.05;letter-spacing:.01em}
+.stitle p{margin:0;color:var(--muted);font-size:1rem}
+.sbig{display:flex;align-items:center;gap:16px;min-width:0}
+.sbig strong{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:clamp(2.2rem,15cqi,4rem);line-height:.9;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sbig span{display:flex;flex-direction:column;gap:4px;flex:none;white-space:nowrap}
+.sumv i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.62rem;color:var(--muted)}
+.sbig em{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.62rem;color:var(--mint)}
+.shit{display:flex;flex-direction:column;gap:12px}
+.sticks{display:flex;gap:3px;height:40px}
+.sticks span{flex:1;border-radius:2px;background:#16231a}
+.sticks span.on{background:var(--k)}
+.sumv[open] .sticks span.on{animation:tickIn .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes tickIn{from{transform:scaleY(.15);opacity:0}}
+.srate{display:flex;justify-content:space-between;align-items:baseline;gap:8px;color:var(--muted);font-size:.95rem}
+.srate b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:1.35rem;color:var(--fg);margin-left:2px}
+.slist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px}
+/* achievement cards (same look as Dropface) */
+.oach{display:flex;flex-direction:column;gap:12px}
+.oach[hidden]{display:none}
+.oeyebrow{margin:0;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:11.9px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}
+.achgrid{display:flex;gap:10px;margin:0 -24px;padding:0 24px 4px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 24px;scrollbar-width:none;overscroll-behavior-x:contain}
+.achgrid::-webkit-scrollbar{display:none}
+.acard{flex:none;width:148px;scroll-snap-align:start;display:flex;flex-direction:column;gap:4px;min-width:0;padding:14px;border-radius:12px;background:#1a1a1a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.acard .atop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.acard .ai{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;color:#000;background:var(--c)}
+.acard .ai svg{width:22px;height:22px}
+.acard .ap{font-family:var(--font-mono);font-weight:700;font-size:.85rem;color:var(--c)}
+.acard b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.04em;line-height:1.2;overflow-wrap:anywhere}
+.acard small{font-size:.8rem;color:var(--muted)}
+.slist li{display:flex;align-items:center;gap:16px}
+.sic2{width:30px;height:30px;flex:none;border-radius:7px;box-shadow:inset 0 0 0 1.5px var(--c);color:var(--c);display:grid;place-items:center}
+.sic2 svg{width:16px;height:16px}
+.slist .sl{flex:1;font-size:1.05rem}
+.slist b{font-family:var(--font-mono);font-weight:700;font-size:1rem;color:var(--c);font-variant-numeric:tabular-nums}
+.snote{margin:-10px 0 0;color:var(--muted);font-size:.85rem}
+.sdiv{flex:none;align-self:stretch;width:auto;height:1px;margin:0 -24px;border:0;background:rgba(255,255,255,.12)} /* divider between summary sections, edge to edge (same as Dropface) */
+#over .drop{margin-top:4px}
+#challengeBtn{transition:background .2s,color .2s,box-shadow .2s}
+#challengeBtn.copied{background:var(--mint);color:var(--mint-ink);box-shadow:0 4px 0 var(--btn-edge)}
+/* how to play in the summary style */
+#help.sumv{background:var(--bg);width:min(440px,calc(var(--appw) - 32px));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.helpv .slist .sl{display:flex;flex-direction:column;gap:3px}
+.helpv .slist small{font-size:.85rem;color:var(--muted)}
+.helpv .hsteps .sic2{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:.85rem;background:var(--c);color:#000;box-shadow:none} /* filled number squares */
+.helpv .sic2 img{width:18px;height:18px;display:block}
+.hwatch{display:flex;flex-direction:column;gap:16px}
+.hwatch .sic2{border-radius:50%;background:color-mix(in srgb,var(--c) 16%,#000);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 75%,transparent)} /* round, like the bubbles in the game */
+.hwatch>i{display:block;color:var(--fg);font-size:calc(.62rem + 2px)}
+.hcombo{display:flex;align-items:center;gap:14px;margin:0;padding:14px 16px;border-radius:12px;background:color-mix(in srgb,var(--mint) 8%,#000);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--mint) 35%,transparent);color:#fff;font-size:.9rem;line-height:1.5}
+.hcombo svg{flex:none;width:28px;height:28px;color:var(--mint)} /* 'Watch for' in white, 2px bigger */
+.helpv .slist li{align-items:center}
+/* leaderboard in the summary style */
+.shead.end{justify-content:flex-end}
+.setv .setlist li:has(.volw){flex-wrap:wrap;row-gap:12px}
+.setv .setlist li:has(.volw) .sl{flex:1 1 100%}
+.setv .volw{width:100%;display:flex;align-items:center;gap:14px}
+.setv .volw output{width:2.6rem;text-align:right;font-family:var(--font-mono);font-weight:700;font-size:.85rem;color:var(--fg);font-variant-numeric:tabular-nums}
+.setv input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:6px;border-radius:3px;margin:0;cursor:pointer;
+  background:linear-gradient(var(--mint),var(--mint)) 0/var(--p,80%) 100% no-repeat,#454a48}
+.setv input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.setv input[type=range]::-moz-range-thumb{width:18px;height:18px;border:0;border-radius:50%;background:#fff}
+.setv input[type=range]:focus-visible{outline:2px solid var(--mint);outline-offset:4px}
+#settings.sumv{background:var(--bg);width:min(440px,calc(var(--appw) - 32px));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.setv .setlist{background:none;border-radius:0}
+.setv .setlist li .toggle{margin-left:auto}
+.setv .setlist li .toggle i{background:#454a48}.setv .setlist li .toggle[aria-checked="true"] i{background:var(--mint)}
+.setv .setlist.muted li:not(:last-child){opacity:.45}
+#lbm.sumv{background:var(--bg);width:min(440px,calc(var(--appw) - 32px));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.lbv .sbig em{color:var(--amber)}
+.lbtabs{background:#141414;border-radius:8px}
+.lbtabs button{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.68rem;padding:11px 8px;border-radius:6px}
+.lbtabs button[aria-selected="true"]{background:#2a2a2a;color:var(--fg)}
+.lbv .lb{gap:18px}
+.lbv .lb li{grid-template-columns:30px 1fr auto;gap:16px;background:none;border-radius:0;padding:0}
+.lbv .lb li.me{box-shadow:none}
+.lbv .lb .rk{width:30px;height:30px;border-radius:7px;box-shadow:inset 0 0 0 1.5px var(--c);display:grid;place-items:center;font-family:var(--font-mono);font-weight:700;font-size:.8rem;color:var(--fg)}
+.lbv .lb li:nth-child(-n+3) .rk{color:var(--c)}
+.lbv .lb .nm{font-size:1.05rem;gap:3px}
+.lbv .lb .nm small{font-size:.8rem}
+.lbv .lb .sc{font-family:var(--font-mono);font-weight:700;font-size:1rem}
+.lbv .lb li.me .nm span{color:var(--mint)}
+.lbv .snote{margin:0}
+@media (max-width:600px){
+  #help.sumv{width:100%;max-width:none;height:100dvh;max-height:100dvh;margin:0;border-radius:0;box-shadow:none}
+  #help .shead{padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+  #help .sbody{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
+  #lbm.sumv{width:100%;max-width:none;height:100dvh;max-height:100dvh;margin:0;border-radius:0;box-shadow:none}
+  #settings.sumv{width:100%;max-width:none;height:100dvh;max-height:100dvh;margin:0;border-radius:0;box-shadow:none}
+  #lbm .shead{padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+  #lbm .sbody{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
+  #over.sumv{width:100%;max-width:none;height:100dvh;max-height:100dvh;margin:0;border-radius:0;box-shadow:none}
+  #over .shead{padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+  #over .sbody{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
+}
+@media (prefers-reduced-motion: reduce){.sumv[open] .sticks span.on{animation:none}}
+/* glass panel hand dock: blurred rounded tray over a purple glow, square slots */
+.app.dockglass.playing::before{content:"";position:fixed;left:0;right:0;bottom:0;z-index:-1;pointer-events:none;height:300px;
+  /* glow under the dock: white when nothing is on, the active power-up's colour, or a blend of up to three side by side */
+  background:radial-gradient(70% 80% at 18% 115%,color-mix(in srgb,var(--g1) 80%,transparent) 0%,color-mix(in srgb,var(--g1) 38%,transparent) 38%,transparent 75%),
+    radial-gradient(70% 80% at 50% 115%,color-mix(in srgb,var(--g2) 85%,transparent) 0%,color-mix(in srgb,var(--g2) 42%,transparent) 38%,transparent 75%),
+    radial-gradient(70% 80% at 82% 115%,color-mix(in srgb,var(--g3) 80%,transparent) 0%,color-mix(in srgb,var(--g3) 38%,transparent) 38%,transparent 75%);
+  transition:--g1 .5s,--g2 .5s,--g3 .5s;opacity:.7} /* a little see-through; the colours stay the same */
+@property --g1{syntax:'<color>';inherits:true;initial-value:#d6d6d6}
+@property --g2{syntax:'<color>';inherits:true;initial-value:#d6d6d6}
+@property --g3{syntax:'<color>';inherits:true;initial-value:#d6d6d6}
+.app.dockglass #slots{padding:16px;margin:0;border-radius:20px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.app.dockglass .slot{aspect-ratio:1/1;min-height:0;height:auto;padding:0 3px;justify-content:center;gap:3px}
+.app.dockglass .slot b{font-size:.58rem;line-height:1}
+.app.dockglass .slot .sic{width:27px;height:27px}
+.app.dockglass .slot .sic img{width:25px;height:25px}
+/* minimal HUD */
+.mbest{display:flex;align-items:baseline;gap:8px}
+.mbest b{font-family:var(--font-mono);font-weight:700;font-size:.75rem;letter-spacing:.04em;color:#8a8a8a;font-variant-numeric:tabular-nums}
+.mhud{display:none}
+.app.hudmini .liferow{display:none!important}
+.app.hudmini.playing .mhud{display:flex;flex-direction:column;gap:4px;position:fixed;z-index:3;top:calc(env(safe-area-inset-top,0px) + 16px);
+  left:max(max(16px,env(safe-area-inset-left,0px)),calc((var(--appw) - 440px)/2));width:min(calc((var(--appw) - 32px)/2),220px);pointer-events:none}
+/* the status section sits in a glass tray across the top, with the sound button on the right */
+.app.hudmini.playing .mhud{flex-direction:row;align-items:center;gap:12px;top:calc(env(safe-area-inset-top,0px) + 10px);
+  left:max(max(12px,env(safe-area-inset-left,0px)),calc((var(--appw) - 464px)/2));right:auto;width:min(calc(var(--appw) - 24px),440px);
+  padding:14px 14px 14px 16px;border-radius:12px;background:rgba(14,14,14,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+/* no glass tray: the scoreboard sits straight on the board */
+.app.hudmini.playing .mhud{padding:4px;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0}
+.mhud .mcol{display:flex;flex-direction:column;gap:4px;width:min(62%,220px)}
+.app.hudmini.playing .mhud .mutebtn{display:grid;position:static;flex:none;margin-left:auto;pointer-events:auto;box-shadow:none}
+.app.hudmini.playing .mhud .pausebtn[hidden]{display:none}
+.app.hudmini.playing .mhud .pausebtn{margin-left:4px} /* pause sits right of the sound button */
+.app.ispaused::before{display:none} /* no glow, score or sound button behind the pause card */
+.app.ispaused .mhud{visibility:hidden}
+.pmotion b{animation:pBreathe 2.6s ease-in-out infinite}
+.pmotion:not([hidden]) .pmbox{animation:pIn .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes pIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes pBreathe{0%,100%{opacity:1}50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){.pmotion b,.pmotion .pmbox{animation:none!important}}
+.mhud i{font-style:normal;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.56rem;color:var(--muted)}
+.mrow{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.msc{display:flex;flex-direction:column;gap:4px}
+.msc.r{align-items:flex-end}
+.msc b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:1.25rem;line-height:1;color:var(--fg);font-variant-numeric:tabular-nums}
+.msc.r b{font-size:.8rem;color:#8a8a8a}
+.mrow{gap:8px}
+.mrow.mid{align-items:center}
+.mhp{flex:1;display:flex;gap:1.5px}
+.mhp span{flex:1;height:3px;background:#262626;transition:background .25s}
+.mhp span.on{background:var(--mint)}
+.mhp span.on.bonus{background:var(--violet)}
+.mhp span.hit{animation:mHit .7s ease-out}
+@keyframes mHit{0%,35%{background:var(--red)}100%{background:#262626}}
+.mhud.hurt .mhp span.on{background:var(--red);animation:hurtBlink .8s steps(1) infinite}
+.mlives{display:flex;gap:4px}
+.mlives svg{width:10px;height:14px;display:block}
+.mlives rect{fill:#262626;stroke:none}.mlives path{fill:#3a3a3a}
+.mlives .on rect{fill:var(--amber)}.mlives .on path{fill:#000}
+.mlives span.got svg{animation:mGot .6s cubic-bezier(.3,.7,.4,1.4)}
+@keyframes mGot{0%{transform:scale(.3) rotateY(180deg)}100%{transform:none}}
+body.is-playing .app.hudmini ~ .scrim.t, .app.hudmini.playing ~ .scrim.t{height:calc(env(safe-area-inset-top,0px) + 150px)}
+@media (prefers-reduced-motion: reduce){.mhp span.hit{animation:none}.mhud.hurt .mhp span.on{animation:none}}
+/* floating glass hand tray */
+#hand .handscroll{padding-bottom:93px} /* the last card stops 16px above the tray; the list runs 16px past the tray before the button area */
+#hand .handtray{position:relative;z-index:2;margin-top:-94px;margin-bottom:16px;padding:14px 16px;border-radius:14px;
+  background:rgba(44,44,44,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 12px 30px rgba(0,0,0,.55)}
+#hand .handtray .mini{gap:10px}
+#hand .handtray .mini>*{width:34px;height:34px;border-radius:6px}
+#hand .handtray .mini>span{background:var(--mint);color:#000}
+#hand .handtray .mini img{width:22px;height:22px}
+#hand .handtray .mini svg{width:12px;height:16px}
+#hand .handtray .randbtn{height:34px;padding:0 12px;justify-content:center;gap:8px;font-weight:700;font-size:.85rem;background:transparent;border:1.5px solid rgba(255,255,255,.55);border-radius:7px}
+#hand .handtray .randbtn svg{width:17px;height:17px}
+#hand .howbody{gap:16px}
+/* a picked or emptied slot flips over */
+.handtray .mini>.flip{animation:miniFlip .34s cubic-bezier(.3,.7,.4,1.2) both;animation-delay:calc(var(--fi,0)*45ms);backface-visibility:hidden}
+@keyframes miniFlip{0%{transform:perspective(160px) rotateY(-180deg)}100%{transform:perspective(160px) rotateY(0)}}
+@media (prefers-reduced-motion: reduce){.handtray .mini>.flip{animation:none}} /* no summary button under Play, no pause */
+.app:not(.playing) #helpBtn{order:-3}
+.app:not(.playing) #siteBtn{order:-4} /* Dailycade, first in the row */
+#siteBtn{color:#fff}
+#siteBtn svg{width:19px;height:24.7px}
+.app.playing #siteBtn{display:none}
+.app:not(.playing) #sumIcon{order:0}
+.app:not(.playing) #siteBtn{order:-5}
+.app:not(.playing) #sndBtn{order:-4} /* sound sits just left of How to play */
+.app.playing #sndBtn{display:none!important} /* summary sits third, after help and the leaderboard */
+/* game board v2: no title or buttons while playing; score/best sit as far above the bars as Lives/Streak sit below; square bars, blue streak */
+.app.playing .top{visibility:hidden}
+.app.hudduel.playing .duel{top:calc(env(safe-area-inset-top,0px) + 16px)}
+.dtop{display:flex;align-items:baseline;gap:8px;justify-content:flex-start}
+.dside.r .dtop{justify-content:flex-end}
+.dtop i{color:var(--mint)}
+.dside.r .dtop i{color:var(--amber)}
+.dbar,.dlives span{border-radius:0}
+.dbar.st .fill{background:#4f9dff}
+.dside.r .dlab b{color:#4f9dff}
+.duel.hot .dbar.st{box-shadow:inset 0 0 0 1px #4f9dff,0 0 12px rgba(79,157,255,.55)}
+body.is-playing .scrim.t{height:calc(env(safe-area-inset-top,0px) + 110px)}
+body.is-playing .scrim.t{display:none} /* no dark band over the top during a game: falling things must be visible as soon as they can be hit (bombs too) */
+
+#droprow{gap:12px}
+
+
+@media (max-width:600px){#hand{width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;height:calc(100dvh - 8px);max-height:calc(100dvh - 8px);padding-bottom:env(safe-area-inset-bottom,0px)}#hand .mhead,#hand .howbody{padding-left:14px;padding-right:14px}}
+@media (prefers-reduced-motion: reduce){.hcard{transition:none}}
+
+@media (min-width:600px) and (min-aspect-ratio:4/5){.crt,.crt:popover-open{border-radius:16px;overflow:hidden;clip-path:inset(0 round 16px)}}
+
+/* ---------- Trace: on top of the shared Gambit/Dropface look ---------- */
+.board{background:#000} /* no glow at the bottom */
+body.is-playing .board{background:#000}
+body.is-playing .scrim.b{display:none} /* nothing to read at the bottom during a game, and the grade callout sits there */
+#droprow .logo svg{width:21.6px;height:30.5px;margin:0 0 0 5px;position:relative;top:7px} /* the cut card: cap height, sitting a little low */
+.hcombo{background:color-mix(in srgb,var(--mint) 8%,#000);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--mint) 35%,transparent)}
+/* grade callout after each cut, below the object */
+.call{position:absolute;left:0;right:0;bottom:17%;text-align:center;pointer-events:none;z-index:2;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s}
+.call.show{opacity:1;transform:none}
+.call b{display:block;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:1.5rem;letter-spacing:.04em;text-transform:uppercase;line-height:1.1}
+.call span{display:block;font-family:var(--font-mono);font-weight:700;font-size:1.8rem;margin-top:4px;font-variant-numeric:tabular-nums}
+.call.note b{font-size:1.05rem;letter-spacing:.08em;color:var(--muted)!important}
+.call small{display:block;font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin-top:4px}
+/* too close: under the HUD */
+.warn{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 92px);text-align:center;color:var(--coral,#ff7a6b);font-family:var(--font-wide);font-stretch:125%;font-weight:900;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;pointer-events:none;z-index:2;opacity:0;text-shadow:0 0 18px rgba(255,122,107,.6)}
+/* HUD: ten cut cells instead of a health bar */
+.mhp span{height:4px}
+.mhp span.now{background:#5a5f5d}
+.mn{flex:none;font-family:var(--font-mono);font-weight:700;font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
+/* summary: one tall stick per cut, colored by grade, and the cut cards */
+.cutsticks{gap:6px;height:44px;align-items:flex-end}
+.cutsticks span{border-radius:3px;background:#1d1d1d;height:100%}
+.cutsticks span.on{background:var(--k);height:var(--h)}
+.of{color:var(--muted);letter-spacing:.04em}
+.ocuts{display:flex;gap:8px;margin:0 -24px;padding:0 24px 4px;overflow-x:auto;scroll-snap-type:x proximity;scroll-padding:0 24px;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch} /* one row, swipe sideways */
+.ocuts::-webkit-scrollbar{display:none}
+.ocuts div{flex:none;width:76px;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px 8px;border-radius:9px;background:#141414;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);min-width:0}
+.ocuts div i{display:block;width:60%;height:3px;border-radius:2px;background:var(--k)}
+.ocuts div b{font-family:var(--font-mono);font-weight:700;font-size:.9rem;color:var(--fg);font-variant-numeric:tabular-nums}
+.ocuts div small{font-size:.66rem;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 3px}
+/* summary bars: tap or slide across them to read each cut, like the cards */
+.shit{position:relative}
+.cutsticks{touch-action:none;cursor:pointer}
+.cutsticks span{transform-origin:bottom;transition:opacity .15s}
+.cutsticks.scrub span:not(.sel){opacity:.35}
+.tickpop{position:absolute;top:-40px;z-index:3;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:#1a1a1a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 6px 18px rgba(0,0,0,.5);white-space:nowrap;pointer-events:none}
+.tickpop i{width:3px;height:16px;border-radius:2px;background:var(--k)}
+.tickpop b{font-family:var(--font-mono);font-weight:700;font-size:.9rem;font-variant-numeric:tabular-nums}
+.tickpop small{font-size:.75rem;color:var(--muted)}
+.ocuts div{transition:box-shadow .15s}
+.ocuts div.sel{box-shadow:inset 0 0 0 1.5px var(--k)}
+#oCuts{display:none!important} /* the bars show each cut now */
+#practiceBtn:not([hidden])~.dcrow{margin-top:2px} /* lands at 20px, minus Play again's 4px raised edge = 16px of space */
+#over .dcrow #challengeBtn{margin-top:0!important} /* 4px under Play again + 28px gap - 12px = 20px edge to edge, minus its 4px raised edge = 16px of space */ /* Challenge a friend tucks under Play again, same gap as the home buttons */
+.count>span.go{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;letter-spacing:.02em} /* "Trace" after the countdown: the title's bold extended type */
+.hsteps li{--c:var(--mint)!important} /* How to play numbers in green */
+/* stage banner: when the game changes (spins, tumbles, lopsided, finale), a glass card drops in under the score, like Gambit's Wild card */
+.sban{position:fixed;z-index:6;left:50%;top:calc(env(safe-area-inset-top,0px) + 96px);transform:translate(-50%,-30px) scale(.9);opacity:0;pointer-events:none;
+  display:flex;align-items:center;gap:12px;padding:10px 18px 10px 10px;border-radius:16px;width:max-content;max-width:calc(var(--appw) - 32px);
+  background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 12px 32px rgba(0,0,0,.45);
+  transition:transform .45s cubic-bezier(.3,1.5,.5,1),opacity .25s}
+.sban.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.sban .sbi{width:40px;height:40px;flex:none;border-radius:50%;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 2px #fff;display:grid;place-items:center}
+.sban .sbi svg{width:21px;height:21px;display:block}
+.sban b{display:block;font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:1rem;letter-spacing:.02em;line-height:1.1}
+.sban small{display:block;font-size:.82rem;font-weight:500;color:rgba(255,255,255,.78);margin-top:2px}
+@media (prefers-reduced-motion: reduce){.sban{transition:opacity .2s;transform:translate(-50%,0)}}
+.sban.plain b{font-family:var(--font-body);font-stretch:100%;text-transform:none;letter-spacing:0;font-weight:600;font-size:.95rem;line-height:1.35} /* a single sentence reads as body text, using the full width */
+.sban.plain .sbi{box-shadow:none} /* no white ring */
+.sban.plain>span:last-child{flex:1;min-width:0}
+/* help: grade swatches */
+#helpGrades .sic2{font-family:var(--font-mono);font-weight:700;font-size:.62rem;color:var(--c)}
+#helpGrades b{font-size:.9rem}
+@media (prefers-reduced-motion: reduce){.call{transition:none}}
+
+/* no double-tap or pinch zoom while playing: it froze the board on phones */
+html,body{touch-action:manipulation}
+
+/* summary: a tighter top block, and the stats list folded away under More stats (closed each time the summary opens) */
+#over .sbody{gap:14px}
+#over .sbody .omore{flex:none;margin:6px -24px 10px;padding:0 24px;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
+#over .sbody .omore summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--fg)}
+#over .sbody .omore summary::-webkit-details-marker{display:none}
+#over .sbody .omore summary svg{width:18px;height:18px;flex:none;color:var(--muted);transition:transform .2s}
+#over .sbody .omore[open] summary svg{transform:rotate(180deg)}
+#over .sbody .omore summary:focus-visible{outline:2px solid var(--mint);outline-offset:2px;border-radius:4px}
+#over .sbody .omore>:not(summary):last-child{margin-bottom:18px}
+#over .stitle p{margin:0}
+
+/* summary: a multicoloured stats icon before More stats; 16px under the last stat; 24px more room under Challenge a friend */
+#over .sbody .omore summary .omlab{display:flex;align-items:center;gap:10px}
+#over .sbody .omore summary svg.omic{width:18px;height:18px;color:inherit;transition:none;transform:none}
+#over .sbody .omore>:not(summary):last-child{margin-bottom:0}
+#over .sbody .omore[open]{padding-bottom:16px}
+#over #challengeBtn{margin-bottom:28px} /* its 4px raised edge + 24px */
+
+/* summary: one card per cut, scrolling sideways (replaces the bars when pictures exist) */
+.shit.noticks .cutsticks,.shit.noticks .tickpop{display:none!important}
+.oshots{margin:4px -24px 0}
+.shotrow{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:24px;padding:2px 24px 6px;scrollbar-width:none;overscroll-behavior-x:contain}
+.shotrow::-webkit-scrollbar{display:none}
+.shot{flex:0 0 156px;margin:0;scroll-snap-align:start}
+.shot .ph{position:relative;width:156px;height:156px;border-radius:14px;overflow:hidden;background:#0d0d0d;box-shadow:inset 0 0 0 2px var(--k)}
+.shot .ph img{display:block;width:100%;height:100%;object-fit:cover}
+.shot .ph i{position:absolute;top:6px;left:6px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font:700 11px/20px inherit;font-style:normal;text-align:center}
+.shot .ph span{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.4);font-weight:700;font-size:13px}
+.shot.miss .ph{box-shadow:inset 0 0 0 2px rgba(255,255,255,.14)}
+.shot .ph span.mo{background:rgba(0,0,0,.62);color:#fff;font-size:15px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:inherit;box-shadow:inset 0 0 0 2px rgba(255,255,255,.14)}
+.shot figcaption{display:flex;align-items:flex-start;gap:8px;padding:10px 0 0}
+.shot .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.shot .tx b{font-size:14px;font-weight:700;color:var(--k)}
+.shot.miss .tx b{color:rgba(255,255,255,.55)}
+.shot .tx span{font-size:13px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shot .tx small{font-size:12px;opacity:.6;font-variant-numeric:tabular-nums;white-space:nowrap}
+.shot .pts{flex:none;width:56px;height:56px;border-radius:12px;background:var(--k);color:#0b0b0b;display:flex;flex-direction:column;align-items:center;justify-content:center;font-style:normal;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:1}
+.shot .pts strong{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:3px;font-variant-numeric:tabular-nums}
+.shot.miss .pts{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6)}
+.shint{margin:6px 24px 0;font-size:12px;opacity:.5}
+
+/* ---------- Trace ---------- */
+.call{top:calc(env(safe-area-inset-top,0px) + 128px);bottom:auto}
+.warn{top:calc(env(safe-area-inset-top,0px) + 132px)}
+#droprow .logo{align-items:flex-start}
+#droprow .logo .ticon{width:41.5px;height:41.5px;flex:none;margin:17.5px 0 -16.1px -7.5px;display:block}
+.board canvas{cursor:default}
+.board,body.is-playing .board{background-color:#000;
+  /* faint graph-paper lines, fading out toward the edges */
+  background-image:radial-gradient(ellipse 75% 65% at 50% 45%,transparent 35%,#000 100%),linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:100% 100%,80px 80px,80px 80px;background-position:center,center,center}
+.opile{display:flex;flex-direction:column;gap:10px}
+.opile canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:10px;background:#0b0b0b;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.opile small{color:var(--muted);font-size:.85rem}
+
+</style>
+
+
+<div class="crt" id="crt" popover="manual" aria-hidden="true"><i class="crt-grain"></i></div>
+<div class="board" id="board">
+  <canvas id="cv" aria-label="Play area. Touch the glowing dot and trace along the line of cubes."></canvas>
+  <div class="idle" id="idle" hidden>
+    <p id="idleText">Touch the glowing dot.<br>Trace the line, fast and true.</p>
+    <button class="chip" id="idleHelp">How to play</button>
+  </div>
+  <div class="count" id="count" aria-live="polite"></div>
+  <div class="call" id="call" aria-live="polite"><b id="callT"></b><span id="callS"></span><small id="callP"></small></div>
+  <div class="warn" id="warn" aria-hidden="true">Running out of time</div>
+  <div class="sban" id="sban" role="status" aria-live="polite"><span class="sbi" id="sbanI"></span><span><b id="sbanT"></b><small id="sbanS"></small></span></div>
+  <div class="paused pmotion" id="paused" hidden><div class="pausebox pmbox"><b>Paused</b><button class="drop noarrow" id="resumeBtn">Resume</button><button class="sumbtn sec bigsum" id="exitBtn">Quit</button><small class="pnote" id="pauseNote">Quitting forfeits your score.</small></div></div>
+</div>
+<div class="scrim t"></div><div class="scrim b"></div>
+
+<div class="app collect flat hudmini">
+  <header class="top">
+    <div class="gtitle"><h1>Trace <span class="modetag" id="modeTag" hidden>Single player</span></h1></div>
+    <nav class="nav">
+      <button class="icon" id="lbBtn" aria-label="Leaderboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 3.6M16 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 13v4M9 20h6M10 17h4"/></svg>
+      </button>
+      <button class="icon" id="pauseBtn" aria-label="Pause" disabled hidden></button>
+      <button class="icon" id="modeBtn" aria-label="Switch to practice"></button>
+      <button class="icon" id="siteBtn" aria-label="Back to Dailycade"><svg viewBox="0 0 53 69" aria-hidden="true" fill="currentColor"><path d="M4.03865 58.5444L28.7422 58.4145C32.5052 58.5538 35.6995 56.1602 36.9927 53.1536C37.5344 51.894 37.6625 50.7215 37.359 49.7708C37.3251 49.1516 37.1874 48.5274 36.9324 47.9231L32.7664 38.051L40.2475 38.07C50.5051 38.3367 55.1171 45.5211 51.5191 53.6912C48.1059 61.8232 37.5355 68.4919 27.3734 68.0026L0 67.9357L4.03865 58.5444Z"/><path d="M24.7505 47.5023L8.75173 47.5868L12.8741 38.0031L20.749 38.0218L24.7505 47.5023Z"/><path d="M16.5587 0.738192C8.75457 3.285 4.48766 11.6712 7.02349 19.4788C9.55916 27.2863 17.9392 31.5651 25.7505 29.0404C33.5774 26.5107 37.8665 18.1101 35.3257 10.2869C32.785 2.4635 24.3783 -1.8137 16.5587 0.738192Z"/></svg></button>
+      <button class="icon" id="helpBtn" aria-label="How to play">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.7"/><path d="M12 17h.01"/></svg>
+      </button>
+      <button class="icon" id="sumIcon" aria-label="See daily summary" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg></button>
+      <button class="icon" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </nav>
+  </header>
+
+  <div class="mhud" id="mhud">
+    <div class="mcol" aria-hidden="true">
+    <div class="mrow"><div class="msc"><b id="mScore">0</b></div></div>
+    <div class="mrow mid"><div class="mhp" id="mHp"></div><div class="mn" id="mN">1/10</div></div>
+    <div class="mrow"><div class="mbest"><i>High score</i><b id="mBest">0</b></div></div>
+    </div>
+    <button class="mutebtn" id="muteBtn" aria-label="Mute sound" aria-pressed="false"><svg class="son" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/></svg><svg class="soff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
+    <button class="mutebtn pausebtn" id="hudPause" aria-label="Pause" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg></button>
+  </div>
+
+  <div class="dock" id="dock">
+    <div class="droprow" id="droprow">
+      <div class="home">
+        <div class="logo" role="img" aria-label="Trace"><span aria-hidden="true">Trace</span><img class="ticon" src="trace-icon.png" alt="" aria-hidden="true"></div>
+        <p id="homeText">Trace ten shapes made of cubes.<br>Stay on the line, grow your pile.</p>
+      </div>
+      <p class="coin">Solo or Global?</p>
+      <button class="drop go2 white daily" id="go">Daily challenge</button>
+      <button class="drop go2" id="arcadeBtn">Single player</button>
+    </div>
+    <button class="sumbtn sec bigsum" id="sumBtn" hidden>See daily summary</button>
+    <section class="daybar" aria-label="Game mode">
+      <div class="dayhead">
+        <b id="modeTitle">Daily Game <span>No. 1</span></b>
+        <button class="toggle" id="practiceTgl" role="switch" aria-checked="false">Practice<i></i></button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" popover="manual"><span class="tbadge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" fill="currentColor"/></svg></span><span><small>New best!</small><b id="toastB">0</b></span></div>
+
+<dialog class="modal sumv helpv setv" id="settings" aria-labelledby="setT">
+  <div class="shead">
+    <h2 id="setT" tabindex="-1" autofocus>Sound</h2>
+    <button class="sbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="sbody">
+    <ul class="slist setlist">
+      <li style="--c:var(--amber)"><span class="sl">Game sound effects<small>Tracing blips, chimes and the timer tick</small></span><button class="toggle" id="setSfx" role="switch" aria-checked="true" aria-label="Game sound effects"><i></i></button></li>
+      <li style="--c:var(--pink)"><span class="sl">Mute everything<small>Silence everything at once</small></span><button class="toggle" id="setMute" role="switch" aria-checked="false" aria-label="Mute everything"><i></i></button></li>
+    </ul>
+  </div>
+</dialog>
+
+<dialog class="modal sumv helpv" id="help" aria-labelledby="helpT">
+  <div class="shead">
+    <h2 id="helpT" tabindex="-1" autofocus>How to play</h2>
+    <button class="sbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="sbody">
+    <ol class="slist hsteps">
+      <li style="--c:var(--pink)"><span class="sic2">1</span><span class="sl">Start at the glowing dot<small>Touch it and trace along the line of cubes. Lift and you can pick up where you left off</small></span></li>
+      <li style="--c:var(--pink)"><span class="sic2">2</span><span class="sl">Stay on the line<small>The closer your line passes each cube, the more points. Up to 70 a shape</small></span></li>
+      <li style="--c:var(--pink)"><span class="sic2">3</span><span class="sl">Be quick<small>Finish before the white mark on the timer for up to 30 more. 100 a shape, 1,000 a game</small></span></li>
+      <li style="--c:var(--pink)"><span class="sic2">4</span><span class="sl">Watch it fall apart<small>Only cubes you trace well break off and fall. The ones you miss stay stuck on the board</small></span></li>
+    </ol>
+    <div class="hwatch">
+      <p class="hcombo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 18c3-8 6 2 9-6s5-4 7-6"/><path d="M3 21h3v-3H3zM9 21h3v-3H9z"/></svg><span>Cutting corners doesn’t pay: every cube is scored by how close your line came to it. Shapes 9 and 10 turn while you trace.</span></p>
+    </div>
+    <div class="hwatch"><i>Grades</i><ul class="slist" id="helpGrades"></ul></div>
+    <button class="drop go2 white" data-close>Got it</button>
+    <button class="dcfblink" id="helpFb" type="button">Send feedback</button>
+  </div>
+</dialog>
+
+<dialog class="modal sumv lbv" id="lbm" aria-labelledby="lbT">
+  <div class="shead">
+    <h2 id="lbT" tabindex="-1" autofocus>Leaderboard</h2>
+    <button class="sbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="sbody">
+    <div class="stitle"><p id="lbSub"></p></div>
+    <div class="sbig"><strong id="lbMine">–</strong><span><i id="lbMineL">Your best</i><em id="lbRank" hidden></em></span></div>
+    <div class="tabs lbtabs" role="tablist">
+      <button role="tab" id="tabToday" aria-selected="true" data-tab="today">Today</button>
+      <button role="tab" id="tabAll" aria-selected="false" data-tab="all">All time</button>
+    </div>
+    <ol class="lb" id="lbList"></ol>
+    <p class="snote" id="lbNote">Loading scores…</p>
+  </div>
+</dialog>
+
+<dialog class="modal sumv" id="over" aria-labelledby="overT">
+  <div class="shead">
+    <h2 id="overT" tabindex="-1" autofocus>Game over</h2>
+    <button class="sbtn" id="shareBtn" aria-label="Share your result" hidden><svg class="ishare" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><svg class="icheck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 12.5l4.2 4.2L18.5 8"/></svg></button>
+    <button class="sbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="sbody">
+    <div class="stitle"><p id="oSub"></p></div>
+    <div class="sbig"><strong id="oScore">0</strong><span><i>Score <span class="of">/ 1,000</span></i><em id="oNb" hidden>New best</em></span></div>
+    <div class="shit">
+      <div class="sticks cutsticks" id="oTicks" aria-hidden="true"></div>
+      <div class="tickpop" id="oPop" hidden></div>
+      <div class="srate"><i>Avg accuracy</i><span><span id="oThrown"></span><b id="oHit">0%</b></span></div>
+    </div>
+    <div class="ocuts" id="oCuts"></div>
+    <div class="oshots" id="oShots" hidden></div>
+    <div class="opile" id="oPileW" hidden><i>Your pile</i><canvas id="oPile" aria-label="The pile of cubes you built"></canvas><small id="oPileN"></small></div>
+    <details class="omore" id="oMore"><summary><span class="omlab"><svg class="omic" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="9" width="2.8" height="9.5" rx="1.2" fill="#f2c14e"/><rect x="4.8" y="5.5" width="2.8" height="13" rx="1.2" fill="#ff8ad8"/><rect x="8.6" y="11" width="2.8" height="7.5" rx="1.2" fill="#c49bff"/><rect x="12.4" y="7" width="2.8" height="11.5" rx="1.2" fill="#7cc8ff"/><rect x="16.2" y="2.5" width="2.8" height="16" rx="1.2" fill="#9deba8"/></svg>More stats</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <ul class="slist" id="oFacts"></ul>
+      <div class="oach" id="oAch" hidden></div>
+    </details>
+    <p class="snote" id="oNote" hidden></p>
+    <button class="drop go2" id="practiceBtn" hidden>Play again</button>
+    <button class="drop go2" id="dailyBtn" hidden>Daily challenge</button>
+    <div class="dcrow stack"><div id="oIni"></div>
+    <button class="drop go2 white" id="challengeBtn" hidden>Challenge a friend</button></div>
+    <div id="oFb"></div>
+  </div>
+</dialog>
+
+
+<script src="dc-tune.js"></script>
+<script src="dc-initials.js"></script>
+<script src="dc-feedback.js"></script>
+<script src="dc-more.js"></script>
+<script>
+/* play stats: count visits that came from a Challenge a friend link */
+(()=>{try{const u=new URL(location.href);if(u.searchParams.get('via')!=='challenge')return;u.searchParams.delete('via');history.replaceState(null,'',u.pathname+(u.search||'')+u.hash);
+  const go=()=>window.DCTrack&&DCTrack('trace','challenge_opened');if(window.DCTrack)go();else addEventListener('load',go)}catch(e){}})();
+</script>
+<script>
+(()=>{
+'use strict';
+/* ---------- live tuning (admin page): approach speed, spin, tumble, sway, scoring, warning ---------- */
+const TF_DEF={speed:1,tol:1};
+const TF=Object.assign({},TF_DEF); let TF_PENDING=null;
+const PREVIEW_VALS=window.DCTune?DCTune.preview('trace'):null, PREVIEW=!!PREVIEW_VALS; // admin test mode
+const $=s=>document.querySelector(s);
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmtN=n=>Math.round(n).toLocaleString('en-US');
+const pad2=n=>String(n).padStart(2,'0');
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())};
+
+/* ---------- sound: swish, chimes, the warning tick, UI clicks ---------- */
+let muted=false, sfxOn=true;
+try{muted=localStorage.getItem('trace.muted')==='1';sfxOn=localStorage.getItem('trace.sfx')!=='0'}catch(e){}
+const SFX=(()=>{
+  let ac=null;
+  const live=()=>ac&&!muted&&sfxOn;
+  const tone=(f,d,type='sine',g=.12,slide=0)=>{if(!live())return;const t=ac.currentTime,o=ac.createOscillator(),v=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);
+    if(slide)o.frequency.exponentialRampToValueAtTime(f*slide,t+d);v.gain.setValueAtTime(g,t);v.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(v).connect(ac.destination);o.start(t);o.stop(t+d)};
+  return {
+    ensure(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ac&&ac.state==='suspended')ac.resume().catch(()=>{})},
+    tone,
+    click(){tone(880,.05,'sine',.12)}, // same click as Gambit and Dropface
+    count(n){tone(n?520:880,n?.12:.28,'triangle',.11)},
+    swish(){if(!live())return;const t=ac.currentTime,n=ac.sampleRate*.18,buf=ac.createBuffer(1,n,ac.sampleRate),d=buf.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+      const s=ac.createBufferSource(),f=ac.createBiquadFilter(),v=ac.createGain();s.buffer=buf;f.type='bandpass';f.frequency.setValueAtTime(900,t);f.frequency.exponentialRampToValueAtTime(4200,t+.16);f.Q.value=1.2;v.gain.value=.35;s.connect(f).connect(v).connect(ac.destination);s.start(t)},
+    tick(k){tone(620+k*520,.06,'square',.035)},
+    blip(p,a){tone(a>=.75?520+p*700:a>=.35?300+p*260:150,.03,'square',a>=.75?.03:.02)},
+    land(){tone(170+Math.random()*120,.025,'triangle',.03)},
+    miss(){tone(110,.4,'sawtooth',.12,.5)},
+    over(){tone(523,.18,'triangle',.1);setTimeout(()=>tone(784,.3,'triangle',.1),140)},
+  };
+})();
+const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+
+
+/* ---------- seeded randomness: today's date picks the shapes ---------- */
+const hash=s=>{let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return h>>>0};
+const mulberry=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+
+/* ---------- shapes: a path in unit space (about -1..1), traced from its first point ---------- */
+const TAU=Math.PI*2;
+const curve=(f,n=160)=>Array.from({length:n+1},(_,i)=>f(i/n));
+const closeP=p=>p.concat([p[0]]);
+const regPts=(n,r=1,rot=-Math.PI/2)=>Array.from({length:n},(_,i)=>[Math.cos(rot+i*TAU/n)*r,Math.sin(rot+i*TAU/n)*r]);
+const starPts=(k,ro,ri,dy=0)=>closeP(Array.from({length:k*2},(_,i)=>{const a=-Math.PI/2+i*Math.PI/k,r=i%2?ri:ro;return[Math.cos(a)*r,Math.sin(a)*r+dy]}));
+const qb=(a,c,b,n=24)=>Array.from({length:n+1},(_,i)=>{const t=i/n,u=1-t;return[u*u*a[0]+2*u*t*c[0]+t*t*b[0],u*u*a[1]+2*u*t*c[1]+t*t*b[1]]});
+const arcPts=(cx,cy,r,a0,a1,n=40)=>Array.from({length:n+1},(_,i)=>{const a=(a0+(a1-a0)*i/n)*Math.PI/180;return[cx+Math.cos(a)*r,cy+Math.sin(a)*r]});
+const centerP=p=>{const xs=p.map(q=>q[0]),ys=p.map(q=>q[1]),mx=(Math.min(...xs)+Math.max(...xs))/2,my=(Math.min(...ys)+Math.max(...ys))/2,sc=1.8/Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys));return p.map(([x,y])=>[(x-mx)*sc,(y-my)*sc])};
+const rotP=(p,deg)=>{const a=deg*Math.PI/180,c=Math.cos(a),s=Math.sin(a);return p.map(([x,y])=>[x*c-y*s,x*s+y*c])};
+const SHAPES={
+  line:()=>[[-.85,.5],[.85,-.5]],
+  arc:()=>curve(t=>[-.85*Math.cos(Math.PI*t),.32-.68*Math.sin(Math.PI*t)],60),
+  vee:()=>[[-.8,-.6],[0,.6],[.8,-.6]],
+  zig:()=>[[-.9,.3],[-.45,-.3],[0,.3],[.45,-.3],[.9,.3]],
+  scurve:()=>curve(t=>[-.9+1.8*t,Math.sin(t*TAU)*.45],80),
+  square:()=>closeP([[-.72,-.72],[.72,-.72],[.72,.72],[-.72,.72]]),
+  triangle:()=>closeP(regPts(3,.95).map(([x,y])=>[x,y+.18])),
+  diamond:()=>closeP([[0,-.95],[.68,0],[0,.95],[-.68,0]]),
+  circle:()=>curve(t=>[Math.cos(-Math.PI/2+t*TAU)*.85,Math.sin(-Math.PI/2+t*TAU)*.85]),
+  house:()=>closeP([[-.7,.85],[-.7,-.12],[0,-.85],[.7,-.12],[.7,.85]]),
+  moon:()=>{const o=curve(t=>{const a=(60+240*t)*Math.PI/180;return[Math.cos(a)*.9,Math.sin(a)*.9]},70);
+    const i=curve(t=>{const a=(274-188*t)*Math.PI/180;return[.4+Math.cos(a)*.78,Math.sin(a)*.78]},60);return o.concat(i.slice(1),[o[0]])},
+  star:()=>starPts(5,.95,.4,.06),
+  heart:()=>curve(t=>{const a=t*TAU,x=16*Math.pow(Math.sin(a),3),y=-(13*Math.cos(a)-5*Math.cos(2*a)-2*Math.cos(3*a)-Math.cos(4*a));return[x/17,y/17-.08]},180),
+  wave:()=>curve(t=>[-.95+1.9*t,Math.sin(t*TAU*2)*.38],140),
+  bolt:()=>closeP([[.3,-.95],[-.45,.12],[.02,.12],[-.28,.95],[.5,-.18],[.02,-.18]]),
+  cloud:()=>curve(t=>{const a=-Math.PI/2+t*TAU,r=.62+.2*Math.abs(Math.sin(3*a));return[Math.cos(a)*r*1.1,Math.sin(a)*r*.82]},220),
+  spiral:()=>curve(t=>{const a=t*TAU*2.4,r=.1+.85*t;return[Math.cos(a)*r,Math.sin(a)*r]},240),
+  infinity:()=>curve(t=>{const a=t*TAU,d=1+Math.sin(a)*Math.sin(a);return[Math.cos(a)*.95/d,Math.sin(a)*Math.cos(a)*1.25/d]},220),
+  rose:()=>curve(t=>{const a=t*Math.PI,r=Math.cos(3*a)*.95;return[Math.cos(a)*r,Math.sin(a)*r]},240),
+  trefoil:()=>curve(t=>{const a=t*TAU;return[(Math.sin(a)+2*Math.sin(2*a))/3.1,(Math.cos(a)-2*Math.cos(2*a))/3.1+.05]},260),
+  fish:()=>{const top=curve(t=>[-.4+1.3*t,-.48*Math.sin(Math.PI*t)],40),bot=curve(t=>[.9-1.3*t,.48*Math.sin(Math.PI*t)],40);
+    return top.concat(bot.slice(1),[[-.92,.45],[-.92,-.45],[-.4,0]])},
+  star7:()=>starPts(7,.95,.52,.02),
+  flower:()=>curve(t=>{const a=-Math.PI/2+t*TAU,r=.42+.53*Math.abs(Math.cos(2.5*(a+Math.PI/2)));return[Math.cos(a)*r,Math.sin(a)*r]},300),
+  loop:()=>curve(t=>{const a=t*6*Math.PI;return[(2*Math.cos(a)+5*Math.cos(2*a/3))/7.05,(2*Math.sin(a)-5*Math.sin(2*a/3))/7.05]},360),
+  // --- added set ---
+  hook:()=>[[.3,-.9],...arcPts(-.1,.3,.4,0,180,30),[-.5,.05]],
+  check:()=>[[-.75,0],[-.25,.55],[.8,-.6]],
+  swoop:()=>curve(t=>[-.85+1.7*t,.55-1.2*t*t],60),
+  stairs:()=>[[-.9,.7],[-.45,.7],[-.45,.25],[0,.25],[0,-.2],[.45,-.2],[.45,-.65],[.9,-.65]],
+  em:()=>[[-.8,.6],[-.8,-.6],[0,.2],[.8,-.6],[.8,.6]],
+  cee:()=>arcPts(0,0,.82,-45,-315,90),
+  uturn:()=>[[-.55,-.85],...arcPts(0,.2,.55,180,0,40),[.55,-.85]],
+  pentagon:()=>closeP(regPts(5,.92).map(([x,y])=>[x,y+.06])),
+  hexagon:()=>closeP(regPts(6,.9,0)),
+  arrow:()=>closeP([[-.85,-.22],[.1,-.22],[.1,-.6],[.85,0],[.1,.6],[.1,.22],[-.85,.22]]),
+  drop:()=>curve(t=>{const a=t*TAU;return[.8*Math.sin(a)*Math.sin(a/2),-.92*Math.cos(a)*.9+.08]},180),
+  shield:()=>closeP([[-.7,-.78],[.7,-.78],[.7,.02],...qb([.7,.02],[.7,.6],[0,.92]).slice(1),...qb([0,.92],[-.7,.6],[-.7,.02]).slice(1,-1)]),
+  cross:()=>{const w=.28,r=.85;return closeP([[-w,-r],[w,-r],[w,-w],[r,-w],[r,w],[w,w],[w,r],[-w,r],[-w,w],[-r,w],[-r,-w],[-w,-w]])},
+  leaf:()=>rotP(curve(t=>{const a=t*TAU,sn=Math.sin(a);return[Math.cos(a)*.95,.5*sn*Math.sqrt(Math.abs(sn))]},160),-35),
+  crown:()=>closeP([[-.8,.6],[-.8,-.45],[-.4,0],[0,-.7],[.4,0],[.8,-.45],[.8,.6]]),
+  tree:()=>closeP([[0,-.95],[.45,-.35],[.25,-.35],[.65,.25],[.15,.25],[.15,.8],[-.15,.8],[-.15,.25],[-.65,.25],[-.25,-.35],[-.45,-.35]]),
+  boat:()=>closeP([[-.85,.35],[-.05,.35],[-.05,-.85],[.65,.2],[.05,.2],[.05,.35],[.85,.35],[.55,.75],[-.55,.75]]),
+  coil:()=>curve(t=>{const a=t*TAU*4;return[-.72+1.44*t-.24*Math.sin(a),-.32*Math.cos(a)]},280),
+  clover:()=>curve(t=>{const a=-Math.PI/2+t*TAU,r=.3+.65*Math.abs(Math.cos(2*(a+Math.PI/4)));return[Math.cos(a)*r,Math.sin(a)*r]},280),
+  sqspiral:()=>{const p=[[0,0]],d=[[1,0],[0,1],[-1,0],[0,-1]];let x=0,y=0;for(let i=0;i<9;i++){const l=.2*(Math.floor(i/2)+1);x+=d[i%4][0]*l;y+=d[i%4][1]*l;p.push([x,y])}return centerP(p)},
+  rose4:()=>curve(t=>{const a=t*TAU,r=Math.cos(2*a)*.95;return[Math.cos(a)*r,Math.sin(a)*r]},300),
+  gear:()=>curve(t=>{const a=-Math.PI/2+t*TAU,k=Math.max(-1,Math.min(1,Math.cos(8*a)*3)),r=.64+.15*(k+1);return[Math.cos(a)*r,Math.sin(a)*r]},400),
+  spiro:()=>curve(t=>{const a=t*4*Math.PI;return[(3*Math.cos(a)+3*Math.cos(1.5*a))/6.1,(3*Math.sin(a)-3*Math.sin(1.5*a))/6.1]},360),
+  pentagram:()=>{const v=regPts(5,.95).map(([x,y])=>[x,y+.06]);return closeP([v[0],v[2],v[4],v[1],v[3]])},
+};
+const NAMES={line:'Line',arc:'Arc',vee:'Vee',zig:'Zigzag',scurve:'S-curve',square:'Square',triangle:'Triangle',diamond:'Diamond',circle:'Circle',house:'House',moon:'Moon',
+  star:'Star',heart:'Heart',wave:'Wave',bolt:'Bolt',cloud:'Cloud',spiral:'Spiral',infinity:'Infinity',rose:'Rose',trefoil:'Knot',fish:'Fish',star7:'Big star',flower:'Flower',loop:'Loop',
+  hook:'Hook',check:'Check',swoop:'Swoop',stairs:'Stairs',em:'M',cee:'C',uturn:'U-turn',pentagon:'Pentagon',hexagon:'Hexagon',arrow:'Arrow',drop:'Drop',shield:'Shield',cross:'Cross',
+  leaf:'Leaf',crown:'Crown',tree:'Tree',boat:'Boat',coil:'Coil',clover:'Clover',sqspiral:'Square spiral',rose4:'Four petals',gear:'Gear',spiro:'Spirograph',pentagram:'Pentagram'};
+const SYM=new Set(['line','square','triangle','diamond','circle','house','star','heart','star7','flower','rose','cloud','em','uturn','pentagon','hexagon','cross','drop','shield','crown','tree','clover','rose4','gear','pentagram']); // no point mirroring these
+// easy to hard: a stroke, a bend, corners, curves, mixes, long ones, then two that turn while you trace
+const LADDER=[['line','arc','hook','check','swoop'],['vee','zig','scurve','stairs','em','cee','uturn'],['square','triangle','diamond','pentagon','hexagon','arrow'],
+  ['circle','house','moon','drop','shield','cross'],['star','heart','wave','leaf','crown'],['bolt','cloud','heart','star','tree','boat','crown'],
+  ['spiral','infinity','coil','clover','sqspiral'],['rose','trefoil','fish','rose4','gear'],['star7','spiral','infinity','rose','clover','gear','sqspiral'],['flower','loop','spiro','pentagram']];
+const PALETTE=['#9deba8','#7cc8ff','#ff8ad8','#f2c14e','#c49bff','#ff9f5a','#4fd8c8','#ff7a6b','#d6f25b','#6e8bff'];
+const GREY='#3b3d3c';
+const mixHex=(a,b,k)=>{const A=hexRGB(a),B=hexRGB(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*k).toString(16).padStart(2,'0')).join('')};
+function makeRun(seed){
+  const r=mulberry(hash(seed)),pick=a=>a[Math.floor(r()*a.length)];
+  const cols=PALETTE.slice();for(let i=cols.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[cols[i],cols[j]]=[cols[j],cols[i]]}
+  const used=new Set(),items=[];
+  for(let i=0;i<10;i++){let name,tries=0;do{name=pick(LADDER[i])}while(used.has(name)&&++tries<20);used.add(name);
+    items.push({name,color:cols[i],mirror:!SYM.has(name)&&r()<.5,rev:r()<.5,roll:r(),rot0:i<2?0:(r()-.5)*.5,
+      spin:i>=8?(r()<.5?-1:1)*(i===8?.22:.3):0});
+  }
+  return items;
+}
+// a path in pixels around its own center: dense samples every `step` px, their distance along the path, and the cubes on it
+function buildShape(it,R,cs){
+  let u=SHAPES[it.name]();
+  const closed=Math.hypot(u[0][0]-u[u.length-1][0],u[0][1]-u[u.length-1][1])<1e-3;
+  if(it.mirror)u=u.map(([x,y])=>[-x,y]);
+  if(closed){const body=u.slice(0,-1),k=Math.floor((it.roll||0)*body.length);u=body.slice(k).concat(body.slice(0,k));u.push(u[0])}
+  if(it.rev)u=u.slice().reverse();
+  const P=u.map(([x,y])=>[x*R,y*R]),step=2,pts=[P[0]];let need=step;
+  for(let i=0;i+1<P.length;i++){const a=P[i],b=P[i+1],L=Math.hypot(b[0]-a[0],b[1]-a[1]);let pos=0;
+    while(L-pos>=need){pos+=need;pts.push([a[0]+(b[0]-a[0])*pos/L,a[1]+(b[1]-a[1])*pos/L]);need=step}need-=L-pos}
+  const lastP=P[P.length-1],tail=Math.hypot(lastP[0]-pts[pts.length-1][0],lastP[1]-pts[pts.length-1][1]);
+  if(tail>.3)pts.push(lastP);
+  const L=(pts.length-2)*step+(tail>.3?tail:step);
+  const at=s=>{const f=Math.max(0,Math.min(pts.length-1,s/step)),i=Math.min(pts.length-2,Math.floor(f)),k=f-i;return[pts[i][0]+(pts[i+1][0]-pts[i][0])*k,pts[i][1]+(pts[i+1][1]-pts[i][1])*k]};
+  let sp=cs*1.3;if(L/sp>170)sp=L/170;
+  const n=closed?Math.max(8,Math.round(L/sp)):Math.max(4,Math.round(L/sp)+1),cubes=[];
+  for(let k=0;k<n;k++){const s=closed?k*L/n:k*L/(n-1),p=at(s);cubes.push({s,x:p[0],y:p[1],st:0,d:0})}
+  return {pts,step,L,at,cubes,closed};
+}
+
+/* ---------- geometry helpers ---------- */
+const segDist=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy;let t=l?((p[0]-a[0])*dx+(p[1]-a[1])*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(p[0]-a[0]-dx*t,p[1]-a[1]-dy*t)};
+
+
+/* ---------- canvas ---------- */
+const board=$('#board'), cv=$('#cv'), cx=cv.getContext('2d'), warnEl=$('#warn');
+let W=0,H=0,DPR=1;
+function resize(){const r=board.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);DPR=Math.min(2,devicePixelRatio||1);
+  cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);cx.setTransform(DPR,0,0,DPR,0,0);paintPile()}
+const hexRGB=hex=>{const n=parseInt(hex.slice(1),16);return[n>>16,n>>8&255,n&255]};
+const shadeRGB=(c,k)=>'rgb('+Math.min(255,Math.round(c[0]*k))+','+Math.min(255,Math.round(c[1]*k))+','+Math.min(255,Math.round(c[2]*k))+')';
+
+/* ---------- grades and points ---------- */
+// accuracy: how close your line passed each cube. Up to 70 points for accuracy, up to 30 for speed (scaled by accuracy), 100 a shape
+const GRADE=[[95,'Perfect','#f6d77a','🟨'],[85,'Clean','#9deba8','🟩'],[70,'Close','#7cc8ff','🟦'],[45,'Shaky','#ff8ad8','🟥'],[0,'Way off','#ff7a6b','🟥']];
+const MISS_C='#ff7a6b';
+const gradeOf=acc=>GRADE.find(g=>acc>=g[0]-1e-9)||GRADE[GRADE.length-1];
+const cutColor=r=>r.miss?MISS_C:gradeOf(r.acc)[2];
+const square=r=>r.miss?'⬛':gradeOf(r.acc)[3];
+const accOf=(d,cs)=>{const p0=cs*.3*TF.tol,p1=cs*2.0*TF.tol;return Math.max(0,Math.min(1,1-(d-p0)/(p1-p0)))};
+
+/* ---------- state ---------- */
+let practice=false;
+const fresh=()=>({mode:'idle',practice:false,run:[],idx:0,cur:null,results:[],score:0,count:0,gapT:0,prev:null,tickT:0,cs:7});
+let S=fresh();
+let stroke=null, trail=[], falling=[], sparks=[], flashA=0, shake=0;
+let pile=[], pileA=0, left=[], ghost=[]; // ghost: column heights of the pile a perfect game would build // the heap at the bottom: one array of colours per column, bottom first
+let best=0, abest=0; try{best=+localStorage.getItem('trace.best')||0;abest=+localStorage.getItem('trace.abest')||0}catch(e){}
+
+
+/* ---------- flashes and callouts ---------- */
+const countEl=$('#count');
+function flash(text,cls,color){const s=document.createElement('span');s.textContent=text;if(cls)s.className=cls;if(color)s.style.setProperty('--c',color);countEl.replaceChildren(s)}
+let callTO=0;
+function callout(title,big,small,color){const c=$('#call');$('#callT').textContent=title;$('#callT').style.color=color||'var(--fg)';$('#callS').textContent=big;$('#callP').textContent=small;
+  c.classList.toggle('note',!big);c.classList.add('show');clearTimeout(callTO);callTO=setTimeout(()=>c.classList.remove('show'),big?1100:1400)}
+const NOTES={2:'Closed shapes now',4:'Curves and corners',6:'The long ones',8:'Now it turns'};
+const STAGE={0:{t:'Trace each shape as close and fast as you can',s:'',i:'<img src="trace-icon.png" alt="" style="width:20px;height:20px;display:block">'}};
+let sbanT=0;
+function stageBanner(st){const el=$('#sban');$('#sbanI').innerHTML=st.i;$('#sbanT').textContent=st.t;$('#sbanS').textContent=st.s;$('#sbanS').hidden=!st.s;el.classList.toggle('plain',!st.s);
+  el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(sbanT);sbanT=setTimeout(()=>el.classList.remove('show'),st.ms||2600)}
+
+/* ---------- HUD ---------- */
+let hud={};
+function setText(id,v){if(hud[id]!==v){hud[id]=v;document.getElementById(id).textContent=v}}
+function updateHUD(){
+  const pr=S.mode==='idle'?practice:S.practice;
+  const ttl=pr?'Practice Mode':'Daily Game <span>No. '+DAY_NO+'</span>';
+  if(hud.ttl!==ttl){hud.ttl=ttl;$('#modeTitle').innerHTML=ttl}
+  setText('mScore',fmtN(S.score));
+  setText('mBest',fmtN(Math.max(S.practice?abest:best,S.score)));
+  setText('mN',Math.min(10,S.idx+1)+'/10');
+  const key=S.results.map(r=>r?cutColor(r):'').join()+'|'+S.idx+'|'+S.mode;
+  if(hud.cells!==key){hud.cells=key;const box=$('#mHp');if(box.children.length!==10)box.innerHTML='<span></span>'.repeat(10);
+    [...box.children].forEach((e,i)=>{const r=S.results[i];e.className=r?'':(i===S.idx&&S.mode!=='over'?'now':'');e.style.background=r?cutColor(r):''})}
+}
+
+/* ---------- daily number + shared leaderboard ---------- */
+// Game No. 1 is the epoch day (the admin's "Reset all data" moves it to the day of the reset); days turn over at local midnight
+let GEPOCH='2026-11-23'; try{const e=localStorage.getItem('trace.epoch');if(/^\d{4}-\d{2}-\d{2}$/.test(e||''))GEPOCH=e}catch(e){}
+const dayNo=()=>{const d=new Date();const a=new Date(d.getFullYear(),d.getMonth(),d.getDate());const [y,m,dd]=GEPOCH.split('-').map(Number);const b=new Date(y,m-1,dd);return Math.max(1,Math.round((a-b)/864e5)+1)};
+let DAY_NO=dayNo();
+let dayRec=null;
+let playedDay=0; try{playedDay=+localStorage.getItem('trace.played')||0}catch(e){}
+let playedAt=0; try{playedAt=+localStorage.getItem('trace.playedAt')||0}catch(e){}
+const playedToday=()=>playedDay===DAY_NO; // one daily game per calendar day; it reopens at local midnight
+const dailyLocked=()=>!PREVIEW&&playedToday();
+function untilNext(){const n=new Date(),mid=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1);const mins=Math.max(1,Math.ceil((mid-n)/6e4));return Math.floor(mins/60)+'h '+(mins%60)+'m'}
+let dbNS=null,userNS=null,myId=null,lbRows=[],lbState='loading',lbTab='today',postBlocked=false;
+async function myDoc(){if(!dbNS||!myId)return null;const ref=dbNS.doc('trace_scores/'+myId);const snap=await ref.get();return {ref,d:(snap.exists&&snap.data())||{}}}
+async function markPlayed(){
+  playedDay=DAY_NO; playedAt=Date.now(); try{localStorage.setItem('trace.played',String(DAY_NO));localStorage.setItem('trace.playedAt',String(playedAt))}catch(e){}
+  try{const m=await myDoc(); if(m)await m.ref.set(Object.assign({},m.d,{playedDay:DAY_NO,playedAt,updatedAt:Date.now()}))}catch(e){}
+}
+setInterval(()=>{const n=dayNo(); if(n!==DAY_NO){DAY_NO=n;hud={}} if(S.mode==='idle'||S.mode==='over')setBar()},20000);
+setTimeout(async()=>{
+  const use=n=>(window.claude&&window.claude.use)?window.claude.use(n).catch(()=>null):Promise.resolve(null);
+  [userNS,dbNS]=await Promise.all([use('user'),use('db')]);
+  try{myId=userNS?await userNS.id():null}catch(e){myId=null}
+  try{const m=dbNS&&await myDoc(); if(m&&m.d.day===DAY_NO){dayRec=m.d;setBar()} if(m&&m.d.playedAt>playedAt){playedAt=m.d.playedAt;playedDay=m.d.playedDay||playedDay;try{localStorage.setItem('trace.playedAt',String(playedAt));localStorage.setItem('trace.played',String(playedDay))}catch(e){} setBar();updateHUD()}}catch(e){}
+  if(!dbNS){lbState='off';renderLB();return}
+  DCTune.guard('trace',dbNS,'Trace');
+  if(!PREVIEW)dbNS.doc('trace_config/tune').onSnapshot(sn=>{const v=DCTune.pick(sn.exists?sn.data():null)||{};if(S.mode==='idle'||S.mode==='over')applyTF(v);else TF_PENDING=v},()=>{});
+  // owner reset: when trace_config/game.at is newer than this device's last reset, clear the local daily lock and record
+  dbNS.doc('trace_config/game').onSnapshot(sn=>{const ep=sn.exists&&sn.data().epoch;
+    if(typeof ep==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(ep)&&ep!==GEPOCH){GEPOCH=ep;try{localStorage.setItem('trace.epoch',ep)}catch(e){}DAY_NO=dayNo();hud={};try{setBar()}catch(e){}}
+    const at=sn.exists&&Number(sn.data().at);if(!at)return;let seen=0;try{seen=+localStorage.getItem('trace.resetAt')||0}catch(e){}
+    if(at<=seen)return;const wipe=Number(sn.data().wipedAt)>=at; // "Reset all data" also clears personal bests
+    try{['trace.played','trace.playedAt','trace.daily'].concat(wipe?['trace.best','trace.abest']:[]).forEach(k=>localStorage.removeItem(k));localStorage.setItem('trace.resetAt',String(at))}catch(e){}
+    if(wipe){best=0;abest=0}
+    playedDay=0;playedAt=0;daily=null;dayRec=null;try{setBar();updateHUD()}catch(e){}},()=>{});
+  dbNS.collection('trace_scores').orderBy('best','desc').limit(500).fields('ini','day','dayBest','dayPerf','dayAvg','best','bestPerf','bestAvg').onSnapshot(
+    snap=>{lbRows=snap.docs.map(d=>Object.assign({id:d.id},d.data()));lbState='ready';renderLB()},
+    ()=>{lbState='error';renderLB()});
+},0);
+async function postScore(m){
+  if(!dbNS||!myId||m.score<=0)return;
+  const ref=dbNS.doc('trace_scores/'+myId);
+  try{
+    const snap=await ref.get(); const d=(snap.exists&&snap.data())||{};
+    const same=d.day===DAY_NO, oldDay=same?(d.dayBest||0):0, oldBest=d.best||0, avg=Math.round(m.avg*10)/10;
+    await ref.set({best:Math.max(oldBest,m.score),bestPerf:m.score>oldBest?m.perf:(d.bestPerf||0),bestAvg:m.score>oldBest?avg:(d.bestAvg??null),
+      day:DAY_NO,dayBest:Math.max(oldDay,m.score),dayPerf:m.score>oldDay?m.perf:(d.dayPerf||0),dayAvg:m.score>oldDay?avg:(d.dayAvg??null),
+      games:(d.games||0)+1,ini:(window.DCIni&&DCIni.get())||d.ini||'',playedDay:DAY_NO,playedAt:Math.max(d.playedAt||0,playedAt),updatedAt:Date.now()});
+  }catch(e){postBlocked=true;renderLB()}
+}
+const lbMeta=(perf,avg)=>(perf||0)+' Perfect'+(avg!=null?' · '+Math.round(Number(avg))+'% accuracy':'');
+async function renderLB(){
+  $('#tabToday').setAttribute('aria-selected',String(lbTab==='today'));
+  $('#tabAll').setAttribute('aria-selected',String(lbTab==='all'));
+  const list=$('#lbList'), note=$('#lbNote');
+  $('#lbSub').textContent=lbTab==='today'?'Daily challenge No. '+DAY_NO:'Best daily scores, all time';
+  $('#lbMineL').textContent=lbTab==='today'?'Your score':'Your best';
+  const mineLocal=lbTab==='today'?((dayRec&&dayRec.day===DAY_NO&&dayRec.dayBest)||(dailyLocked()&&daily&&daily.score)||0):best;
+  $('#lbMine').textContent=mineLocal?fmtN(mineLocal):'–'; $('#lbRank').hidden=true;
+  if(lbState!=='ready'){
+    list.replaceChildren();
+    note.textContent=lbState==='loading'?'Loading scores…'
+      :lbState==='error'?'Scores could not load. Close this and open it again to retry.'
+      :'The leaderboard can\'t be reached right now. Your best on this device: '+(best?fmtN(best):'none yet')+'.';
+    return;
+  }
+  const rows=(lbTab==='today'
+    ?lbRows.filter(r=>r.day===DAY_NO&&r.dayBest>0).map(r=>({id:r.id,ini:r.ini,score:r.dayBest,meta:lbMeta(r.dayPerf,r.dayAvg)}))
+    :lbRows.filter(r=>r.best>0).map(r=>({id:r.id,ini:r.ini,score:r.best,meta:lbMeta(r.bestPerf,r.bestAvg)}))
+  ).sort((a,b)=>b.score-a.score).slice(0,50);
+  const mi=rows.findIndex(r=>r.id===myId);
+  if(mi>=0){$('#lbMine').textContent=fmtN(rows[mi].score);const rk=$('#lbRank');rk.hidden=false;rk.textContent='Rank #'+(mi+1)}
+  list.replaceChildren(...rows.map((r,i)=>{
+    const li=document.createElement('li'); const me=r.id===myId; if(me)li.className='me';
+    const rk=document.createElement('span'); rk.className='rk'; rk.textContent=i+1; li.style.setProperty('--c',i===0?'var(--amber)':i===1?'var(--steel)':i===2?'var(--orange)':'#3a3a3a');
+    const nm=document.createElement('div'); nm.className='nm';
+    const nmTxt=r.ini||(me?'You':'Someone');
+    const n=document.createElement('span'); n.textContent=nmTxt;
+    const sm=document.createElement('small'); sm.textContent=(me&&nmTxt!=='You'?'You · ':'')+r.meta;
+    nm.append(n,sm);
+    const sc=document.createElement('span'); sc.className='sc'; sc.textContent=fmtN(r.score);
+    li.append(rk,nm,sc); return li;
+  }));
+  note.hidden=false; note.textContent=postBlocked?'Your scores are not posted from this device right now.'
+    :rows.length?'Each player\'s best daily score. Single player games are not posted.'
+    :(lbTab==='today'?'No scores yet today. Finish a daily game to post yours.':'No scores yet. Finish a daily game to post yours.');
+}
+
+/* ---------- modes ---------- */
+const goBtn=$('#go'), droprow=$('#droprow');
+const playing=()=>['count','play','gap','pause','ending'].includes(S.mode); // 'ending': the game screen stays up until the summary is closed
+function setBar(){
+  const m=S.mode, app=document.querySelector('.app'), pl=playing();
+  droprow.hidden=pl;
+  const pb=$('#pauseBtn'); pb.hidden=!practice; pb.disabled=!(m==='play'||m==='gap'||m==='pause');
+  $('#paused').hidden=m!=='pause';
+  $('#hudPause').hidden=!(S.practice&&(m==='play'||m==='gap'||m==='count')); // only single player can pause; the daily only pauses itself when the page goes to the background
+  app.classList.toggle('ispaused',m==='pause');
+  $('#exitBtn').hidden=!S.practice; $('#pauseNote').hidden=!S.practice;
+  if(app.classList.contains('playing')!==pl){app.classList.toggle('playing',pl); if(pl)try{window.scrollTo({top:0,behavior:'instant'})}catch(e){window.scrollTo(0,0)}}
+  const lk=dailyLocked();
+  goBtn.disabled=lk; goBtn.textContent=lk?'Next daily game in '+untilNext():'Daily challenge';
+  document.body.classList.toggle('is-playing',pl);
+  const tg=$('#practiceTgl'); tg.setAttribute('aria-checked',String(practice)); tg.disabled=!(m==='idle'||m==='over');
+  const mb=$('#modeBtn'); mb.disabled=!(m==='idle'||m==='over'); mb.setAttribute('aria-pressed',String(practice));
+  mb.setAttribute('aria-label',practice?'Back to the daily game':'Switch to practice'); mb.innerHTML=practice?ICON_DAILY:ICON_PRACTICE; $('#modeTag').hidden=!practice;
+  if(!$('#dailyBtn').hidden)paintDailyBtn();
+  const sumNow=summaryNow();
+  $('#sumBtn').hidden=!(sumNow&&(m==='idle'||m==='over'));
+  $('#sumBtn').textContent=sumNow&&sumNow.practice?'See game summary':'See daily summary';
+  const dNow=dailySumNow(); $('#sumIcon').hidden=!(dNow&&(m==='idle'||m==='over'));
+}
+function newRun(){return makeRun(S.practice?'trace:p:'+Date.now()+Math.random():'trace:'+todayKey())}
+function start(){
+  if(!practice&&dailyLocked())return;
+  if(TF_PENDING){applyTF(TF_PENDING);TF_PENDING=null}
+  SFX.ensure();
+  if(!practice&&!PREVIEW)markPlayed();
+  S=fresh(); S.practice=practice; S.run=newRun(); S.mode='count'; S.count=-1.6; // the tip shows first, then 3-2-1
+  stageBanner(Object.assign({ms:3400},STAGE[0]));
+  S.cs=Math.max(5,Math.min(9,Math.round(Math.min(W,H*.6)/56)));
+  falling=[];sparks=[];trail=[];pile=[];left=[];ghost=[];pileA=1;paintPile();hud={};countN=-1;amb=null;ambFall=[];
+  if(!PREVIEW&&window.DCTrack)DCTrack('trace',S.practice?'start_practice':'start_daily');
+  setBar(); updateHUD();
+}
+// where shapes sit: under the HUD and timer, above the room the pile needs
+function stageBox(){const top=Math.min(150,H*.17),bot=H*.71;return {cx:W/2,cy:(top+bot)/2,R:Math.max(60,Math.min(W*.4,(bot-top)/2*.9))}}
+function nextShape(){
+  left=[]; // the last shape's leftovers go when the next shape starts
+  if(S.idx>=10){gameOver();return}
+  const it=S.run[S.idx],box=stageBox(),sh=buildShape(it,box.R,S.cs);
+  const pxs=box.R*(1.55+.09*S.idx)*TF.speed, par=sh.L/pxs, limit=Math.max(4,par*2.6+1.6)/Math.max(.3,TF.speed);
+  S.cur=Object.assign({},it,sh,{t:0,clock:0,head:0,par,limit,on:false,lost:false,done:false,recent:[],rot:it.rot0,kept:0,fell:0,lastBlip:0});
+  S.mode='play';stroke=null;S.tickT=0;
+  if(S.idx===0)callout('Start at the glowing dot','','');
+  if(STAGE[S.idx])callout(STAGE[S.idx],'','');
+  updateHUD();
+}
+// pause: single player any time; the daily pauses itself when the page goes to the background, and from the HUD (Resume only)
+function pause(auto){
+  if(!(S.mode==='play'||S.mode==='gap'||S.mode==='count'))return;
+  if(!auto&&!S.practice)return; // the daily can't be paused by hand
+  S.prev=S.mode; S.mode='pause'; stroke=null; if(S.cur)S.cur.on=false; setBar();
+}
+function endRun(){S=fresh();$('#sban').classList.remove('show');falling=[];sparks=[];trail=[];countEl.replaceChildren();$('#call').classList.remove('show');hud={};amb=null}
+function endRun(){S=fresh();falling=[];sparks=[];trail=[];countEl.replaceChildren();$('#call').classList.remove('show');hud={};amb=null}
+
+// the summary slides up over the finished game; closing it goes back to the home screen
+$('#over').addEventListener('close',()=>{if(S.mode==='ending'){S.mode='over';setBar();updateHUD()}});
+// on phones the summary slides down before it really closes: switch to the home screen as soon as it starts, so home is already there underneath
+new MutationObserver(()=>{if($('#over').classList.contains('closing')&&S.mode==='ending'){S.mode='over';setBar();updateHUD()}}).observe($('#over'),{attributes:true,attributeFilter:['class']});
+function gameOver(){
+  S.mode='ending'; S.cur=null; stroke=null; SFX.over();
+  if(!PREVIEW&&window.DCTrack)DCTrack('trace',S.practice?'finish_practice':'finish_daily');
+  // muting only lasts for the game: sound is back on once it's over
+  setTimeout(()=>{if(muted||!sfxOn){muted=false;sfxOn=true;saveAudio();paintSound()}},0);
+  const R=S.results, done=R.filter(r=>!r.miss), perf=R.filter(r=>!r.miss&&r.acc>=95).length, avg=R.length?R.reduce((a,r)=>a+r.acc,0)/R.length:0;
+  const quick=done.filter(r=>r.t<=r.par).length, fastest=done.length?done.reduce((a,r)=>r.t/r.par<a.t/a.par?r:a):null, misses=R.filter(r=>r.miss).length;
+  const kept=R.reduce((a,r)=>a+(r.kept||0),0), fell=R.reduce((a,r)=>a+(r.fell||0),0), total=R.reduce((a,r)=>a+(r.n||0),0);
+  const pb=S.practice?abest:best, nb=S.score>pb&&S.score>0;
+  if(nb){if(S.practice){abest=S.score;try{localStorage.setItem('trace.abest',String(abest))}catch(e){}}else{best=S.score;try{localStorage.setItem('trace.best',String(best))}catch(e){}} showToast(S.score)}
+  // achievements (kept on this device)
+  const ach=[];
+  if(!misses&&R.every(r=>r.acc>=85))ach.push('steady');
+  if(quick>=5)ach.push('quick');
+  if(total&&fell/total>=.95)ach.push('rainbow');
+  if(ach.length){try{const a=JSON.parse(localStorage.getItem('trace.ach')||'{}');for(const k of ach){a[k]=a[k]||{first:Date.now(),n:0};a[k].n++}localStorage.setItem('trace.ach',JSON.stringify(a))}catch(e){}}
+  const sum={day:DAY_NO,practice:S.practice,score:S.score,cuts:R.map(r=>({acc:+r.acc.toFixed(1),t:+r.t.toFixed(2),par:+r.par.toFixed(2),score:r.score,name:r.name,miss:!!r.miss})),
+    perf,avg,misses,quick,fastest:fastest?{name:fastest.name,t:+fastest.t.toFixed(2)}:null,kept,fell,total,pile:encodePile(),pb,nb,ach,best:S.practice?abest:best};
+  if(!S.practice&&!PREVIEW)postScore(sum);
+  sum.shots=(S.shots||[]).slice(0,10); // pictures stay on this device
+  lastSum=sum; if(S.practice)lastPractice=sum;
+  if(!S.practice){daily=sum;try{localStorage.setItem('trace.daily',JSON.stringify(sum))}catch(e){}}
+  fillOver(sum); setBar(); updateHUD();
+  // a moment to look at the pile before the summary slides up
+  setTimeout(()=>callout('Your pile',fmtN(fell),'of '+fmtN(total)+' cubes fell · '+fmtN(total-fell)+' left behind','#fff'),500);
+  setTimeout(()=>{try{$('#over').showModal()}catch(e){S.mode='over';setBar()} raiseToast()},2600);
+}
+// the pile as text: a palette, then one string per column (one character per cube)
+function encodePile(){
+  const cols=pile.map(c=>c.slice());
+  for(const f of falling)if(f.pile){const c=Math.max(0,Math.min(cols.length-1,colAt(f.x)));if(cols[c])cols[c].push(f.c)} // still in the air: count it where it would land
+  const pal=[],idx=new Map(),key=c=>{if(!idx.has(c)){idx.set(c,pal.length);pal.push(c)}return idx.get(c).toString(36)};
+  const data=cols.map(c=>c.map(key).join(''));const n=Math.max(data.length,pileCols());let x0=0;
+  while(data.length&&!data[0]){data.shift();x0++}while(data.length&&!data[data.length-1])data.pop();
+  // the perfect pile's outline, so the summary box can be sized to it
+  const g=ghost.slice();let gx0=0;while(g.length&&!g[0]){g.shift();gx0++}while(g.length&&!g[g.length-1])g.pop();
+  if(!data.length&&!g.length)return null;
+  return {pal,cols:data,n:Math.max(n,ghost.length),x0:data.length?x0:0,g,gx0};
+}
+// always drawn at the same scale: the full width of the board and a fixed height, so a small pile looks small
+function drawPileThumb(cv2,p){
+  if(!p||!p.cols)return false;
+  const cell=6,n=Math.max(p.n||56,p.cols.length),x0=p.x0!=null?p.x0:Math.floor((n-p.cols.length)/2),top=Math.max(0,...p.cols.map(s=>s.length));
+  // sized to the perfect pile: a 100% game reaches the top. (Older saves without one keep the old fixed box.)
+  const gp=p.g&&p.g.length?Math.max(...p.g):0,rows=gp?Math.max(gp,top)+1:Math.max(Math.round(n*.55),top+1);
+  cv2.width=n*cell;cv2.height=rows*cell;const g=cv2.getContext('2d');g.clearRect(0,0,cv2.width,cv2.height);
+  if(gp){g.fillStyle='rgba(255,255,255,.06)';p.g.forEach((h,i)=>{for(let y=0;y<h;y++)g.fillRect((i+p.gx0)*cell,cv2.height-(y+1)*cell,cell-1,cell-1)})} // faint outline of 100%
+  p.cols.forEach((s,x)=>{for(let y=0;y<s.length;y++){const c=p.pal[parseInt(s[y],36)]||GREY;drawCube(g,(x+x0)*cell,cv2.height-(y+1)*cell,cell-1,c)}});
+  return true;
+}
+let lastSum=null, daily=null, lastPractice=null; try{daily=JSON.parse(localStorage.getItem('trace.daily')||'null');if(daily&&daily.day!==DAY_NO&&!playedToday())daily=null}catch(e){}
+function paintDailyBtn(){const b=$('#dailyBtn'),lk=dailyLocked();b.disabled=lk;b.textContent=lk?'Next daily game in '+untilNext():'Daily challenge'}
+function summaryNow(){if(practice)return lastPractice;return dailySumNow()}
+function dailySumNow(){
+  if(S.mode==='over'&&lastSum&&!lastSum.practice)return lastSum;
+  if(playedToday()){
+    if(daily&&daily.day===DAY_NO)return daily;
+    return {day:DAY_NO,practice:false,partial:true,score:(dayRec&&dayRec.dayBest)||0,cuts:[],best,nb:false};
+  }
+  return null;
+}
+const SACH={
+  steady:{name:'Steady hand',rule:'Every shape Clean or better',c:'var(--sky)',g:'<path d="M3 12h4l2-5 4 10 2-5h6"/>'},
+  quick:{name:'Quick draw',rule:'5+ shapes traced under par',c:'var(--gold-solid)',g:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>'},
+  rainbow:{name:'Clean sweep',rule:'95% of the cubes fell',c:'var(--pink)',g:'<path d="M4 18h4v-4H4zM10 18h4v-4h-4zM16 18h4v-4h-4zM7 12h4V8H7zM13 12h4V8h-4zM10 6h4V2h-4z"/>'},
+};
+let shareSum=null, shareText='';
+function fillOver(m){
+  $('#practiceBtn').hidden=!m.practice; $('#dailyBtn').hidden=true; $('#challengeBtn').hidden=false; $('#shareBtn').hidden=true;
+  const isDaily=!m.practice;
+  $('#overT').textContent=m.practice?'Game Summary':'Daily Summary';
+  // daily: leaderboard initials sit left of Challenge a friend (saved on this device; posted to the leaderboard when it's reachable)
+  {const iw=$('#oIni');iw.replaceChildren();if(isDaily&&!PREVIEW&&window.DCIni)iw.append(DCIni.block(async v=>{if(!(dbNS&&myId&&!postBlocked))return;const ref=dbNS.doc('trace_scores/'+myId),sn=await ref.get();await ref.set(Object.assign({},sn.exists?sn.data():{},{ini:v}))},{feature:true}))}
+  $('#oSub').textContent=m.practice?'Single player':'Daily challenge No. '+m.day;
+  $('#oScore').textContent=fmtN(m.score);
+  $('#oNb').hidden=!m.nb;
+  const cuts=m.cuts||[];
+  $('#oTicks').innerHTML=Array.from({length:10},(_,i)=>{const r=cuts[i];if(!r)return '<span></span>';
+    return '<span class="on" style="--k:'+cutColor(r)+';--h:'+(r.miss?8:Math.max(10,r.score))+'%;animation-delay:'+(i*40)+'ms"></span>'}).join('');
+  $('#oThrown').textContent=m.partial?'':(10-(m.misses||0))+' of 10 finished · ';
+  $('#oHit').textContent=m.partial||!cuts.length?'–':Math.round(m.avg)+'%';
+  {const sh=m.shots||[],has=cuts.length&&sh.some(Boolean),box=$('#oShots');
+    box.hidden=!has;$('#oTicks').parentElement.classList.toggle('noticks',!!has);
+    if(has)box.innerHTML='<div class="shotrow">'+cuts.map((r,i)=>{const gr=gradeOf(r.acc),c=cutColor(r),nm=NAMES[r.name]||r.name||'';
+      return '<figure class="shot'+(r.miss?' miss':'')+'" style="--k:'+c+'"><div class="ph">'+(sh[i]?'<img alt="'+nm+' · '+Math.round(r.acc)+'% accurate" src="'+sh[i]+'">':'')+'<i>'+(i+1)+'</i></div>'
+        +'<figcaption><div class="tx"><b>'+(r.miss?"Time's up":gr[1])+'</b><span>'+nm+'</span><small>'+Math.round(r.acc)+'%'+(r.miss?'':' · '+r.t.toFixed(1)+'s')+'</small></div><em class="pts"><strong>+'+r.score+'</strong>pts</em></figcaption></figure>'}).join('')+'</div>';}
+  $('#oCuts').hidden=!cuts.length;
+  const lab=r=>(NAMES[r.name]||r.name)+(r.miss?' · time':'');
+  $('#oCuts').innerHTML=cuts.map(r=>'<div style="--k:'+cutColor(r)+'"><i></i><b>'+r.score+'</b><small>'+lab(r)+'</small></div>').join('');
+  // tap or slide across the bars: a label pops over the bar under your finger
+  {const tk=$('#oTicks'),pop=$('#oPop'),row=$('#oCuts');let hideT=0,lastI=-1;
+    const pick=e=>{const r=tk.getBoundingClientRect(),i=Math.max(0,Math.min(9,Math.floor((e.clientX-r.left)/r.width*10))),c=cuts[i];
+      tk.classList.add('scrub');[...tk.children].forEach((s,j)=>s.classList.toggle('sel',j===i));[...row.children].forEach((d,j)=>d.classList.toggle('sel',j===i));
+      if(i===lastI)return;lastI=i;
+      if(!c){pop.hidden=true;return}
+      pop.style.setProperty('--k',cutColor(c));pop.innerHTML='<i></i><b>'+c.score+'</b><small>'+(NAMES[c.name]||c.name)+' · '+Math.round(c.acc)+'% · '+(c.miss?'time':c.t.toFixed(1)+'s')+'</small>';pop.hidden=false;
+      const sr=tk.parentElement.getBoundingClientRect(),cxp=r.left-sr.left+(i+.5)*r.width/10,w=pop.offsetWidth/2;pop.style.left=Math.max(w,Math.min(sr.width-w,cxp))+'px';
+      SFX.tick(i/9)};
+    const done=()=>{clearTimeout(hideT);hideT=setTimeout(()=>{pop.hidden=true;lastI=-1;tk.classList.remove('scrub');[...tk.children].forEach(s=>s.classList.remove('sel'));[...row.children].forEach(d=>d.classList.remove('sel'))},1400)};
+    tk.onpointerdown=e=>{clearTimeout(hideT);try{tk.setPointerCapture(e.pointerId)}catch(_){}pick(e)};
+    tk.onpointermove=e=>{if(e.buttons||e.pointerType==='mouse'){clearTimeout(hideT);pick(e)}};
+    tk.onpointerup=tk.onpointercancel=tk.onpointerleave=done;}
+  // the pile you built
+  {const w=$('#oPileW'),ok=!m.partial&&drawPileThumb($('#oPile'),m.pile);w.hidden=!ok;
+    if(ok){const f=m.fell!=null?m.fell:(m.kept||0);$('#oPileN').textContent=fmtN(f)+' of '+fmtN(m.total||0)+' cubes fell · '+fmtN((m.total||0)-f)+' left on the board'}}
+  const ic={star:'<path d="M12 5l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7L5.2 10l4.7-.7z"/>',bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',x:'<path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="8"/>',ok:'<path d="M6 12.5l4 4 8-9"/>',
+    target:'<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/>',cube:'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/>'};
+  const row=(c,i,label,val)=>`<li style="--c:${c}"><span class="sic2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic[i]}</svg></span><span class="sl">${label}</span><b>${val}</b></li>`;
+  const bestNow=Math.max(m.best||0,m.practice?abest:best);
+  $('#oMore').open=false; // More stats starts closed
+  $('#oFacts').innerHTML=m.partial?row('var(--fg)','star','Personal best',fmtN(bestNow)):[
+    row('var(--gold-solid)','target','Perfect traces',m.perf),
+    m.fastest?row('var(--mint)','bolt','Under par',(m.quick||0)+' of 10'):'',
+    row('var(--violet)','cube','Cubes that fell',m.total?Math.round((m.fell!=null?m.fell:m.kept)/m.total*100)+'%':'–'),
+    row('var(--coral,#ff7a6b)','x','Ran out of time',m.misses||0),
+    m.nb?row('var(--mint)','ok','New personal best',m.pb?'+'+fmtN(m.score-m.pb):fmtN(m.score)):row('var(--fg)','star','Personal best',fmtN(bestNow))
+  ].join('');
+  {const box=$('#oAch'), list=(m.ach||[]).map(id=>SACH[id]).filter(Boolean);
+    box.hidden=!list.length;
+    box.innerHTML=list.length?`<p class="oeyebrow">Achievements</p><div class="achgrid">${list.map(a=>`<div class="acard" style="--c:${a.c}"><div class="atop"><span class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${a.g}</svg></span></div><b>${a.name}</b><small>${a.rule}</small></div>`).join('')}</div>`:''}
+  // beta: a quick 👍/👎 under the summary, once a day
+  {const w=$('#oFb');w.replaceChildren();if(!PREVIEW&&window.DCFeedback){const q=DCFeedback.quick('trace',{mode:m.practice?'practice':'daily',day:m.practice?null:m.day,score:m.score},{dark:true});if(q)w.append(q)}}
+  const note=m.partial?'Detailed stats were not saved for this game.':'';
+  $('#oNote').hidden=!note; $('#oNote').textContent=note;
+  shareSum=m;
+  shareText=(m.practice?'Trace':'Trace No. '+m.day)+': '+fmtN(m.score)+'/1000'+(cuts.length?'\n'+cuts.map(square).join(''):'');
+}
+
+document.documentElement.classList.add('crton'); // the tube TV look is on
+// the tube overlay sits in the top layer (a popover) so it also covers the open pages; re-raise it whenever a page opens,
+// and size it to the game's frame (on desktop the frame is a box in the middle of the window)
+function crtLift(){const c=document.getElementById('crt'),on=document.documentElement.matches('.crton,.crtstrong');if(!c)return;
+  try{if(c.matches(':popover-open'))c.hidePopover();if(on&&!matchMedia('(min-width:600px) and (min-aspect-ratio:4/5)').matches){
+      Object.assign(c.style,{left:'0',top:'0',right:'0',bottom:'auto',width:'100vw',height:'100lvh'});c.showPopover();return}
+    if(on){let r=document.body.getBoundingClientRect(),x0=r.left,y0=r.top,x1=r.right,y1=r.bottom;
+    for(const d of document.querySelectorAll('dialog[open]')){const q=d.getBoundingClientRect();x0=Math.min(x0,q.left);y0=Math.min(y0,q.top);x1=Math.max(x1,q.right);y1=Math.max(y1,q.bottom)}
+    Object.assign(c.style,{left:x0+'px',top:y0+'px',width:(x1-x0)+'px',height:(y1-y0)+'px',right:'auto',bottom:'auto'});c.showPopover()}}catch(e){}}
+new MutationObserver(()=>{setTimeout(crtLift,0);setTimeout(crtLift,450)}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['open']});
+addEventListener('resize',crtLift);
+setTimeout(crtLift,0);
+const SHARE_URL=location.origin+'/trace';
+$('#challengeBtn').addEventListener('click',async()=>{SFX.click();if(!PREVIEW&&window.DCTrack)DCTrack('trace','challenge_shared');const b=$('#challengeBtn'),m=shareSum;
+  let ini='';try{ini=(localStorage.getItem('dc.initials')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3)}catch(e){}
+  const link=m?location.origin+'/c/trace?s='+Math.max(0,Math.round(m.score||0))+(m.practice?'':'&n='+m.day)+(ini?'&i='+ini:''):SHARE_URL; // shows a score card in link previews
+  const msg=(m?'I scored '+fmtN(m.score)+'/1000'+(m.practice?' on Trace':' on Trace Daily challenge No. '+m.day)+'. Can you beat it?'+(m.cuts&&m.cuts.length?'\n'+m.cuts.map(square).join(''):''):'Can you beat my Trace score?')+'\n'+link;
+  try{if(navigator.share){await navigator.share({url:link});return}}catch(e){if(e&&e.name==='AbortError')return} // share sheet: just the link, its preview card says the rest; copying keeps the text
+  try{await navigator.clipboard.writeText(msg)}catch(e){}
+  b.textContent='Link copied'; b.classList.add('copied'); clearTimeout(b._t);
+  b._t=setTimeout(()=>{b.textContent='Challenge a friend';b.classList.remove('copied')},2000)});
+const DAILYCADE_URL='/';
+$('#siteBtn').addEventListener('click',()=>{SFX.ensure();SFX.click();if(window.DCCrt)DCCrt.off(DAILYCADE_URL);else location.href=DAILYCADE_URL});
+let toastT;
+function raiseToast(){const t=$('#toast');try{if(t.matches(':popover-open')){t.hidePopover();t.showPopover()}}catch(e){}}
+function showToast(v){const t=$('#toast');$('#toastB').textContent=fmtN(v);try{if(!t.matches(':popover-open'))t.showPopover()}catch(e){}
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));clearTimeout(toastT);
+  toastT=setTimeout(()=>{t.classList.remove('show');setTimeout(()=>{try{t.hidePopover()}catch(e){}},550)},3400)}
+
+/* ---------- the pile: cubes land in columns and roll off steep spots, so it settles into a heap ---------- */
+const pileCv=document.createElement('canvas'), pg=pileCv.getContext('2d');
+const floorY=()=>H-4;
+const pileCols=()=>Math.max(1,Math.floor(W/S.cs));
+const pileX0=()=>(W-pileCols()*S.cs)/2;
+const colAt=x=>Math.floor((x-pileX0())/S.cs);
+function drawCube(g,x,y,s,c){
+  g.fillStyle=c;g.fillRect(x,y,s,s);if(s<4)return;const b=Math.max(1,Math.round(s*.22));
+  g.fillStyle='rgba(255,255,255,.34)';g.fillRect(x,y,s,b);g.fillRect(x,y+b,b,s-b);
+  g.fillStyle='rgba(0,0,0,.32)';g.fillRect(x+b,y+s-b,s-b,b);g.fillRect(x+s-b,y+b,b,s-b*2);
+}
+function pileCube(c,r){drawCube(pg,pileX0()+c*S.cs,floorY()-(r+1)*S.cs,S.cs-1,pile[c][r])}
+function paintPile(){pileCv.width=Math.round(W*DPR);pileCv.height=Math.round(H*DPR);pg.setTransform(DPR,0,0,DPR,0,0);pg.clearRect(0,0,W,H);
+  for(let c=0;c<pile.length;c++)if(pile[c])for(let r=0;r<pile[c].length;r++)pileCube(c,r)}
+// every cube, hit or missed, also lands in the ghost pile: the one you'd get at 100%
+function ghostLand(x){
+  const n=pileCols();while(ghost.length<n)ghost.push(0);
+  let c=Math.max(0,Math.min(n-1,colAt(x)));const h=i=>i<0||i>=n?1e9:ghost[i];
+  for(let k=0;k<80;k++){const hc=h(c),opts=[];
+    for(const d of [-1,1]){if(h(c+d)<=hc-2)opts.push(c+d);else if(h(c+d)<=hc-1&&h(c+2*d)<=hc-2)opts.push(c+2*d)}
+    if(!opts.length)break;const lo=Math.min(...opts.map(h)),pick=opts.filter(o=>h(o)===lo);c=pick[Math.floor(Math.random()*pick.length)]}
+  ghost[c]++;
+}
+function land(f){
+  const n=pileCols();while(pile.length<n)pile.push([]);
+  let c=Math.max(0,Math.min(n-1,colAt(f.x)));const h=i=>i<0||i>=n?1e9:pile[i].length;
+  for(let k=0;k<80;k++){const hc=h(c),opts=[];
+    for(const d of [-1,1]){if(h(c+d)<=hc-2)opts.push(c+d);else if(h(c+d)<=hc-1&&h(c+2*d)<=hc-2)opts.push(c+2*d)}
+    if(!opts.length)break;const lo=Math.min(...opts.map(h)),pick=opts.filter(o=>h(o)===lo);c=pick[Math.floor(Math.random()*pick.length)]}
+  pile[c].push(f.c);pileCube(c,pile[c].length-1);
+}
+
+/* ---------- input: touch the glowing dot and trace along the line ---------- */
+const ptOf=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+const catchR=()=>Math.max(30,S.cs*5.5);
+function toLocal(c,p){const box=stageBox(),x=p[0]-box.cx,y=p[1]-box.cy,co=Math.cos(-c.rot),si=Math.sin(-c.rot);return[x*co-y*si,x*si+y*co]}
+function toWorld(c,p){const box=stageBox(),co=Math.cos(c.rot),si=Math.sin(c.rot);return[box.cx+p[0]*co-p[1]*si,box.cy+p[0]*si+p[1]*co]}
+cv.addEventListener('pointerdown',e=>{SFX.ensure();const p=ptOf(e);trail.push({x:p[0],y:p[1],t:performance.now(),br:true});
+  const c=S.cur;if(S.mode!=='play'||!c||c.done||c.t<INTRO)return;
+  const hp=toWorld(c,c.at(c.head));
+  if(Math.hypot(p[0]-hp[0],p[1]-hp[1])<=catchR()*1.4){stroke={prev:p};c.on=true;c.started=true;c.recent=[toLocal(c,p)];try{cv.setPointerCapture(e.pointerId)}catch(_){}track(p)}
+  else{c.nudge=1;callout(c.head>0?'Pick up where you left off':'Start at the glowing dot','','')}});
+cv.addEventListener('pointermove',e=>{const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];for(const ev of evs){const p=ptOf(ev);
+  if(stroke)move(p);else if(e.buttons)trail.push({x:p[0],y:p[1],t:performance.now()})}});
+const endStroke=()=>{stroke=null;if(S.cur)S.cur.on=false};cv.addEventListener('pointerup',endStroke);cv.addEventListener('pointercancel',endStroke);
+function move(q){
+  const a=stroke.prev;stroke.prev=q;trail.push({x:q[0],y:q[1],t:performance.now()});
+  if(S.mode!=='play'||!S.cur||S.cur.done)return;
+  const steps=Math.max(1,Math.ceil(Math.hypot(q[0]-a[0],q[1]-a[1])/5)); // small steps so a fast stroke can't skip the line
+  for(let i=1;i<=steps&&S.cur&&!S.cur.done;i++)track([a[0]+(q[0]-a[0])*i/steps,a[1]+(q[1]-a[1])*i/steps]);
+}
+function track(p){
+  const c=S.cur,lp=toLocal(c,p);c.recent.push(lp);if(c.recent.length>12)c.recent.shift();
+  // the nearest point on the path, looking only a little behind and ahead of where you are (no skipping ahead)
+  const i0=Math.max(0,Math.floor((c.head-S.cs*2)/c.step)),i1=Math.min(c.pts.length-1,Math.ceil((c.head+Math.max(56,S.cs*8))/c.step));
+  let bd=1e9,bi=i0;for(let i=i0;i<=i1;i++){const q=c.pts[i],d=(q[0]-lp[0])**2+(q[1]-lp[1])**2;if(d<bd){bd=d;bi=i}}
+  bd=Math.sqrt(bd);c.lost=bd>catchR();
+  if(c.lost)return;
+  const s=bi>=c.pts.length-1?c.L:Math.min(c.L,bi*c.step);if(s>c.head)advance(s);
+}
+// every cube you pass is scored by how close your line came to it
+function lineDist(c,q){let m=1e9;const r=c.recent;if(r.length===1)return Math.hypot(r[0][0]-q[0],r[0][1]-q[1]);for(let i=1;i<r.length;i++)m=Math.min(m,segDist(q,r[i-1],r[i]));return m}
+function advance(s){
+  const c=S.cur;c.head=s;
+  for(const k of c.cubes)if(!k.st&&k.s<=s+.5)release(c,k,lineDist(c,[k.x,k.y]));
+  if(c.head>=c.L-S.cs*2)finish(false);
+}
+// only cubes you traced well enough break off and fall; the ones you missed stay stuck on the board
+const FALL_AT=.8;
+function release(c,k,d,forced){
+  k.d=d;const a=forced?0:accOf(d,S.cs);k.a=a;ghostLand(toWorld(c,[k.x,k.y])[0]);
+  const now=performance.now();if(!forced&&now-c.lastBlip>38){c.lastBlip=now;SFX.blip(c.head/c.L,a)}
+  if(a<FALL_AT){k.st=2;return}
+  k.st=1;c.fell++;
+  const col=a>=.88?c.color:mixHex(c.color,'#4a4a4a',.4);if(a>=.88)c.kept++;
+  const w=toWorld(c,[k.x,k.y]);
+  falling.push({x:w[0],y:w[1],vx:(Math.random()-.5)*70,vy:-40-Math.random()*90,r:0,vr:(Math.random()-.5)*9,c:col,pile:true,good:a>=.75});
+  if(a>=.75&&Math.random()<.35)sparks.push({x:w[0],y:w[1],vx:(Math.random()-.5)*120,vy:-60-Math.random()*80,life:1,c:'#fff'});
+}
+function finish(timeout){
+  const c=S.cur;if(c.done)return;c.done=true;c.on=false;stroke=null;
+  for(const k of c.cubes)if(!k.st)release(c,k,timeout?1e9:lineDist(c,[k.x,k.y]),timeout);
+  const n=c.cubes.length,acc=c.cubes.reduce((s,k)=>s+k.a,0)/n*100;
+  const t=timeout?c.limit:c.clock, spd=timeout?0:t<=c.par?1:Math.max(0,(c.limit-t)/(c.limit-c.par));
+  const score=Math.round(70*acc/100+30*spd*acc/100);
+  const gr=gradeOf(acc);
+  S.results[S.idx]={acc,t,par:c.par,score,name:c.name,miss:timeout,kept:c.kept,fell:c.fell,n};S.score+=score;
+  for(const k of c.cubes)if(k.st===2){const w=toWorld(c,[k.x,k.y]);left.push({x:w[0],y:w[1],c:c.color,i:S.idx})} // missed cubes stay where they were
+  if(timeout){SFX.miss();buzz(60);shake=.6;board.classList.add('boom');callout("Time's up",Math.round(acc)+'%','+'+score,MISS_C)}
+  else{const f={Perfect:1046,Clean:880,Close:740,Shaky:587,'Way off':440}[gr[1]];SFX.tone(f,.35,'triangle',.14);if(gr[1]==='Perfect'){setTimeout(()=>SFX.tone(f*1.5,.4,'triangle',.12),90);flashA=.5;buzz([12,30,12])}else buzz(10);
+    callout(gr[1],Math.round(acc)+'% · '+t.toFixed(1)+'s',(t<=c.par?'Under par · ':'')+'+'+score,gr[2])}
+  snapShape(c);
+  S.mode='gap';S.gapT=1.25;updateHUD();
+}
+
+// a small picture of a finished shape for the summary's row of cards
+function snapShape(c){try{
+  const OUT=160,o=document.createElement('canvas');o.width=o.height=OUT;const g=o.getContext('2d');g.fillStyle='#0d0d0d';g.fillRect(0,0,OUT,OUT);
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const k of c.cubes){x0=Math.min(x0,k.x);y0=Math.min(y0,k.y);x1=Math.max(x1,k.x);y1=Math.max(y1,k.y)}
+  const sc=(OUT-36)/Math.max(x1-x0,y1-y0,1),s=Math.max(3,Math.min(7,S.cs*sc*1.1)),ox=OUT/2-(x0+x1)/2*sc,oy=OUT/2-(y0+y1)/2*sc;
+  for(const k of c.cubes){const x=ox+k.x*sc-s/2,y=oy+k.y*sc-s/2;
+    if(k.st===1)drawCube(g,x,y,s,k.a>=.88?c.color:mixHex(c.color,'#4a4a4a',.4));
+    else{g.fillStyle='#202221';g.fillRect(x,y,s,s);g.strokeStyle=c.color;g.globalAlpha=.8;g.lineWidth=1;g.strokeRect(x+.5,y+.5,s-1,s-1);g.globalAlpha=1}}
+  (S.shots||(S.shots=[]))[S.idx]=o.toDataURL('image/webp',.75);
+}catch(e){}}
+
+/* ---------- drawing ---------- */
+const INTRO=.55;
+function drawMissed(x,y,s,c,a){cx.globalAlpha=a;cx.fillStyle='#202221';cx.fillRect(x,y,s,s);cx.strokeStyle=c;cx.lineWidth=1;cx.strokeRect(x+.5,y+.5,s-1,s-1);cx.globalAlpha=1}
+function drawPathCubes(c,alpha,cs,world){
+  const n=c.cubes.length;
+  for(let i=0;i<n;i++){const k=c.cubes[i];if(k.st===2){const w=world(k);drawMissed(w[0]-(cs-1)/2,w[1]-(cs-1)/2,cs-1,c.color,.95);continue}if(k.st)continue;
+    const pop=Math.max(0,Math.min(1,(c.t-i/n*INTRO*.8)/.18));if(pop<=0)continue;
+    const w=world(k),s=(cs-1)*(pop<1?.4+.6*pop:1);
+    cx.globalAlpha=alpha*pop;drawCube(cx,w[0]-s/2,w[1]-s/2,s,c.color)}
+  cx.globalAlpha=1;
+}
+function drawHead(c,now,world,cs){
+  const p=world(c.at(c.head)),pulse=.5+.5*Math.sin(now/1000*Math.PI*3),lost=c.lost&&c.on,col=lost?'#ff7a6b':'#fff';
+  const r=cs*1.7+(c.on?0:cs*.9*pulse)+(c.nudge||0)*cs*2;
+  cx.strokeStyle=col;cx.globalAlpha=c.on?.9:.55+.4*pulse;cx.lineWidth=2.5;cx.beginPath();cx.arc(p[0],p[1],r,0,TAU);cx.stroke();
+  cx.globalAlpha=1;cx.fillStyle=col;cx.beginPath();cx.arc(p[0],p[1],cs*.55,0,TAU);cx.fill();
+  if(!c.on&&c.head===0){ // which way to go
+    const q=world(c.at(Math.min(c.L,cs*4))),a=Math.atan2(q[1]-p[1],q[0]-p[0]),d=r+cs*1.6+pulse*3;
+    cx.save();cx.translate(p[0]+Math.cos(a)*d,p[1]+Math.sin(a)*d);cx.rotate(a);cx.strokeStyle='#fff';cx.lineWidth=2.5;cx.lineCap='round';cx.lineJoin='round';
+    cx.beginPath();cx.moveTo(-cs*.6,-cs*.9);cx.lineTo(cs*.4,0);cx.lineTo(-cs*.6,cs*.9);cx.stroke();cx.restore()}
+}
+function drawTimer(c,danger){
+  const w=Math.min(W-64,300),x=(W-w)/2,y=Math.min(118,H*.13),left=Math.max(0,1-c.clock/c.limit);
+  cx.fillStyle='#1d1d1d';cx.fillRect(x,y,w,4);
+  cx.fillStyle=left<.25?'#ff7a6b':left<.5?'#f2c14e':'#9deba8';cx.fillRect(x,y,w*left,4);
+  const px=x+w*(1-c.par/c.limit);cx.fillStyle=c.clock<=c.par?'#fff':'#555';cx.fillRect(px-1,y-4,2,12); // par: finish before the timer passes this mark
+}
+// attract mode: a shape builds, traces itself and crumbles above the home screen
+let amb=null, ambI=0, ambFall=[];
+const AMB_LIST=['star','heart','spiral','infinity','bolt','flower','house','rose','fish','cloud'];
+function ambientStep(dt,now){
+  const cs=Math.max(5,Math.round(Math.min(W,H*.6)/60)),R=Math.min(W*.3,H*.15),cxp=W/2,cyp=Math.max(170,H*.3);
+  if(!amb){const name=AMB_LIST[ambI%AMB_LIST.length];amb=Object.assign({name,color:PALETTE[(ambI*3)%PALETTE.length],t:0,head:0,wait:0},buildShape({name},R,cs));ambI++}
+  amb.t+=dt;
+  const world=k=>[cxp+(k.x!=null?k.x:k[0]),cyp+(k.y!=null?k.y:k[1])];
+  if(amb.t>INTRO+.5&&amb.head<amb.L){amb.head=Math.min(amb.L,amb.head+dt*Math.max(160,amb.L/3.2));
+    for(const k of amb.cubes)if(!k.st&&k.s<=amb.head){k.st=1;const w=world(k);ambFall.push({x:w[0],y:w[1],vx:(Math.random()-.5)*60,vy:-30-Math.random()*70,r:0,vr:(Math.random()-.5)*8,c:amb.color,life:1})}}
+  if(amb.head>=amb.L){amb.wait+=dt;if(amb.wait>1.4)amb=null}
+  if(amb){drawPathCubes(amb,.85,cs,world);if(amb.t>INTRO&&amb.head<amb.L)drawHead(Object.assign({},amb,{on:amb.t>INTRO+.5}),now,world,cs)}
+  for(const f of ambFall){f.vy+=1100*dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.r+=f.vr*dt;f.life-=dt*1.5;
+    cx.save();cx.globalAlpha=Math.max(0,f.life)*.85;cx.translate(f.x,f.y);cx.rotate(f.r);drawCube(cx,-cs/2,-cs/2,cs-1,f.c);cx.restore()}
+  ambFall=ambFall.filter(f=>f.life>0&&f.y<H+20);
+}
+let last=performance.now(), countN=-1;
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  const run=S.mode==='play'||S.mode==='gap'||S.mode==='count';
+  const c=S.cur, live=c&&!c.done&&S.mode==='play'&&c.t>=INTRO;
+  const rem=live?1-c.clock/c.limit:1, danger=live?Math.max(0,Math.min(1,(.3-rem)/.3)):0;
+  const pulse=.5+.5*Math.sin(now/1000*Math.PI*(4+10*danger));
+  cx.clearRect(0,0,W,H);cx.save();
+  if(shake>0){cx.translate((Math.random()-.5)*14*shake,(Math.random()-.5)*14*shake);shake=Math.max(0,shake-dt*2.5)}
+  // the pile stays through the game and the summary, then fades on the home screen
+  const showPile=S.mode!=='idle'&&S.mode!=='over';pileA+=((showPile?1:0)-pileA)*Math.min(1,dt*(showPile?8:2.5));
+  if(!showPile&&pileA<.01&&pile.length){pile=[];paintPile()}
+  if(pileA>.01){cx.globalAlpha=pileA;cx.drawImage(pileCv,0,0,W,H);cx.globalAlpha=1;
+    // what you missed on the shape you just finished, shown until the next one starts
+    if(S.mode==='gap'||(S.mode==='pause'&&S.prev==='gap'))for(const m of left)drawMissed(m.x-(S.cs-1)/2,m.y-(S.cs-1)/2,S.cs-1,m.c,.95)}
+  if(!showPile&&pileA<.01&&left.length)left=[];
+  if(S.mode==='count'){S.count+=dt;const n=Math.floor(S.count/.7);
+    if(S.count>=0&&n!==countN){countN=n;if(n<3){flash(String(3-n));SFX.count(1)}else{flash('Trace','go',C('pink'));SFX.count(0)}}
+    if(S.count>=2.6){countEl.replaceChildren();countN=-1;nextShape()}}
+  if(S.mode==='gap'){S.gapT-=dt;if(S.gapT<=0){S.idx++;S.cur=null;nextShape()}}
+  if(S.mode==='idle'||S.mode==='over')ambientStep(dt,now);
+  if(c&&!c.done&&(S.mode==='play'||S.mode==='pause')){
+    if(S.mode==='play'){c.t+=dt;if(c.started||c.t>=INTRO+2.5)c.clock+=dt;c.rot+=c.spin*dt*TF.speed;c.nudge=Math.max(0,(c.nudge||0)-dt*2.5)}
+    const world=k=>toWorld(c,k.x!=null?[k.x,k.y]:k);
+    // the path you've already covered, faintly, so you can see where you've been
+    if(c.head>0){cx.strokeStyle='rgba(255,255,255,.12)';cx.lineWidth=S.cs*.5;cx.lineCap='round';cx.lineJoin='round';cx.beginPath();
+      for(let s=0;s<=c.head;s+=c.step*2){const w=world(c.at(s));s?cx.lineTo(w[0],w[1]):cx.moveTo(w[0],w[1])}cx.stroke()}
+    drawPathCubes(c,1,S.cs,world);
+    if(c.t>=INTRO){drawHead(c,now,world,S.cs);drawTimer(c,danger)}
+    if(S.mode==='play'&&c.t>=INTRO&&c.clock>=c.limit)finish(true);
+  }
+  if(S.mode!=='pause'){
+    const fy=floorY();
+    for(const f of falling){f.vy+=1400*dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.r+=f.vr*dt;f.vx*=.995;
+      if(f.vy>0){const col=Math.max(0,Math.min(pileCols()-1,colAt(f.x))),top=fy-((pile[col]&&pile[col].length)||0)*S.cs;
+        if(f.y+S.cs/2>=top){f.dead=true;land(f);if(Math.random()<.18)SFX.land()}}}
+    falling=falling.filter(f=>!f.dead);
+    for(const s of sparks){s.x+=s.vx*dt;s.y+=s.vy*dt;s.vx*=.94;s.vy=s.vy*.94+300*dt;s.life-=dt*2}
+  }
+  for(const f of falling){cx.save();cx.translate(f.x,f.y);cx.rotate(f.r);drawCube(cx,-S.cs/2,-S.cs/2,S.cs-1,f.c);cx.restore()}
+  for(const s of sparks){cx.globalAlpha=Math.max(0,s.life);cx.fillStyle=s.c;cx.fillRect(s.x-1.5,s.y-1.5,3,3)}
+  cx.globalAlpha=1;sparks=sparks.filter(s=>s.life>0);
+  // your line: a bright trail that fades out behind your finger
+  const tn=performance.now(),keep=S.mode==='play'?520:200;trail=trail.filter(p=>tn-p.t<keep);
+  for(let i=1;i<trail.length;i++){const a=trail[i-1],b=trail[i];if(b.br)continue;const k=1-(tn-b.t)/keep;cx.strokeStyle='rgba(255,255,255,'+(.9*k)+')';cx.lineWidth=1.5+3.5*k;cx.lineCap='round';cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke()}
+  cx.restore();
+  // running out of time: a red glow creeps in from the edges, with a quickening tick
+  if(danger>0){const a=(.12+.36*danger)*(.55+.45*pulse),gr=cx.createRadialGradient(W/2,H*.45,Math.min(W,H)*(.45-.15*danger),W/2,H*.45,Math.hypot(W,H)*.62);
+    gr.addColorStop(0,'rgba(255,122,107,0)');gr.addColorStop(1,'rgba(255,122,107,'+a+')');cx.fillStyle=gr;cx.fillRect(0,0,W,H);
+    S.tickT-=dt;if(S.tickT<=0){SFX.tick(danger);S.tickT=.45-.3*danger}}
+  warnEl.style.opacity=danger>.15?((danger-.15)/.85*(.55+.45*pulse)).toFixed(3):'0';
+  if(flashA>0){cx.fillStyle='rgba(255,255,255,'+(flashA*.3)+')';cx.fillRect(0,0,W,H);flashA=Math.max(0,flashA-dt*2)}
+  if(run||S.mode==='pause')updateHUD();
+  requestAnimationFrame(frame);
+}
+
+const C=n=>getComputedStyle(document.documentElement).getPropertyValue('--'+n).trim();
+
+/* ---------- buttons, sheets, settings ---------- */
+function playMode(p){
+  if(!(S.mode==='idle'||S.mode==='over'))return; SFX.ensure(); SFX.click();
+  if(!p&&dailyLocked())return;
+  try{$('#over').close()}catch(e){}
+  practice=p||PREVIEW; if(S.mode!=='idle')endRun(); hud={}; setBar(); updateHUD(); start();
+}
+goBtn.addEventListener('click',()=>playMode(false));
+$('#arcadeBtn').addEventListener('click',()=>playMode(true));
+$('#pauseBtn').addEventListener('click',()=>{SFX.click(); S.mode==='pause'?resume():pause()});
+$('#resumeBtn').addEventListener('click',()=>{SFX.click(); resume()});
+$('#exitBtn').addEventListener('click',()=>{SFX.click(); if(S.mode==='pause'&&S.practice){endRun();setBar();updateHUD()}}); // quit: the run is thrown away
+$('#hudPause').addEventListener('click',()=>{SFX.ensure();SFX.click();pause(false)});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')pause(true)});
+addEventListener('pagehide',()=>pause(true));
+function setPractice(on){if(!(S.mode==='idle'||S.mode==='over'))return;practice=on;if(S.mode!=='idle')endRun();hud={};setBar();updateHUD()}
+$('#practiceTgl').addEventListener('click',()=>{if(!(S.mode==='idle'||S.mode==='over'))return;SFX.ensure();SFX.click();setPractice(!practice)});
+const ICON_PRACTICE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>';
+const ICON_DAILY='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="M12 13.5v3.5"/></svg>';
+$('#modeBtn').addEventListener('click',()=>{SFX.ensure();SFX.click();setPractice(!practice)});
+$('#lbBtn').addEventListener('click',()=>{SFX.ensure();SFX.click();try{$('#lbm').showModal()}catch(e){}renderLB()});
+document.querySelectorAll('#lbm [data-tab]').forEach(b=>b.addEventListener('click',()=>{lbTab=b.dataset.tab;renderLB()}));
+$('#setBtn').addEventListener('click',()=>{SFX.ensure();SFX.click();paintSound();try{$('#settings').showModal()}catch(e){}});
+function saveAudio(){try{localStorage.setItem('trace.muted',muted?'1':'0');localStorage.setItem('trace.sfx',sfxOn?'1':'0')}catch(e){}}
+function paintSound(){
+  const set=(id,v)=>document.getElementById(id).setAttribute('aria-checked',String(v));
+  set('setSfx',sfxOn);set('setMute',muted);
+  const mb=$('#muteBtn');mb.classList.toggle('off',muted);mb.setAttribute('aria-pressed',String(muted));mb.setAttribute('aria-label',muted?'Turn sound on':'Mute sound');
+  document.querySelector('.setlist').classList.toggle('muted',muted);
+}
+$('#setSfx').addEventListener('click',()=>{sfxOn=!sfxOn;if(sfxOn&&muted)muted=false;SFX.ensure();saveAudio();paintSound();SFX.click()});
+$('#muteBtn').addEventListener('click',e=>{e.stopPropagation();muted=!muted;SFX.ensure();saveAudio();paintSound();if(!muted)SFX.click()});
+$('#setMute').addEventListener('click',()=>{muted=!muted;SFX.ensure();saveAudio();paintSound();SFX.click()});
+for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,()=>SFX.ensure(),{capture:true});
+$('#helpFb').addEventListener('click',()=>{if(window.DCFeedback)DCFeedback.open({game:'trace',dark:true})});
+$('#sumBtn').addEventListener('click',()=>{const m=summaryNow();if(!m)return;fillOver(m);try{$('#over').showModal()}catch(e){}});
+$('#sumIcon').addEventListener('click',()=>{SFX.ensure();SFX.click();const m=dailySumNow();if(!m)return;fillOver(m);try{$('#over').showModal()}catch(e){}});
+$('#practiceBtn').addEventListener('click',()=>{SFX.ensure();SFX.click();try{$('#over').close()}catch(e){}practice=true;endRun();setBar();start()});
+$('#dailyBtn').addEventListener('click',()=>{if(dailyLocked())return;SFX.ensure();SFX.click();try{$('#over').close()}catch(e){}practice=false;endRun();setBar();start()});
+function paintHelp(){
+  const say={Perfect:'Right on the line',Clean:'Barely a wobble',Close:'Near enough',Shaky:'Drifting off','Way off':'Lost the line'};
+  const rows=GRADE.map((g,i)=>`<li style="--c:${g[2]}"><span class="sic2">${i+1}</span><span class="sl">${g[1]}<small>${say[g[1]]}</small></span><b>${i===GRADE.length-1?'&lt;'+GRADE[i-1][0]:g[0]+'%+'}</b></li>`);
+  rows.push(`<li style="--c:${MISS_C}"><span class="sic2">×</span><span class="sl">Time's up<small>Whatever you didn’t trace stays on the board</small></span><b>0%</b></li>`);
+  $('#helpGrades').innerHTML=rows.join('');
+}
+const openHelp=()=>{paintHelp();try{$('#help').showModal()}catch(e){}};
+$('#helpBtn').addEventListener('click',()=>{SFX.ensure();SFX.click();openHelp()});
+$('#idleHelp').addEventListener('click',openHelp);
+/* phone sheets slide back down when they close (any way they close: the X, Escape, picking an option) */
+(()=>{const sheet=matchMedia('(max-width:600px)'), still=matchMedia('(prefers-reduced-motion: reduce)');
+  for(const d of document.querySelectorAll('dialog.modal')){const real=HTMLDialogElement.prototype.close.bind(d);
+    d.close=rv=>{if(!d.open||d.classList.contains('closing'))return; if(!sheet.matches||still.matches)return real(rv);
+      d.classList.add('closing');let done=false;const fin=()=>{if(done)return;done=true;d.classList.remove('closing');real(rv)};
+      d.addEventListener('animationend',e=>{if(e.target===d)fin()},{once:true});setTimeout(fin,320)};
+    d.addEventListener('cancel',e=>{if(sheet.matches&&!still.matches){e.preventDefault();d.close()}});
+  }})();
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
+board.addEventListener('animationend',()=>board.classList.remove('boom'));
+
+/* ---------- live tuning (from the admin page) ---------- */
+function applyTF(v){Object.assign(TF,TF_DEF,v||{});amb=null;try{if(S.mode==='idle'||S.mode==='over')updateHUD()}catch(e){}}
+if(PREVIEW){
+  applyTF(PREVIEW_VALS);
+  const bar=document.createElement('div'); bar.className='pvbar'; bar.setAttribute('role','toolbar'); bar.setAttribute('aria-label','Test mode');
+  bar.innerHTML='<b>Test</b><button type="button" data-a="skip">Next shape</button><button type="button" data-a="end">End game</button><button type="button" data-a="admin">← Admin</button>';
+  bar.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
+    if(a==='skip'){if(S.mode==='play'&&S.cur&&S.cur.t>=INTRO)S.cur.clock=S.cur.limit*.9}
+    else if(a==='end'){if(playing()){while(S.results.length<10)S.results.push({miss:true,acc:0,t:0,par:1,score:0,kept:0,n:0,name:(S.run[S.results.length]||{}).name||''});gameOver()}}
+    else if(a==='admin'){location.href='admin.html'}});
+  document.body.appendChild(bar);
+  const st=document.createElement('style');
+  st.textContent='.pvbar{position:fixed;z-index:70;left:6px;right:6px;top:calc(env(safe-area-inset-top,0px) + 3px);display:flex;justify-content:center;gap:3px;align-items:center;padding:3px;border-radius:12px;background:rgba(255,214,0,.96);color:#000;font:600 11px/1 Inter,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.4)}'
+   +'body.is-playing .pvbar{top:calc(env(safe-area-inset-top,0px) + 104px);opacity:.85}.pvbar b{padding:0 6px;font-weight:700}.pvbar button{font:inherit;border:0;border-radius:8px;padding:5px 7px;background:rgba(0,0,0,.1);color:#000;cursor:pointer}';
+  document.head.appendChild(st);
+}
+
+new ResizeObserver(resize).observe(board);
+resize(); paintSound(); setBar(); updateHUD();
+requestAnimationFrame(frame);
+})();
+</script>
+
+<script>/* iPhone: block pinch-zoom gestures (Safari ignores the viewport setting for pinches) */['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));</script>
+</body></html>

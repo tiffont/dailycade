@@ -132,6 +132,7 @@ h1{font-family:var(--sans);font-weight:700;font-size:clamp(64px,8.6vw,120px);lin
 #soon{--shape:#d94fd0;--blob:52% 48% 40% 60% / 55% 45% 55% 45%;--tilt:-8deg}
 #dropface{--shape:#c49bff;--blob:38% 62% 45% 55% / 60% 38% 62% 40%;--tilt:22deg}
 #slice{--shape:#ff8ad8;--blob:63% 37% 54% 46% / 41% 57% 43% 59%;--tilt:-28deg}
+#trace{--shape:#f2c14e;--blob:45% 55% 38% 62% / 57% 44% 56% 43%;--tilt:18deg}
 /* a game whose handheld art isn't made yet: keep the same footprint, show just its colored shape */
 .cab.noart{height:457px}
 @media (max-width:940px){.cab.tv.noart{height:auto;width:300px;max-width:100%;display:grid;place-items:center;padding:12px 0}
@@ -367,9 +368,35 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
           </div>
         </div>
       </article>
+      <article class="panel" id="trace" data-base="2026-11-23" aria-label="Trace" hidden>
+        <div class="grid">
+          <div>
+            <h1>Trace</h1>
+            <p class="lede">Ten shapes made of cubes. Stay on the line, grow your pile.</p>
+            <div class="ctas"><a class="btn" href="/trace">Play game
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></div>
+            <div class="daybox">
+            <p class="bhead"><svg class="dglobe" viewBox="0 0 24 24" fill="none" stroke="url(#dcGrad)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span>Today's daily challenge</span></p>
+            <div class="board">
+              <div class="cell"><span class="mono">Game</span><b data-k="day">–</b></div>
+              <div class="cell"><span class="mono">Top player</span><b data-k="player">–</b></div>
+              <div class="cell"><span class="mono">Top score</span><b data-k="top">–</b></div>
+            </div>
+            </div>
+          </div>
+          <div class="show">
+            <div class="float">
+              <div class="cab tv">
+                <img class="cabimg" src="handheld-trace.webp" alt="Trace on a blue Dailycade handheld: a square traced in coral cubes, scored Close 70% in 2.3 seconds, with a pile of cubes below" >
+              </div>
+            </div>
+            <div class="floor" aria-hidden="true"></div>
+          </div>
+        </div>
+      </article>
     </div>
     <div class="wrap railnav">
-      <div class="dots" id="dots"><button aria-label="Show Gambit" aria-current="true"></button><button aria-label="Show Dropface"></button><button aria-label="Show Slice"></button></div>
+      <div class="dots" id="dots"><button aria-label="Show Gambit" aria-current="true"></button><button aria-label="Show Dropface"></button><button aria-label="Show Slice"></button><button aria-label="Show Trace" hidden></button></div>
       <div class="arrows">
         <button id="prev" aria-label="Previous game"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg></button>
         <button id="next" aria-label="Next game"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
@@ -477,6 +504,10 @@ tick();setInterval(tick,30000);
   let sSub=null;const sWatch=()=>{try{if(sSub)sSub();sSub=db.collection('slice_scores').where('day','==',sDay()).fields('ini','dayBest').onSnapshot(s=>set('slice',s.docs.map(x=>x.data()),'dayBest'),()=>{})}catch(e){}};
   sWatch();
   try{db.doc('slice_config/game').onSnapshot(sn=>{const e=sn.exists&&sn.data().epoch;if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)&&e!==sEpoch){sEpoch=e;$('slice').dataset.base=e;tick();sWatch()}},()=>{})}catch(e){}
+  let tEpoch='2026-11-23';const tDay=()=>{const d=new Date(),[y,m,dd]=tEpoch.split('-').map(Number);return Math.max(1,Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(y,m-1,dd))/864e5)+1)};
+  let tSub=null;const tWatch=()=>{try{if(tSub)tSub();tSub=db.collection('trace_scores').where('day','==',tDay()).fields('ini','dayBest').onSnapshot(s=>set('trace',s.docs.map(x=>x.data()),'dayBest'),()=>{})}catch(e){}};
+  tWatch();
+  try{db.doc('trace_config/game').onSnapshot(sn=>{const e=sn.exists&&sn.data().epoch;if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)&&e!==tEpoch){tEpoch=e;$('trace').dataset.base=e;tick();tWatch()}},()=>{})}catch(e){}
   try{db.doc('dropface_config/game').onSnapshot(sn=>{const e=sn.exists&&sn.data().epoch;if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)){$('dropface').dataset.base=e;tick()}},()=>{})}catch(e){}
 })();
 
@@ -500,7 +531,10 @@ function countdown(){const n=new Date(),mid=new Date(n.getFullYear(),n.getMonth(
   if(s===0)setTimeout(tick,1500)}
 countdown();setInterval(countdown,1000);
 
-/* games the admin has taken down are hidden (panel, dot and header link) until put back */
+/* games the admin has taken down are hidden (panel, dot and header link) until put back.
+   New games start hidden too, until the admin puts them on the site (site_config/home.live) */
+const NEW_GAMES=['trace'];
+const effHidden=d=>{const h=Array.isArray(d.hidden)?d.hidden:[],live=Array.isArray(d.live)?d.live:[];return h.concat(NEW_GAMES.filter(g=>!live.includes(g)&&!h.includes(g)))};
 let lastHidden=null;
 function applyHidden(list){
   list=Array.isArray(list)?list:[];
@@ -513,14 +547,14 @@ function applyHidden(list){
   if(!first)rail.scrollTo({left:0}); // only jump back when the set of games really changed
   paint();
 }
-try{applyHidden(JSON.parse(localStorage.getItem('dc.hidden')||'[]'))}catch(e){}
+try{const c=JSON.parse(localStorage.getItem('dc.hidden')||'[]'),l=JSON.parse(localStorage.getItem('dc.live')||'[]');applyHidden(effHidden({hidden:c,live:l}))}catch(e){applyHidden(effHidden({}))}
 function applyBoards(on){document.documentElement.classList.toggle('noboards',on===false);try{localStorage.setItem('dc.boards',on===false?'0':'1')}catch(e){}}
 try{applyBoards(localStorage.getItem('dc.boards')!=='0')}catch(e){}
 (async()=>{let db=null;try{if(window.claude&&window.claude.use)db=await window.claude.use('db')}catch(e){}
-  if(db)try{db.doc('site_config/home').onSnapshot(sn=>{const d=sn.exists?sn.data():{};applyHidden(d.hidden||[]);applyBoards(d.boards!==false)},()=>{})}catch(e){}})();
+  if(db)try{db.doc('site_config/home').onSnapshot(sn=>{const d=sn.exists?sn.data():{};try{localStorage.setItem('dc.live',JSON.stringify(Array.isArray(d.live)?d.live:[]))}catch(e){}applyHidden(effHidden(d));applyBoards(d.boards!==false)},()=>{})}catch(e){}})();
 
 /* Play game: switch the game on like a tube TV when it opens */
-document.querySelectorAll(['gambit','dropface','slice'].map(g=>`a.btn[href="/${g}"], .games a[href="/${g}"]`).join(',')).forEach(a=>a.addEventListener('click',e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;
+document.querySelectorAll(['gambit','dropface','slice','trace'].map(g=>`a.btn[href="/${g}"], .games a[href="/${g}"]`).join(',')).forEach(a=>a.addEventListener('click',e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;
   try{sessionStorage.setItem('dc.crton','1')}catch(err){}e.preventDefault();pressSound();setTimeout(()=>{location.href=a.getAttribute('href')},140)}));
 /* Play game: a soft TV power-switch click as the button goes down */
 function pressSound(){try{const ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state!=='running')ac.resume();const t=ac.currentTime+.005;
