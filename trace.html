@@ -1483,7 +1483,7 @@ function fillOver(m){
   $('#overT').textContent=m.practice?'Game Summary':'Daily Summary';
   // daily: leaderboard initials sit left of Challenge a friend (saved on this device; posted to the leaderboard when it's reachable)
   {const iw=$('#oIni');iw.replaceChildren();if(isDaily&&!PREVIEW&&window.DCIni)iw.append(DCIni.block(async v=>{if(!(dbNS&&myId&&!postBlocked))return;const ref=dbNS.doc('trace_scores/'+myId),sn=await ref.get();await ref.set(Object.assign({},sn.exists?sn.data():{},{ini:v}))},{feature:true}))}
-  $('#oSub').textContent=m.practice?'Single player':'Daily challenge No. '+m.day;
+  $('#oSub').textContent='Trace '+(m.practice?'Single player':'Daily challenge No. '+m.day);
   $('#oScore').textContent=fmtN(m.score);
   $('#oNb').hidden=!m.nb;
   const cuts=m.cuts||[];

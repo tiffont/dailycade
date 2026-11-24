@@ -1735,7 +1735,7 @@ function openSummary(){
   const prac=mode==='practice', pb=Math.max(0,...day.scores.map(Number));
   const el=(t,c,txt)=>{ const e=document.createElement(t); if(c) e.className=c; if(txt!=null) e.textContent=txt; return e; };
   $('sumh').textContent=prac?'Game Summary':'Daily Summary';
-  body.appendChild(el('p','ssub',prac?'Single player':`Daily challenge No. ${dayNo()}`));
+  body.appendChild(el('p','ssub',prac?'Dropface Single player':`Dropface Daily challenge No. ${dayNo()}`));
   // the total, big, with NEW BEST DROP when today's best drop is your all-time best
   const big=el('div','sbig'), lab=el('span'); big.appendChild(el('strong',null,day.total.toLocaleString()));
   lab.appendChild(el('i',null,prac?'Total':'Daily total')); if(!prac&&pb>0&&pb>=bestDrop) lab.appendChild(el('em',null,'New best drop'));
