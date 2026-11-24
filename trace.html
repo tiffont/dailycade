@@ -893,7 +893,8 @@ html,body{touch-action:manipulation}
   background-image:radial-gradient(ellipse 75% 65% at 50% 45%,transparent 35%,#000 100%),linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
   background-size:100% 100%,80px 80px,80px 80px;background-position:center,center,center}
 .opile{display:flex;flex-direction:column;gap:10px}
-.opile canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:10px;background:#0b0b0b;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.opile .opbox{border-radius:10px;background:#0b0b0b;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.opile canvas{display:block;width:66.667%;height:auto;margin:0 auto;image-rendering:pixelated} /* 2/3 size: the box is 2/3 as tall */
 .opile small{color:var(--muted);font-size:.85rem}
 
 </style>
@@ -1030,7 +1031,7 @@ html,body{touch-action:manipulation}
       <div class="srate"><i>Avg accuracy</i><span><span id="oThrown"></span><b id="oHit">0%</b></span></div>
     </div>
     <div class="ocuts" id="oCuts"></div>
-    <div class="opile" id="oPileW" hidden><i>Your pile</i><canvas id="oPile" aria-label="The pile of cubes you built"></canvas><small id="oPileN"></small></div>
+    <div class="opile" id="oPileW" hidden><i>Your pile</i><div class="opbox"><canvas id="oPile" aria-label="The pile of cubes you built"></canvas></div><small id="oPileN"></small></div>
     <details class="omore" id="oMore"><summary><span class="omlab"><svg class="omic" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="9" width="2.8" height="9.5" rx="1.2" fill="#f2c14e"/><rect x="4.8" y="5.5" width="2.8" height="13" rx="1.2" fill="#ff8ad8"/><rect x="8.6" y="11" width="2.8" height="7.5" rx="1.2" fill="#c49bff"/><rect x="12.4" y="7" width="2.8" height="11.5" rx="1.2" fill="#7cc8ff"/><rect x="16.2" y="2.5" width="2.8" height="16" rx="1.2" fill="#9deba8"/></svg>More stats</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
       <ul class="slist" id="oFacts"></ul>
       <div class="oach" id="oAch" hidden></div>
