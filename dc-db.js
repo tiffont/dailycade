@@ -3,6 +3,15 @@
    Everything lives in one table, public.docs (col, id, data). Leaderboards and settings are readable by anyone;
    a player can only write their own score row; settings and resets need the admin login (see admin.html). */
 (function(){
+  /* staging.dailycadegames.com (and Vercel preview links) keep their own data: every collection gets a 'stg_' prefix,
+     so testing there never touches the live leaderboards, feedback or settings */
+  const H=location.hostname, STG=/^staging\./.test(H)||(/\.vercel\.app$/.test(H)&&H!=='dailycade.vercel.app');
+  const P=STG?'stg_':'';
+  window.DC_STAGING=STG;
+  if(STG){const tag=()=>{if(document.getElementById('dcStg'))return;const t=document.createElement('div');t.id='dcStg';t.textContent='Staging';t.setAttribute('aria-hidden','true');
+    t.style.cssText='position:fixed;left:8px;bottom:8px;z-index:2147483647;padding:4px 9px;border-radius:999px;background:#ff8a1f;color:#1a0d02;font:800 11px/1.2 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.4)';
+    document.body.appendChild(t)};document.body?tag():document.addEventListener('DOMContentLoaded',tag);
+    try{const m=document.createElement('meta');m.name='robots';m.content='noindex,nofollow';document.head.appendChild(m)}catch(e){}}
   const SB_URL='https://qtcxlnchxztinnzbuwmd.supabase.co';
   const SB_KEY='sb_publishable_Mh7eThLTfeBTyY_8lRWv3w_OLI7KriP'; // publishable key: safe in the page, the database rules do the guarding
   let sb=null;
@@ -30,7 +39,7 @@
 
   const clone=v=>v==null?v:JSON.parse(JSON.stringify(v));
   const snap=(id,row)=>({id,exists:!!row,data:()=>row?clone(row.data):undefined});
-  const split=path=>{const i=path.lastIndexOf('/');return [path.slice(0,i),path.slice(i+1)]};
+  const split=path=>{const i=path.lastIndexOf('/');return [P+path.slice(0,i),path.slice(i+1)]};
   const T=()=>sb.from('docs');
   const fail=r=>{if(r.error)throw r.error;return r};
 
@@ -84,19 +93,20 @@
       orderBy:(f,dir)=>query(col,{...q,o:[f,dir||'asc']}),
       limit:n=>query(col,{...q,l:n}),
       fields:(...f)=>query(col,{...q,f:f.flat().filter(x=>/^[A-Za-z_][A-Za-z0-9_]*$/.test(x))}), // only download these fields
-      doc:id=>doc(col+'/'+id),
+      doc:id=>doc(col.slice(P.length)+'/'+id),
       get:run,
       onSnapshot(cb,err){return watch(col,()=>run().then(cb,e=>err&&err(e)))}
     };
   }
 
-  const db={doc,collection:col=>query(col)};
+  const db={doc,collection:col=>query(P+col)};
   const user={
     async id(){return (await ensureAuth()).id},
     async profiles(){return {}} // players are anonymous for now: the leaderboard shows their initials
   };
   /* ---- play stats: DCTrack('gambit','start_daily') adds one to today's count (see admin > Stats) ---- */
-  window.DCTrack=(game,name)=>{try{ensureAuth().catch(()=>null).then(()=>sb.rpc('track',{p_game:game,p_name:name})).then(()=>{},()=>{})}catch(e){}};
+  window.DCTrack=(game,name)=>{if(STG)return;try{ // staging plays don't count in admin > Activity
+    ensureAuth().catch(()=>null).then(()=>sb.rpc('track',{p_game:game,p_name:name})).then(()=>{},()=>{})}catch(e){}};
   window.claude={use:async n=>{
     if(!sb)throw new Error('Database unavailable');
     if(n==='db')return db;

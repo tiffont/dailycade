@@ -71,7 +71,7 @@ button.dcfblink.dcfblink:hover{opacity:1}`;
     if(!window.claude||!window.DCSB)throw new Error('offline');
     const uid=await (await window.claude.use('user')).id();
     // a plain insert: players can add feedback but can't read it back (only the admin can)
-    const r=await window.DCSB.from('docs').insert({col:'feedback',id:uid+'-'+Date.now(),data});
+    const r=await window.DCSB.from('docs').insert({col:(window.DC_STAGING?'stg_':'')+'feedback',id:uid+'-'+Date.now(),data});
     if(r.error)throw r.error;
   }
 
