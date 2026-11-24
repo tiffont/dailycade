@@ -893,8 +893,8 @@ html,body{touch-action:manipulation}
   background-image:radial-gradient(ellipse 75% 65% at 50% 45%,transparent 35%,#000 100%),linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
   background-size:100% 100%,80px 80px,80px 80px;background-position:center,center,center}
 .opile{display:flex;flex-direction:column;gap:10px}
-.opile .opbox{border-radius:10px;background:#0b0b0b;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
-.opile canvas{display:block;width:66.667%;height:auto;margin:0 auto;image-rendering:pixelated} /* 2/3 size: the box is 2/3 as tall */
+.opile .opbox{overflow:hidden;border-radius:10px;background:#0b0b0b;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.opile canvas{display:block;width:100%;height:auto;image-rendering:pixelated} /* stretched edge to edge; the box is 2/3 as tall */
 .opile small{color:var(--muted);font-size:.85rem}
 
 </style>
@@ -1453,7 +1453,9 @@ function drawPileThumb(cv2,p){
   const cell=6,n=Math.max(p.n||56,p.cols.length),x0=p.x0!=null?p.x0:Math.floor((n-p.cols.length)/2),top=Math.max(0,...p.cols.map(s=>s.length));
   // sized to the perfect pile: a 100% game reaches the top. (Older saves without one keep the old fixed box.)
   const gp=p.g&&p.g.length?Math.max(...p.g):0,rows=gp?Math.max(gp,top)+1:Math.max(Math.round(n*.55),top+1);
-  cv2.width=n*cell;cv2.height=rows*cell;const g=cv2.getContext('2d');g.clearRect(0,0,cv2.width,cv2.height);
+  // only the columns the pile (or a perfect pile) uses, stretched to fill the box edge to edge; the box stays 2/3 as tall
+  let lo=x0,hi=x0+p.cols.length;if(gp){lo=Math.min(lo,p.gx0);hi=Math.max(hi,p.gx0+p.g.length)}const m=Math.max(1,hi-lo);
+  const W=Math.round(n*cell*1.5),SX=W/(m*cell);cv2.width=W;cv2.height=rows*cell;const g=cv2.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cv2.width,cv2.height);g.setTransform(SX,0,0,1,-lo*cell*SX,0);
   if(gp){g.fillStyle='rgba(255,255,255,.06)';p.g.forEach((h,i)=>{for(let y=0;y<h;y++)g.fillRect((i+p.gx0)*cell,cv2.height-(y+1)*cell,cell-1,cell-1)})} // faint outline of 100%
   p.cols.forEach((s,x)=>{for(let y=0;y<s.length;y++){const c=p.pal[parseInt(s[y],36)]||GREY;drawCube(g,(x+x0)*cell,cv2.height-(y+1)*cell,cell-1,c)}});
   return true;
