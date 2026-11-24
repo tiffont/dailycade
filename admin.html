@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <style>
 :root{--ink:#0d0d0d;--muted:#707070;--line:#e6e6e3;--soft:#f4f4f2;--sans:"Plus Jakarta Sans",-apple-system,system-ui,sans-serif;
-  --gambit:#9de6a3;--dropface:#b48cff;--slice:#ff8ad8;--trace:#f2c14e;--spiral:#5fc9f3;--amber:#b7791f;--red:#c0392b}
+  --gambit:#9de6a3;--dropface:#b48cff;--slice:#ff8ad8;--trace:#f2c14e;--spiral:#5fc9f3;--frames:#ff9f5a;--amber:#b7791f;--red:#c0392b}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;background:#fff;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
@@ -455,12 +455,17 @@ const GAMES={
       ['Target',[['size','Target size',.5,2,.05,pct],['move','How far the target moves',0,2,.05,pct]]],
       ['Perfect spiral',[['spiral','How easy it is to throw',.5,2,.05,pct]]],
     ]},
+  frames:{name:'Frames',color:'var(--frames)',
+    defaults:{speed:1,hook:1},
+    groups:[
+      ['Ball',[['speed','Ball speed down the lane',.5,2,.05,pct],['hook','How much the ball curves',.25,2,.05,pct]]],
+    ]},
 };
 
 /* ---------- state ---------- */
 let ovOn=false, fbNew=0, fbSeen=0; try{fbSeen=+localStorage.getItem('dc.admin.fbSeen')||0}catch(e){}
 let ovQ=0;
-let db=null, game='gambit', doc=null, draft=null, unsub=[], scoresRows=[], epochs={gambit:'2026-11-09',dropface:'2026-11-09',slice:'2026-11-14',trace:'2026-11-23',spiral:'2026-11-24'};
+let db=null, game='gambit', doc=null, draft=null, unsub=[], scoresRows=[], epochs={gambit:'2026-11-09',dropface:'2026-11-09',slice:'2026-11-14',trace:'2026-11-23',spiral:'2026-11-24',frames:'2026-11-24'};
 const G=()=>GAMES[game];
 const clone=o=>JSON.parse(JSON.stringify(o));
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -544,7 +549,7 @@ function paintStatus(){const ul=$('status');ul.replaceChildren();const def=G().d
 const dayFrom=ep=>{const [y,m,d]=ep.split('-').map(Number);const n=new Date();return Math.max(1,Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-new Date(y,m-1,d))/864e5)+1)};
 function gambitDay(){return dayFrom(epochs.gambit)}
 function dropDay(){return dayFrom(epochs.dropface)}
-const numDay=()=>game==='slice'||game==='trace'||game==='spiral'?dayFrom(epochs[game]):gambitDay(); // Gambit, Slice, Trace and Spiral number their days; Dropface uses the date
+const numDay=()=>game==='slice'||game==='trace'||game==='spiral'||game==='frames'?dayFrom(epochs[game]):gambitDay(); // Gambit, Slice, Trace and Spiral number their days; Dropface uses the date
 function paintToday(){
   const isG=game!=='dropface', rows=scoresRows.filter(r=>isG?r.day===numDay():r.day===today()), key=isG?'dayBest':'dayScore';
   $('sDay').textContent='No. '+(isG?numDay():dropDay());
@@ -574,7 +579,7 @@ function load(){
 
 /* ---------- show or hide a game on the site ---------- */
 // New games start hidden until they're put on the site (they're then listed in site_config/home.live)
-const NEW_GAMES=['trace','spiral'];
+const NEW_GAMES=['trace','spiral','frames'];
 let hiddenList=[], rawHidden=[], liveList=[];
 function readHome(d){rawHidden=Array.isArray(d.hidden)?d.hidden:[];liveList=Array.isArray(d.live)?d.live:[];
   hiddenList=rawHidden.concat(NEW_GAMES.filter(g=>!liveList.includes(g)&&!rawHidden.includes(g)))}
@@ -631,7 +636,7 @@ $('resetBtn').onclick=async()=>{
     const isG=game!=='dropface', now=Date.now();
     for(const r of scoresRows){
       const ch=isG?{playedDay:0,playedAt:0}:{};
-      if(isG?r.day===numDay():r.day===today()) Object.assign(ch,isG?(game==='spiral'?{day:0,dayBest:0,dayBulls:0,daySpirals:0}:game==='slice'||game==='trace'?{day:0,dayBest:0,dayPerf:0,dayAvg:null}:{day:0,dayBest:0,dayTime:0}):{day:'',dayScore:0,dropsUsed:0,dropScores:[],dropLog:[],bonusDrops:0,dayAch:[]});
+      if(isG?r.day===numDay():r.day===today()) Object.assign(ch,isG?(game==='frames'?{day:0,dayBest:0,dayStrikes:0,daySpares:0}:game==='spiral'?{day:0,dayBest:0,dayBulls:0,daySpirals:0}:game==='slice'||game==='trace'?{day:0,dayBest:0,dayPerf:0,dayAvg:null}:{day:0,dayBest:0,dayTime:0}):{day:'',dayScore:0,dropsUsed:0,dropScores:[],dropLog:[],bonusDrops:0,dayAch:[]});
       if(Object.keys(ch).length)await db.doc(P().scores+'/'+r.id).update(ch);
     }
     const ref=db.doc(P().reset), sn=await ref.get();
@@ -661,7 +666,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidd
 
 /* ---------- beta feedback ---------- */
 let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
-let lbOn=false, lbGame='gambit', lbData={gambit:[],dropface:[],slice:[],trace:[],spiral:[]}, lbBlocked=[], lbSubs=null;
+let lbOn=false, lbGame='gambit', lbData={gambit:[],dropface:[],slice:[],trace:[],spiral:[],frames:[]}, lbBlocked=[], lbSubs=null;
 function setFb(){document.body.classList.toggle('ovmode',ovOn);$('ovCard').hidden=!ovOn;document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn;document.body.classList.toggle('bkmode',bkOn);$('bkCard').hidden=!bkOn}
 /* ---------- stats: daily counts from the track() function ---------- */
 let stOn=false, stRows=[], stGame='all', stT=0;
@@ -764,7 +769,7 @@ async function loadSt(){if(!window.DCSB)return;$('stNote').textContent='Loading�
   try{const r=await DCSB.rpc('stats_summary',{p_days:30});if(r.error)throw r.error;stRows=r.data||[];paintSt()}catch(e){$('stNote').textContent="Couldn't load stats: "+(e.message||e)}
   clearTimeout(stT);stT=setTimeout(()=>{if(stOn&&document.visibilityState==='visible')loadSt()},60000)}
 function paintSt(){queueOv();$('stNote').textContent='Last 30 days';
-  const ch=$('stGames');ch.replaceChildren();for(const [k,l] of [['all','All games'],['gambit','Gambit'],['dropface','Dropface'],['slice','Slice'],['trace','Trace'],['spiral','Spiral']]){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',String(k===stGame));b.onclick=()=>{stGame=k;paintSt()};ch.append(b)}
+  const ch=$('stGames');ch.replaceChildren();for(const [k,l] of [['all','All games'],['gambit','Gambit'],['dropface','Dropface'],['slice','Slice'],['trace','Trace'],['spiral','Spiral'],['frames','Frames']]){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',String(k===stGame));b.onclick=()=>{stGame=k;paintSt()};ch.append(b)}
   const F=['players','start_daily','finish_daily','start_practice','challenge_shared','challenge_opened'];
   const byDay={};for(const r of stRows){if(stGame!=='all'&&r.game!==stGame)continue;const d=byDay[r.day]||(byDay[r.day]={});for(const f of F)d[f]=(d[f]||0)+Number(r[f]||0)}
   const days=Object.keys(byDay).sort().reverse();
@@ -788,7 +793,9 @@ const LB={gambit:{name:'Gambit',col:'gambit_scores',today:()=>dayFrom(epochs.gam
   trace:{name:'Trace',col:'trace_scores',today:()=>dayFrom(epochs.trace),
     day:r=>r.dayBest,dayOk:(r,t)=>r.day===t&&r.dayBest>0,best:r=>r.best,meta:(r,d)=>{const p=d?r.dayPerf:r.bestPerf;return p?p+' Perfect':''},at:r=>r.updatedAt||r.playedAt},
   spiral:{name:'Spiral',col:'spiral_scores',today:()=>dayFrom(epochs.spiral),
-    day:r=>r.dayBest,dayOk:(r,t)=>r.day===t&&r.dayBest>0,best:r=>r.best,meta:(r,d)=>{const b=d?r.dayBulls:r.bestBulls,s=d?r.daySpirals:r.bestSpirals;return [b?b+' Bullseye'+(b===1?'':'s'):'',s?s+' Spiral'+(s===1?'':'s'):''].filter(Boolean).join(', ')},at:r=>r.updatedAt}};
+    day:r=>r.dayBest,dayOk:(r,t)=>r.day===t&&r.dayBest>0,best:r=>r.best,meta:(r,d)=>{const b=d?r.dayBulls:r.bestBulls,s=d?r.daySpirals:r.bestSpirals;return [b?b+' Bullseye'+(b===1?'':'s'):'',s?s+' Spiral'+(s===1?'':'s'):''].filter(Boolean).join(', ')},at:r=>r.updatedAt},
+  frames:{name:'Frames',col:'frames_scores',today:()=>dayFrom(epochs.frames),
+    day:r=>r.dayBest,dayOk:(r,t)=>r.day===t&&r.dayBest>0,best:r=>r.best,meta:(r,d)=>{const x=d?r.dayStrikes:r.bestStrikes,s=d?r.daySpares:r.bestSpares;return [x?x+' Strike'+(x===1?'':'s'):'',s?s+' Spare'+(s===1?'':'s'):''].filter(Boolean).join(', ')},at:r=>r.updatedAt}};
 function watchLb(){if(lbSubs||!db)return;lbSubs=[];$('lbNote').textContent='Loading…';
   for(const k of Object.keys(LB))lbSubs.push(db.collection(LB[k].col).orderBy('best','desc').limit(500).onSnapshot(r=>{lbData[k]=r.docs.map(d=>Object.assign({_id:d.id},d.data()));paintLb()},e=>{$('lbNote').textContent="Couldn't load: "+(e&&e.message||e)}));
   // each game's start day, so "today" and the No. match what players see (a reset moves it)
@@ -813,7 +820,7 @@ function paintLb(){queueOv();const g=LB[lbGame],rows=lbData[lbGame],t=g.today();
   for(const b of lbBlocked){const d=document.createElement('div');d.className='lbrow';
     d.append(Object.assign(document.createElement('span'),{className:'ini'+(b.ini?'':' none'),textContent:b.ini||'Nameless'}),Object.assign(document.createElement('span'),{className:'meta',textContent:[(LB[b.game]||{}).name,b.best?'best '+fmtN(b.best):'',b.at?'blocked '+when(b.at):''].filter(Boolean).join(' · ')}));
     const u=Object.assign(document.createElement('button'),{type:'button',className:'un',textContent:'Unblock'});u.style.marginLeft='auto';u.onclick=()=>lbUnblock(b);d.append(u);bl.append(d)}}
-const FB_RATE={1:'😕',2:'😐',3:'🙂',4:'😍'}, FB_GAME={site:['Dailycade','#c49bff'],gambit:['Gambit','var(--gambit)'],dropface:['Dropface','var(--dropface)'],slice:['Slice','var(--slice)'],trace:['Trace','var(--trace)'],spiral:['Spiral','var(--spiral)']};
+const FB_RATE={1:'😕',2:'😐',3:'🙂',4:'😍'}, FB_GAME={site:['Dailycade','#c49bff'],gambit:['Gambit','var(--gambit)'],dropface:['Dropface','var(--dropface)'],slice:['Slice','var(--slice)'],trace:['Trace','var(--trace)'],spiral:['Spiral','var(--spiral)'],frames:['Frames','var(--frames)']};
 function device(ua){ua=ua||'';const os=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)?'iPad':/Android/.test(ua)?'Android':/Mac OS X/.test(ua)?'Mac':/Windows/.test(ua)?'Windows':/Linux/.test(ua)?'Linux':'Other';
   const br=/CriOS|Chrome\//.test(ua)&&!/Edg/.test(ua)?'Chrome':/FxiOS|Firefox/.test(ua)?'Firefox':/Edg/.test(ua)?'Edge':/Safari/.test(ua)?'Safari':'Browser';return os+' · '+br}
 function watchFb(){if(fbUnsub||!db)return;$('fbNote').textContent='Loading…';
@@ -826,7 +833,7 @@ function paintFb(){queueOv();
   const cell=(l,v)=>{const d=document.createElement('div');d.append(Object.assign(document.createElement('span'),{textContent:l}),Object.assign(document.createElement('b'),{textContent:v}));return d};
   $('fbSum').replaceChildren(cell('Notes',notes.length),cell('Avg rating',rated.length?(FB_RATE[Math.round(rated.reduce((a,r)=>a+r.rating,0)/rated.length)]+' '+(rated.reduce((a,r)=>a+r.rating,0)/rated.length).toFixed(1)+' / 4'):'–'),
     cell('👍 after a game',up),cell('👎 after a game',down),cell('👍 rate',quick.length?Math.round(up/quick.length*100)+'%':'–'));
-  const F=[['all','All'],['notes','Notes only'],['site','Dailycade'],['gambit','Gambit'],['dropface','Dropface'],['slice','Slice'],['trace','Trace'],['spiral','Spiral']], fl=$('fbFilters');fl.replaceChildren();
+  const F=[['all','All'],['notes','Notes only'],['site','Dailycade'],['gambit','Gambit'],['dropface','Dropface'],['slice','Slice'],['trace','Trace'],['spiral','Spiral'],['frames','Frames']], fl=$('fbFilters');fl.replaceChildren();
   for(const [k,l] of F){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',String(fbFilter===k));b.onclick=()=>{fbFilter=k;paintFb()};fl.append(b)}
   const list=$('fbList');list.replaceChildren();
   const rows=fbRows.filter(r=>fbFilter==='all'||(fbFilter==='notes'?r.kind!=='quick':(r.game||'site')===fbFilter));
@@ -852,7 +859,7 @@ function paintFb(){queueOv();
 function queueOv(){if(!ovOn||ovQ)return;ovQ=requestAnimationFrame(()=>{ovQ=0;paintOv()})}
 function markFbSeen(){fbSeen=Date.now();try{localStorage.setItem('dc.admin.fbSeen',String(fbSeen))}catch(e){}if(fbNew){fbNew=0;paintTabs()}}
 function openOv(){watchFb();watchLb();loadSt();if(!usData)loadUsage();paintOv()}
-const GHEX={gambit:'#9de6a3',dropface:'#b48cff',slice:'#ff8ad8',trace:'#f2c14e',spiral:'#5fc9f3'};
+const GHEX={gambit:'#9de6a3',dropface:'#b48cff',slice:'#ff8ad8',trace:'#f2c14e',spiral:'#5fc9f3',frames:'#ff9f5a'};
 const nyDay=(d=new Date())=>d.toLocaleDateString('en-CA',{timeZone:'America/New_York'});
 const ago=ms=>{const m=Math.round((Date.now()-ms)/6e4);return m<1?'just now':m<60?m+'m ago':m<1440?Math.round(m/60)+'h ago':Math.round(m/1440)+'d ago'};
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}

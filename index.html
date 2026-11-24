@@ -134,6 +134,7 @@ h1{font-family:var(--sans);font-weight:700;font-size:clamp(64px,8.6vw,120px);lin
 #slice{--shape:#ff8ad8;--blob:63% 37% 54% 46% / 41% 57% 43% 59%;--tilt:-28deg}
 #trace{--shape:#f2c14e;--blob:45% 55% 38% 62% / 57% 44% 56% 43%;--tilt:18deg}
 #spiral{--shape:#5fc9f3;--blob:56% 44% 61% 39% / 42% 59% 41% 58%;--tilt:-20deg}
+#frames{--shape:#ff9f5a;--blob:47% 53% 58% 42% / 54% 41% 59% 46%;--tilt:12deg}
 /* a game whose handheld art isn't made yet: keep the same footprint, show just its colored shape */
 .cab.noart{height:457px}
 @media (max-width:940px){.cab.tv.noart{height:auto;width:300px;max-width:100%;display:grid;place-items:center;padding:12px 0}
@@ -421,9 +422,35 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
           </div>
         </div>
       </article>
+      <article class="panel" id="frames" data-base="2026-11-24" aria-label="Frames" hidden>
+        <div class="grid">
+          <div>
+            <h1>Frames</h1>
+            <p class="lede">One lane, ten pins. Knock them all down.</p>
+            <div class="ctas"><a class="btn" href="/frames">Play game
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></div>
+            <div class="daybox">
+            <p class="bhead"><svg class="dglobe" viewBox="0 0 24 24" fill="none" stroke="url(#dcGrad)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span>Today's daily challenge</span></p>
+            <div class="board">
+              <div class="cell"><span class="mono">Game</span><b data-k="day">–</b></div>
+              <div class="cell"><span class="mono">Top player</span><b data-k="player">–</b></div>
+              <div class="cell"><span class="mono">Top score</span><b data-k="top">–</b></div>
+            </div>
+            </div>
+          </div>
+          <div class="show">
+            <div class="float">
+              <div class="cab tv">
+                <img class="cabimg" src="handheld-frames.webp" alt="Frames on a green Dailycade handheld: a mint bowling ball rolls down a dark lane toward the pins" >
+              </div>
+            </div>
+            <div class="floor" aria-hidden="true"></div>
+          </div>
+        </div>
+      </article>
     </div>
     <div class="wrap railnav">
-      <div class="dots" id="dots"><button aria-label="Show Gambit" aria-current="true"></button><button aria-label="Show Dropface"></button><button aria-label="Show Slice"></button><button aria-label="Show Trace" hidden></button><button aria-label="Show Spiral" hidden></button></div>
+      <div class="dots" id="dots"><button aria-label="Show Gambit" aria-current="true"></button><button aria-label="Show Dropface"></button><button aria-label="Show Slice"></button><button aria-label="Show Trace" hidden></button><button aria-label="Show Spiral" hidden></button><button aria-label="Show Frames" hidden></button></div>
       <div class="arrows">
         <button id="prev" aria-label="Previous game"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg></button>
         <button id="next" aria-label="Next game"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
@@ -539,6 +566,10 @@ tick();setInterval(tick,30000);
   let pSub=null;const pWatch=()=>{try{if(pSub)pSub();pSub=db.collection('spiral_scores').where('day','==',pDay()).fields('ini','dayBest').onSnapshot(s=>set('spiral',s.docs.map(x=>x.data()),'dayBest'),()=>{})}catch(e){}};
   pWatch();
   try{db.doc('spiral_config/game').onSnapshot(sn=>{const e=sn.exists&&sn.data().epoch;if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)&&e!==pEpoch){pEpoch=e;$('spiral').dataset.base=e;tick();pWatch()}},()=>{})}catch(e){}
+  let fEpoch='2026-11-24';const fDay=()=>{const d=new Date(),[y,m,dd]=fEpoch.split('-').map(Number);return Math.max(1,Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(y,m-1,dd))/864e5)+1)};
+  let fSub=null;const fWatch=()=>{try{if(fSub)fSub();fSub=db.collection('frames_scores').where('day','==',fDay()).fields('ini','dayBest').onSnapshot(s=>set('frames',s.docs.map(x=>x.data()),'dayBest'),()=>{})}catch(e){}};
+  fWatch();
+  try{db.doc('frames_config/game').onSnapshot(sn=>{const e=sn.exists&&sn.data().epoch;if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)&&e!==fEpoch){fEpoch=e;$('frames').dataset.base=e;tick();fWatch()}},()=>{})}catch(e){}
   try{db.doc('dropface_config/game').onSnapshot(sn=>{const e=sn.exists&&sn.data().epoch;if(typeof e==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e)){$('dropface').dataset.base=e;tick()}},()=>{})}catch(e){}
 })();
 
@@ -564,7 +595,7 @@ countdown();setInterval(countdown,1000);
 
 /* games the admin has taken down are hidden (panel, dot and header link) until put back.
    New games start hidden too, until the admin puts them on the site (site_config/home.live) */
-const NEW_GAMES=['trace','spiral'];
+const NEW_GAMES=['trace','spiral','frames'];
 const effHidden=d=>{const h=Array.isArray(d.hidden)?d.hidden:[],live=Array.isArray(d.live)?d.live:[];return h.concat(NEW_GAMES.filter(g=>!live.includes(g)&&!h.includes(g)))};
 let lastHidden=null;
 function applyHidden(list){
@@ -585,7 +616,7 @@ try{applyBoards(localStorage.getItem('dc.boards')!=='0')}catch(e){}
   if(db)try{db.doc('site_config/home').onSnapshot(sn=>{const d=sn.exists?sn.data():{};try{localStorage.setItem('dc.live',JSON.stringify(Array.isArray(d.live)?d.live:[]))}catch(e){}applyHidden(effHidden(d));applyBoards(d.boards!==false)},()=>{})}catch(e){}})();
 
 /* Play game: switch the game on like a tube TV when it opens */
-document.querySelectorAll(['gambit','dropface','slice','trace','spiral'].map(g=>`a.btn[href="/${g}"], .games a[href="/${g}"]`).join(',')).forEach(a=>a.addEventListener('click',e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;
+document.querySelectorAll(['gambit','dropface','slice','trace','spiral','frames'].map(g=>`a.btn[href="/${g}"], .games a[href="/${g}"]`).join(',')).forEach(a=>a.addEventListener('click',e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;
   try{sessionStorage.setItem('dc.crton','1')}catch(err){}e.preventDefault();pressSound();setTimeout(()=>{location.href=a.getAttribute('href')},140)}));
 /* Play game: a soft TV power-switch click as the button goes down */
 function pressSound(){try{const ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state!=='running')ac.resume();const t=ac.currentTime+.005;

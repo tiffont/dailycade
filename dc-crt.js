@@ -26,7 +26,7 @@
     document.documentElement.appendChild(st);document.documentElement.appendChild(el);
     setTimeout(()=>{location.href=href},880);
   }
-  function muted(){try{return (/gambit/.test(location.pathname)&&localStorage.getItem('gambit.muted')==='1')||(/dropface/.test(location.pathname)&&localStorage.getItem('dropface-muted')==='1')||(/slice/.test(location.pathname)&&localStorage.getItem('slice.muted')==='1')||(/trace/.test(location.pathname)&&localStorage.getItem('trace.muted')==='1')||(/spiral/.test(location.pathname)&&localStorage.getItem('spiral1.muted')==='1')}catch(e){return false}}
+  function muted(){try{return (/gambit/.test(location.pathname)&&localStorage.getItem('gambit.muted')==='1')||(/dropface/.test(location.pathname)&&localStorage.getItem('dropface-muted')==='1')||(/slice/.test(location.pathname)&&localStorage.getItem('slice.muted')==='1')||(/trace/.test(location.pathname)&&localStorage.getItem('trace.muted')==='1')||(/spiral/.test(location.pathname)&&localStorage.getItem('spiral1.muted')==='1')||(/frames/.test(location.pathname)&&localStorage.getItem('frames1.muted')==='1')}catch(e){return false}}
   function offSound(){ // a soft click and the hum winding down
     if(muted())return;
     try{const ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state!=='running')ac.resume();
