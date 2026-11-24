@@ -14,6 +14,10 @@
     if(br){t.style.position='static';t.style.alignSelf='flex-start';t.style.display='inline-block';t.style.margin='0 0 12px';t.style.boxShadow='none';br.parentNode.insertBefore(t,br)}
     else{if(/^\/(index(\.html)?)?$/.test(location.pathname)){t.style.bottom='auto';t.style.right='auto';t.style.top='4px';t.style.left='6px'} // homepage: top-left
       document.body.appendChild(t)}};document.body?tag():document.addEventListener('DOMContentLoaded',tag);
+    // orange favicon and home-screen icon, so a staging tab or saved app can't be mistaken for the real one
+    const swap=(sel,attr,v)=>{let l=document.querySelector(sel);if(!l){l=document.createElement('link');l.rel=sel.match(/rel="([^"]+)"/)[1];document.head.appendChild(l)}l.setAttribute(attr,v)};
+    try{swap('link[rel="icon"]','href','/favicon-staging.svg');swap('link[rel="apple-touch-icon"]','href','/apple-touch-icon-staging.png');swap('link[rel="manifest"]','href','/site-staging.webmanifest');
+      const tt=document.querySelector('meta[name="apple-mobile-web-app-title"]');if(tt)tt.content='DC Staging'}catch(e){}
     try{const m=document.createElement('meta');m.name='robots';m.content='noindex,nofollow';document.head.appendChild(m)}catch(e){}}
   const SB_URL='https://qtcxlnchxztinnzbuwmd.supabase.co';
   const SB_KEY='sb_publishable_Mh7eThLTfeBTyY_8lRWv3w_OLI7KriP'; // publishable key: safe in the page, the database rules do the guarding
