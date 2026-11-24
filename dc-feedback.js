@@ -105,7 +105,7 @@ button.dcfblink.dcfblink:hover{opacity:1}`;
       go.disabled=true;go.textContent='Sending…';note.classList.remove('fberr');
       try{
         await save(Object.assign(context(o.game,o.ctx),{kind:'note',rating:rating?+rating:null,text:tx.value.trim().slice(0,2000),email:em.value.trim().slice(0,200)}));
-        if(window.DCTrack)DCTrack(['gambit','dropface','slice'].includes(o.game)?o.game:'site','feedback_sent');
+        if(window.DCTrack)DCTrack(['gambit','dropface','slice','trace'].includes(o.game)?o.game:'site','feedback_sent');
         f.innerHTML=`<div class="fbdone"><b aria-hidden="true">💌</b><h3>Thanks, got it!</h3><p>Every note helps shape Dailycade while it's in beta.</p></div><button class="fbgo" type="button">Done</button>`;
         f.querySelector('.fbgo').onclick=close;f.querySelector('.fbgo').focus();
       }catch(err){go.disabled=false;go.textContent='Send feedback';note.textContent="Couldn't send that. Check your connection and try again.";note.classList.add('fberr')}

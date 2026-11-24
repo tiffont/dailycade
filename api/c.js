@@ -6,6 +6,7 @@ const GAMES = {
   gambit:   { name: 'Gambit',   page: '/gambit',   tag: 'Swipe, curve, stack power-ups. Survive the fall.' },
   dropface: { name: 'Dropface', page: '/dropface', tag: 'Ten boards, one ball. Call where it lands.' },
   slice:    { name: 'Slice',    page: '/slice',    tag: 'Things fly at you. Cut them perfectly in half.' },
+  trace:    { name: 'Trace',    page: '/trace',    tag: 'Ten shapes made of cubes. Stay on the line, grow your pile.' },
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
