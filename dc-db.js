@@ -9,7 +9,7 @@
   const P=STG?'stg_':'';
   window.DC_STAGING=STG;
   if(STG){const tag=()=>{if(document.getElementById('dcStg'))return;const t=document.createElement('div');t.id='dcStg';t.textContent='Staging';t.setAttribute('aria-hidden','true');
-    t.style.cssText='position:fixed;left:8px;bottom:8px;z-index:2147483647;padding:4px 9px;border-radius:999px;background:#ff8a1f;color:#1a0d02;font:800 11px/1.2 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.4)';
+    t.style.cssText='position:fixed;right:8px;bottom:8px;z-index:2147483647;padding:4px 9px;border-radius:999px;background:#ff8a1f;color:#1a0d02;font:800 11px/1.2 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.4)';
     document.body.appendChild(t)};document.body?tag():document.addEventListener('DOMContentLoaded',tag);
     try{const m=document.createElement('meta');m.name='robots';m.content='noindex,nofollow';document.head.appendChild(m)}catch(e){}}
   const SB_URL='https://qtcxlnchxztinnzbuwmd.supabase.co';
