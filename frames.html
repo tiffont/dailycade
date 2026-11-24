@@ -1212,8 +1212,8 @@ const Lane = (() => {
   function newBall(x0, power, hook, y0 = -0.45) {
     // SPEED: 10% quicker down the lane; the hook grows with the square so the ball still follows the same line
     // the slowest throw is unchanged; the hardest is 20% faster than it was (8.8 -> 10.56 before SPEED)
-    const SPEED = 1.1 * (typeof TF !== 'undefined' ? TF.speed : 1), v0 = 4.2 + 6.36 * power, v = v0 * SPEED, th = -hook * ANGLE;
-    return { x: x0, y: y0, vx: v * Math.sin(th), vy: v * Math.cos(th), hook: hook * HOOK * (typeof TF !== 'undefined' ? TF.hook : 1) * (v0 / 7.4) ** 1.6 * SPEED * SPEED,
+    const SPEED = 1.1 * ((window.FRAMES_TF || {}).speed || 1), v0 = 4.2 + 6.36 * power, v = v0 * SPEED, th = -hook * ANGLE;
+    return { x: x0, y: y0, vx: v * Math.sin(th), vy: v * Math.cos(th), hook: hook * HOOK * ((window.FRAMES_TF || {}).hook || 1) * (v0 / 7.4) ** 1.6 * SPEED * SPEED,
       gutter: false, pit: false, roll: 0, spin: 0 };
   }
   function newPins(mask) {
@@ -1767,7 +1767,7 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmtN=n=>Math.round(n).toLocaleString('en-US');
 const pad2=n=>String(n).padStart(2,'0');
 const K='frames1.'; // local storage prefix (the site's own; the prototype used frames3.)
-const TF_DEF={speed:1,hook:1};const TF=Object.assign({},TF_DEF);let TF_PENDING=null;
+const TF_DEF={speed:1,hook:1};const TF=window.FRAMES_TF=Object.assign({},TF_DEF);let TF_PENDING=null; // TF is shared with the lane physics, which runs in its own script
 const PREVIEW_VALS=window.DCTune?DCTune.preview('frames'):null,PREVIEW=!!PREVIEW_VALS; // admin test mode
 function applyTF(v){Object.assign(TF,TF_DEF);for(const k in TF_DEF){const n=Number(v&&v[k]);if(isFinite(n)&&n>0)TF[k]=Math.max(.25,Math.min(3,n))}TF_PENDING=null}
 if(PREVIEW)applyTF(PREVIEW_VALS);
