@@ -1070,7 +1070,7 @@ body.cele-on .dock{visibility:hidden}
       <button class="icon" id="lbBtn" aria-label="Leaderboard">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 3.6M16 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 13v4M9 20h6M10 17h4"/></svg>
       </button>
-      <a class="icon" id="siteBtn" href="https://dailycadegames.com/" target="_blank" rel="noopener" aria-label="Dailycade"><svg viewBox="0 0 53 69" aria-hidden="true" fill="currentColor"><path d="M4.03865 58.5444L28.7422 58.4145C32.5052 58.5538 35.6995 56.1602 36.9927 53.1536C37.5344 51.894 37.6625 50.7215 37.359 49.7708C37.3251 49.1516 37.1874 48.5274 36.9324 47.9231L32.7664 38.051L40.2475 38.07C50.5051 38.3367 55.1171 45.5211 51.5191 53.6912C48.1059 61.8232 37.5355 68.4919 27.3734 68.0026L0 67.9357L4.03865 58.5444Z"/><path d="M24.7505 47.5023L8.75173 47.5868L12.8741 38.0031L20.749 38.0218L24.7505 47.5023Z"/><path d="M16.5587 0.738192C8.75457 3.285 4.48766 11.6712 7.02349 19.4788C9.55916 27.2863 17.9392 31.5651 25.7505 29.0404C33.5774 26.5107 37.8665 18.1101 35.3257 10.2869C32.785 2.4635 24.3783 -1.8137 16.5587 0.738192Z"/></svg></a>
+      <button class="icon" id="siteBtn" type="button" aria-label="Back to Dailycade"><svg viewBox="0 0 53 69" aria-hidden="true" fill="currentColor"><path d="M4.03865 58.5444L28.7422 58.4145C32.5052 58.5538 35.6995 56.1602 36.9927 53.1536C37.5344 51.894 37.6625 50.7215 37.359 49.7708C37.3251 49.1516 37.1874 48.5274 36.9324 47.9231L32.7664 38.051L40.2475 38.07C50.5051 38.3367 55.1171 45.5211 51.5191 53.6912C48.1059 61.8232 37.5355 68.4919 27.3734 68.0026L0 67.9357L4.03865 58.5444Z"/><path d="M24.7505 47.5023L8.75173 47.5868L12.8741 38.0031L20.749 38.0218L24.7505 47.5023Z"/><path d="M16.5587 0.738192C8.75457 3.285 4.48766 11.6712 7.02349 19.4788C9.55916 27.2863 17.9392 31.5651 25.7505 29.0404C33.5774 26.5107 37.8665 18.1101 35.3257 10.2869C32.785 2.4635 24.3783 -1.8137 16.5587 0.738192Z"/></svg></button>
       <button class="icon" id="helpBtn" aria-label="How to play">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.7"/><path d="M12 17h.01"/></svg>
       </button>
@@ -2521,7 +2521,7 @@ $('#resumeBtn').addEventListener('click',()=>{SFX.click();resume()});
 $('#exitBtn').addEventListener('click',()=>{SFX.click();quit()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')pause(true)});
 addEventListener('pagehide',()=>pause(true));
-$('#siteBtn').addEventListener('click',()=>{unlockAudio();SFX.click()});
+$('#siteBtn').addEventListener('click',()=>{unlockAudio();SFX.click();if(window.DCCrt)DCCrt.off('/');else location.href='/'}); // back to the Dailycade homepage, same tab (like the other games)
 $('#sumIcon').addEventListener('click',()=>{unlockAudio();SFX.click();const m=dailySumNow();if(!m)return;fillOver(m);try{$('#over').showModal()}catch(e){}});
 const openHelp=()=>{try{$('#help').showModal()}catch(e){}};
 $('#helpBtn').addEventListener('click',()=>{unlockAudio();SFX.click();openHelp()});
