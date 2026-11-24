@@ -7,6 +7,7 @@ const GAMES = {
   dropface: { name: 'Dropface', page: '/dropface', tag: 'Ten boards, one ball. Call where it lands.' },
   slice:    { name: 'Slice',    page: '/slice',    tag: 'Things fly at you. Cut them perfectly in half.' },
   trace:    { name: 'Trace',    page: '/trace',    tag: 'Ten shapes made of cubes. Stay on the line, grow your pile.' },
+  spiral:   { name: 'Spiral',   page: '/spiral',   tag: 'Ten throws, one target. Throw the perfect spiral.' },
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
