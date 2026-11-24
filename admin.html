@@ -345,7 +345,7 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
   <section class="card" id="bkCard" aria-labelledby="bkH" hidden>
     <h2 id="bkH">Backups <span class="note" id="bkNote"></span></h2>
     <p class="hint" style="margin:0 0 14px" id="bkHint"></p>
-    <div class="bkbar"><button class="btn small" id="bkNow" type="button">Back up now</button></div>
+    <div class="bkbar"><button class="btn small" id="bkNow" type="button">Back up now</button><button class="btn ghost small" id="bkFromLive" type="button" hidden>Copy live data to staging</button></div>
     <div class="bklist" id="bkList"></div>
   </section>
   <section class="card" id="usCard" aria-labelledby="usH" hidden>
@@ -684,6 +684,12 @@ function paintBk(){const list=$('bkList');list.replaceChildren();
     const dl=document.createElement('button');dl.type='button';dl.className='btn ghost small';dl.textContent='Download';dl.onclick=()=>bkDownload(b);
     const rs=document.createElement('button');rs.type='button';rs.className='btn danger small';rs.textContent='Restore';rs.onclick=()=>bkRestore(b);
     a.append(dl,rs);row.append(t,k,a);list.append(row)}}
+$('bkFromLive').hidden=!window.DC_STAGING; // staging only: refresh staging with a fresh copy of live's data
+$('bkFromLive').onclick=async()=>{
+  if(!await ask('Copy live data to staging?',"Staging's scores, leaderboards, feedback and settings are replaced with a copy of the live site's, as they are right now. The live site isn't changed. Staging's current data is saved as a backup first, so you can undo this.",'Copy live data'))return;
+  const btn=$('bkFromLive');btn.disabled=true;msg('Copying…');
+  try{const r=await DCSB.rpc('copy_live_to_staging');if(r.error)throw r.error;msg('Copied '+fmtN(r.data.copied)+' records from live. Staging now matches the live site.','ok');await loadBk()}
+  catch(e){msg("Couldn't copy: "+(e.message||e),'err')}finally{btn.disabled=false}};
 $('bkNow').onclick=async()=>{const btn=$('bkNow');btn.disabled=true;
   try{const r=await DCSB.rpc('backup_now',{p_scope:BK_SCOPE(),p_kind:'manual',p_note:null});if(r.error)throw r.error;msg('Backup saved.','ok');await loadBk()}
   catch(e){msg("Couldn't back up: "+(e.message||e),'err')}finally{btn.disabled=false}};
