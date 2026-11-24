@@ -88,6 +88,17 @@ body.stmode main>section:not(#stCard){display:none!important}
 body.stmode .dock{display:none!important}
 body.usmode main>section:not(#usCard){display:none!important}
 body.usmode .dock{display:none!important}
+body.bkmode main>section:not(#bkCard){display:none!important}
+body.bkmode .dock{display:none!important}
+.bklist{display:flex;flex-direction:column;margin-top:14px;border-top:1px solid var(--line)}
+.bkrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.bkrow .bkt{flex:1;min-width:0}
+.bkrow .bkt b{display:block;font-weight:600}
+.bkrow .bkt small{display:block;opacity:.65;font-size:13px;margin-top:2px}
+.bkrow .bkk{font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.06);white-space:nowrap}
+html[data-theme="dark"] .bkrow .bkk{background:rgba(255,255,255,.08)}
+.bkrow .bka{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.bkbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .usvc{background:#fff;border-radius:14px;padding:16px;margin-top:12px}
 .usvc .uh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .usvc .uh b{font-size:16px}.usvc .uh span.plan{color:var(--muted);font-size:13px}
@@ -329,6 +340,12 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
     <h2 id="tuneH">Tuning <span class="note">Changes stay a draft until you publish</span></h2>
     <div id="knobs"></div>
   </section>
+  <section class="card" id="bkCard" aria-labelledby="bkH" hidden>
+    <h2 id="bkH">Backups <span class="note" id="bkNote"></span></h2>
+    <p class="hint" style="margin:0 0 14px" id="bkHint"></p>
+    <div class="bkbar"><button class="btn small" id="bkNow" type="button">Back up now</button></div>
+    <div class="bklist" id="bkList"></div>
+  </section>
   <section class="card" id="usCard" aria-labelledby="usH" hidden>
     <h2 id="usH">Usage <span class="note" id="usNote"></span></h2>
     <p class="hint" style="margin:0 0 4px">How close each service is to its free plan's limits. Bars fill as usage grows: amber at 70%, red at 90% means it's time to subscribe. Some numbers only the service's own dashboard can show; those rows link there.</p>
@@ -451,11 +468,12 @@ const IC={
   chat:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>',
   trophy:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg>',
   chart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  safe:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.4"/></svg>',
   gauge:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 17a9 9 0 1 1 17 0"/><path d="M12 13l4-4"/><circle cx="12" cy="13" r="1.2"/></svg>'};
 const PAGES=[['overview','Overview',IC.grid,'How Dailycade is doing today.'],['feedback','Feedback',IC.chat,'Notes and reactions from players.'],
   ['leaderboards','Leaderboards',IC.trophy,'Review scores and remove anything that looks wrong.'],['stats','Activity',IC.chart,'Plays counted by Dailycade, by day (New York time).'],
-  ['usage','Usage',IC.gauge,'How close each service is to its free plan limits.']];
-const curPage=()=>ovOn?'overview':fbOn?'feedback':lbOn?'leaderboards':stOn?'stats':usOn?'usage':game;
+  ['usage','Usage',IC.gauge,'How close each service is to its free plan limits.'],['backups','Backups',IC.safe,'Copies of your scores, feedback and settings, and how to put one back.']];
+const curPage=()=>ovOn?'overview':fbOn?'feedback':lbOn?'leaderboards':stOn?'stats':usOn?'usage':bkOn?'backups':game;
 function paintTabs(){const nav=$('nav');if(!nav)return;nav.replaceChildren();const cur=curPage();
   const item=(k,label,icon,extra)=>{const b=document.createElement('button');b.type='button';b.className='nv';b.setAttribute('aria-current',String(k===cur));b.innerHTML=icon+'<span>'+label+'</span>'+(extra||'');b.onclick=()=>goPage(k);return b};
   for(const [k,l,ic] of PAGES){let ex='';if(k==='feedback'&&fbNew)ex='<em class="badge">'+fbNew+'</em>';if(k==='usage'&&usLevel)ex='<em class="dot'+(usLevel>=2?' bad':'')+'"></em>';nav.append(item(k,l,ic,ex))}
@@ -465,11 +483,11 @@ function paintTabs(){const nav=$('nav');if(!nav)return;nav.replaceChildren();con
   $('pageS').textContent=pg?pg[3]:'Change how '+GAMES[cur].name+' plays. Publish right away or schedule it for a day. Only you can publish.';
   document.title=(pg?pg[1]:GAMES[cur].name)+' · Admin · Dailycade';
   const on=nav.querySelector('[aria-current="true"]');if(on&&nav.scrollWidth>nav.clientWidth)nav.scrollTo({left:Math.max(0,on.offsetLeft-20),behavior:'smooth'})}
-function goPage(k){ovOn=k==='overview';fbOn=k==='feedback';lbOn=k==='leaderboards';stOn=k==='stats';usOn=k==='usage';
+function goPage(k){ovOn=k==='overview';fbOn=k==='feedback';lbOn=k==='leaderboards';stOn=k==='stats';usOn=k==='usage';bkOn=k==='backups';
   try{localStorage.setItem('dc.admin.tab',k)}catch(e){}
   setFb();
   if(GAMES[k]&&k!==game){game=k;load()}else paintTabs();
-  if(ovOn)openOv();if(fbOn){watchFb();markFbSeen()}if(lbOn)watchLb();if(stOn)loadSt();if(usOn)loadUsage();
+  if(ovOn)openOv();if(fbOn){watchFb();markFbSeen()}if(lbOn)watchLb();if(stOn)loadSt();if(usOn)loadUsage();if(bkOn)loadBk();
   scrollTo(0,0)}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-go]');if(t)goPage(t.dataset.go)});
 
@@ -601,6 +619,7 @@ $('resetBtn').onclick=async()=>{
   const g=G().name;
   if(!await ask("Reset today's "+g+' daily?',"Everyone can play today's game again, and today's scores come off the board. All-time bests stay.",'Reset'))return;
   try{
+    await safetyCopy("Before resetting today's "+g+' daily');
     const isG=game!=='dropface', now=Date.now();
     for(const r of scoresRows){
       const ch=isG?{playedDay:0,playedAt:0}:{};
@@ -610,7 +629,7 @@ $('resetBtn').onclick=async()=>{
     const ref=db.doc(P().reset), sn=await ref.get();
     await ref.set(Object.assign({},sn.exists?sn.data():{},{at:now}));
     msg(g+"'s daily is reset. Players get a fresh game the next time they open it.",'ok');
-  }catch(e){msg("Couldn't reset. Only the site owner can do this.",'err')}
+  }catch(e){msg(/safety copy/.test(e.message||'')?e.message:"Couldn't reset. Only the site owner can do this.",'err')}
 };
 $('wipeBtn').onclick=async()=>{
   if(!db){msg("Not connected to the database. Reload the page and sign in again.",'err');return}
@@ -623,20 +642,59 @@ $('wipeBtn').onclick=async()=>{
   $('wipe').hidden=true;if(!ok)return;
   msg('Resetting '+g+'…');
   try{
+    await safetyCopy('Before resetting all '+g+' data');
     for(const r of scoresRows)await db.doc(P().scores+'/'+r.id).delete();
     const ref=db.doc(P().reset), sn=await ref.get();
     await ref.set(Object.assign({},sn.exists?sn.data():{},{epoch:today(),at:Date.now(),wipedAt:Date.now()}));
     msg(g+' is reset. Today is '+g+' No. 1 and every leaderboard is empty.','ok');
-  }catch(e){msg("Couldn't finish the reset. Only the site owner can do this. Try again to clear what's left.",'err')}
+  }catch(e){msg(/safety copy/.test(e.message||'')?e.message:"Couldn't finish the reset. Only the site owner can do this. Try again to clear what's left.",'err')}
 };
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidden)$('mNo').click();else if(!$('wipe').hidden)$('wNo').click()}});
 
 /* ---------- beta feedback ---------- */
 let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
 let lbOn=false, lbGame='gambit', lbData={gambit:[],dropface:[],slice:[],trace:[]}, lbBlocked=[], lbSubs=null;
-function setFb(){document.body.classList.toggle('ovmode',ovOn);$('ovCard').hidden=!ovOn;document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn}
+function setFb(){document.body.classList.toggle('ovmode',ovOn);$('ovCard').hidden=!ovOn;document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn;document.body.classList.toggle('bkmode',bkOn);$('bkCard').hidden=!bkOn}
 /* ---------- stats: daily counts from the track() function ---------- */
 let stOn=false, stRows=[], stGame='all', stT=0;
+/* ---------- backups: copies kept in the database (see the backup_* functions in Supabase) ---------- */
+let bkOn=false, bkRows=[];
+const BK_SCOPE=()=>window.DC_STAGING?'staging':'live';
+const BK_KIND={nightly:'Nightly',manual:'Made by you',before_reset:'Before a change',before_restore:'Before a restore'};
+const bkWhen=t=>new Date(t).toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+// a safety copy before anything that deletes data; if it can't be made, nothing is deleted
+async function safetyCopy(note){if(!window.DCSB)throw new Error("Couldn't save a safety copy first, so nothing was changed.");
+  const r=await DCSB.rpc('backup_now',{p_scope:BK_SCOPE(),p_kind:'before_reset',p_note:note});
+  if(r.error)throw new Error("Couldn't save a safety copy first, so nothing was changed. "+(r.error.message||''));return r.data}
+async function loadBk(){if(!window.DCSB)return;
+  $('bkHint').textContent=(window.DC_STAGING?"Staging's data. ":'')+'Each copy holds every score, leaderboard, feedback note and setting'+(window.DC_STAGING?'':', plus Activity counts')+'. One is made every night and kept 30 days. One is also saved before any reset, removal or restore, and kept 90 days. Restoring saves what\'s there now first, so a restore can be undone too.';
+  if(bkOn)$('bkNote').textContent='Loading…';
+  try{const r=await DCSB.rpc('backup_list',{p_scope:BK_SCOPE()});if(r.error)throw r.error;bkRows=r.data||[];paintBk()}
+  catch(e){if(bkOn)$('bkNote').textContent="Couldn't load backups: "+(e.message||e)}}
+function paintBk(){const list=$('bkList');list.replaceChildren();
+  $('bkNote').textContent=bkRows.length?bkRows.length+' saved':'';
+  if(!bkRows.length){const p=document.createElement('p');p.className='hint';p.style.margin='14px 0 0';p.textContent='No copies yet. The first nightly one is made tonight, or make one now.';list.append(p);return}
+  for(const b of bkRows){const row=document.createElement('div');row.className='bkrow';
+    const t=document.createElement('div');t.className='bkt';const bb=document.createElement('b');bb.textContent=bkWhen(b.taken_at);const sm=document.createElement('small');
+    sm.textContent=fmtN(b.n_docs)+' records · '+(b.bytes<1024*1024?Math.max(1,Math.round(b.bytes/1024))+' KB':(b.bytes/1024/1024).toFixed(1)+' MB')+(b.note?' · '+b.note:'');t.append(bb,sm);
+    const k=document.createElement('span');k.className='bkk';k.textContent=BK_KIND[b.kind]||b.kind;
+    const a=document.createElement('div');a.className='bka';
+    const dl=document.createElement('button');dl.type='button';dl.className='btn ghost small';dl.textContent='Download';dl.onclick=()=>bkDownload(b);
+    const rs=document.createElement('button');rs.type='button';rs.className='btn danger small';rs.textContent='Restore';rs.onclick=()=>bkRestore(b);
+    a.append(dl,rs);row.append(t,k,a);list.append(row)}}
+$('bkNow').onclick=async()=>{const btn=$('bkNow');btn.disabled=true;
+  try{const r=await DCSB.rpc('backup_now',{p_scope:BK_SCOPE(),p_kind:'manual',p_note:null});if(r.error)throw r.error;msg('Backup saved.','ok');await loadBk()}
+  catch(e){msg("Couldn't back up: "+(e.message||e),'err')}finally{btn.disabled=false}};
+async function bkDownload(b){try{const r=await DCSB.rpc('backup_get',{p_id:b.id});if(r.error)throw r.error;
+  const blob=new Blob([JSON.stringify(r.data,null,1)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=u;a.download='dailycade-'+BK_SCOPE()+'-backup-'+new Date(b.taken_at).toISOString().slice(0,16).replace(/[:T]/g,'-')+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}
+  catch(e){msg("Couldn't download: "+(e.message||e),'err')}}
+async function bkRestore(b){
+  if(!await ask('Restore the copy from '+bkWhen(b.taken_at)+'?','Every score, leaderboard, feedback note and setting'+(window.DC_STAGING?' on staging':'')+' goes back to how it was then, and anything newer is replaced. What\'s there now is saved first, so you can undo this.','Restore'))return;
+  msg('Restoring…');
+  try{const r=await DCSB.rpc('backup_restore',{p_id:b.id});if(r.error)throw r.error;msg('Restored '+fmtN(r.data.restored)+' records. What was there before is saved at the top of the list.','ok');await loadBk()}
+  catch(e){msg("Couldn't restore: "+(e.message||e),'err')}}
+
 /* ---------- usage: how close each service is to its free plan ---------- */
 let usOn=false, usLevel=0, usData=null, usT=0;
 function openUsage(){goPage('usage')}
@@ -722,7 +780,7 @@ function watchLb(){if(lbSubs||!db)return;lbSubs=[];$('lbNote').textContent='Load
   lbSubs.push(db.collection('blocked').onSnapshot(r=>{lbBlocked=r.docs.map(d=>Object.assign({_id:d.id},d.data()));paintLb()},()=>{}));}
 async function lbRemove(k,r){const who=r.ini||'Nameless';
   if(!await ask('Remove '+who+"'s score?","This deletes their "+LB[k].name+' score and blocks this player from posting scores again. You can unblock them below.','Remove and block'))return;
-  try{await db.doc('blocked/'+r._id).set({ini:r.ini||'',game:k,best:LB[k].best(r)||0,day:LB[k].day(r)||0,at:Date.now()});await db.doc(LB[k].col+'/'+r._id).delete();msg('Removed '+who+' and blocked them.','ok')}
+  try{await safetyCopy('Before removing '+who+' from '+LB[k].name);await db.doc('blocked/'+r._id).set({ini:r.ini||'',game:k,best:LB[k].best(r)||0,day:LB[k].day(r)||0,at:Date.now()});await db.doc(LB[k].col+'/'+r._id).delete();msg('Removed '+who+' and blocked them.','ok')}
   catch(e){msg("Couldn't remove: "+(e.message||e),'err')}}
 async function lbUnblock(b){try{await db.doc('blocked/'+b._id).delete();msg('Unblocked '+(b.ini||'player')+'.','ok')}catch(e){msg("Couldn't unblock: "+(e.message||e),'err')}}
 function paintLb(){queueOv();const g=LB[lbGame],rows=lbData[lbGame],t=g.today();$('lbNote').textContent=rows.length+' players';
@@ -841,7 +899,7 @@ async function toggleGame(g){if(!db){msg("Not connected to the database. Reload 
   if(!await ask(off?'Put '+n+' back?':'Hide '+n+'?',off?n+' comes back on the homepage and is playable again.':n+' comes off the homepage and its page shows a "taking a break" notice. Scores, settings and the daily count are kept.',off?'Put it back':'Hide it'))return;
   try{await saveHome(g,off,boardsOn);msg(n+(off?' is back on the site.':' is hidden from the site.'),'ok')}
   catch(e){msg("Couldn't save. Only the site owner can do this.",'err')}}
-try{const t=localStorage.getItem('dc.admin.tab')||'overview';if(t==='overview')ovOn=true;if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true;if(t==='usage')usOn=true}catch(e){ovOn=true}
+try{const t=localStorage.getItem('dc.admin.tab')||'overview';if(t==='overview')ovOn=true;if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true;if(t==='usage')usOn=true;if(t==='backups')bkOn=true}catch(e){ovOn=true}
 setFb();
 try{const t=localStorage.getItem('dc.admin.tab');if(GAMES[t])game=t}catch(e){}
 load();
