@@ -1159,35 +1159,16 @@ const SHAPES={
   gear:()=>curve(t=>{const a=-Math.PI/2+t*TAU,k=Math.max(-1,Math.min(1,Math.cos(8*a)*3)),r=.64+.15*(k+1);return[Math.cos(a)*r,Math.sin(a)*r]},400),
   spiro:()=>curve(t=>{const a=t*4*Math.PI;return[(3*Math.cos(a)+3*Math.cos(1.5*a))/6.1,(3*Math.sin(a)-3*Math.sin(1.5*a))/6.1]},360),
   pentagram:()=>{const v=regPts(5,.95).map(([x,y])=>[x,y+.06]);return closeP([v[0],v[2],v[4],v[1],v[3]])},
-  // --- sharp ones: corners and spikes, for the late rungs alongside the swirls ---
-  ekg:()=>[[-.95,.1],[-.55,.1],[-.42,-.12],[-.3,.1],[-.16,.1],[-.05,-.88],[.09,.72],[.22,.1],[.46,.1],[.58,-.22],[.7,.1],[.95,.1]],
-  skyline:()=>centerP([[-.95,.7],[-.95,-.1],[-.7,-.1],[-.7,-.5],[-.45,-.5],[-.45,.05],[-.25,.05],[-.25,-.85],[0,-.85],[0,-.3],[.2,-.3],[.2,-.6],[.45,-.6],[.45,0],[.7,0],[.7,-.35],[.95,-.35],[.95,.7]]),
-  mountains:()=>[[-.95,.55],[-.72,-.1],[-.56,.22],[-.3,-.78],[-.1,.08],[.1,-.42],[.3,.3],[.55,-.88],[.76,0],[.95,.55]],
-  saw:()=>[[-.9,.4],[-.6,-.4],[-.6,.4],[-.3,-.4],[-.3,.4],[0,-.4],[0,.4],[.3,-.4],[.3,.4],[.6,-.4],[.6,.4],[.9,-.4]],
-  castle:()=>closeP([[-.85,.75],[-.85,-.55],[-.6,-.55],[-.6,-.3],[-.35,-.3],[-.35,-.55],[-.12,-.55],[-.12,-.85],[.12,-.85],[.12,-.55],[.35,-.55],[.35,-.3],[.6,-.3],[.6,-.55],[.85,-.55],[.85,.75],[.2,.75],[.2,.3],[-.2,.3],[-.2,.75]]),
-  jagstar:()=>{const R=[.95,.42,.7,.3,.9,.48,.62,.28,.98,.4,.75,.34];return closeP(R.map((r,i)=>{const a=-Math.PI/2+i*TAU/R.length;return[Math.cos(a)*r,Math.sin(a)*r]}))},
-  lightning:()=>[[-.25,-.95],[.35,-.48],[-.12,-.36],[.45,.08],[-.06,.2],[.4,.95]],
-  maze:()=>[[-.9,-.9],[.9,-.9],[.9,.9],[-.6,.9],[-.6,-.55],[.55,-.55],[.55,.55],[-.25,.55],[-.25,-.2],[.2,-.2],[.2,.2]],
-  // --- random ones: made fresh from the day's seed, so no two days match ---
-  jumble:sd=>{const g=mulberry(sd||1),p=[];let tries=0;while(p.length<8&&tries++<400){const q=[g()*2-1,g()*2-1],l=p[p.length-1];if(!l||Math.hypot(q[0]-l[0],q[1]-l[1])>.6)p.push(q)}return centerP(p)},
-  squiggle:sd=>{const g=mulberry(sd||2),c=[];let tries=0;while(c.length<7&&tries++<400){const q=[g()*2-1,g()*2-1],l=c[c.length-1];if(!l||Math.hypot(q[0]-l[0],q[1]-l[1])>.55)c.push(q)}
-    const P=[c[0]].concat(c,[c[c.length-1]]),out=[];for(let i=1;i<P.length-2;i++)for(let k=0;k<16;k++){const t=k/16,a=P[i-1],b=P[i],e=P[i+1],f=P[i+2];
-      out.push([0,1].map(j=>.5*(2*b[j]+(-a[j]+e[j])*t+(2*a[j]-5*b[j]+4*e[j]-f[j])*t*t+(-a[j]+3*b[j]-3*e[j]+f[j])*t*t*t)))}out.push(c[c.length-1]);return centerP(out)},
-  shard:sd=>{const g=mulberry(sd||3),n=7+Math.floor(g()*3),a0=g()*TAU;return closeP(centerP(Array.from({length:n},(_,i)=>{const a=a0+(i+.2+g()*.6)*TAU/n,r=.4+g()*.58;return[Math.cos(a)*r,Math.sin(a)*r]})))},
 };
 const NAMES={line:'Line',arc:'Arc',vee:'Vee',zig:'Zigzag',scurve:'S-curve',square:'Square',triangle:'Triangle',diamond:'Diamond',circle:'Circle',house:'House',moon:'Moon',
   star:'Star',heart:'Heart',wave:'Wave',bolt:'Bolt',cloud:'Cloud',spiral:'Spiral',infinity:'Infinity',rose:'Rose',trefoil:'Knot',fish:'Fish',star7:'Big star',flower:'Flower',loop:'Loop',
   hook:'Hook',check:'Check',swoop:'Swoop',stairs:'Stairs',em:'M',cee:'C',uturn:'U-turn',pentagon:'Pentagon',hexagon:'Hexagon',arrow:'Arrow',drop:'Drop',shield:'Shield',cross:'Cross',
-  leaf:'Leaf',crown:'Crown',tree:'Tree',boat:'Boat',coil:'Coil',clover:'Clover',sqspiral:'Square spiral',rose4:'Four petals',gear:'Gear',spiro:'Spirograph',pentagram:'Pentagram',
-  ekg:'Heartbeat',skyline:'Skyline',mountains:'Mountains',saw:'Saw',castle:'Castle',jagstar:'Spiky star',lightning:'Lightning',maze:'Maze',jumble:'Jumble',squiggle:'Squiggle',shard:'Shard'};
-const SYM=new Set(['line','square','triangle','diamond','circle','house','star','heart','star7','flower','rose','cloud','em','uturn','pentagon','hexagon','cross','drop','shield','crown','tree','clover','rose4','gear','pentagram','castle']); // no point mirroring these
+  leaf:'Leaf',crown:'Crown',tree:'Tree',boat:'Boat',coil:'Coil',clover:'Clover',sqspiral:'Square spiral',rose4:'Four petals',gear:'Gear',spiro:'Spirograph',pentagram:'Pentagram'};
+const SYM=new Set(['line','square','triangle','diamond','circle','house','star','heart','star7','flower','rose','cloud','em','uturn','pentagon','hexagon','cross','drop','shield','crown','tree','clover','rose4','gear','pentagram']); // no point mirroring these
 // easy to hard: a stroke, a bend, corners, curves, mixes, long ones, then two that turn while you trace
 const LADDER=[['line','arc','hook','check','swoop'],['vee','zig','scurve','stairs','em','cee','uturn'],['square','triangle','diamond','pentagon','hexagon','arrow'],
   ['circle','house','moon','drop','shield','cross'],['star','heart','wave','leaf','crown'],['bolt','cloud','heart','star','tree','boat','crown'],
   ['spiral','infinity','coil','clover','sqspiral'],['rose','trefoil','fish','rose4','gear'],['star7','spiral','infinity','rose','clover','gear','sqspiral'],['flower','loop','spiro','pentagram']];
-// the last four rungs are half swirls (LADDER above) and half sharp or random shapes, in a different mix each day
-const SHARP=[['ekg','skyline','mountains','saw','castle','shard','jumble'],['jagstar','lightning','maze','jumble','squiggle','shard','castle']];
-const RANDOM=new Set(['jumble','squiggle','shard']);
 const PALETTE=['#9deba8','#7cc8ff','#ff8ad8','#f2c14e','#c49bff','#ff9f5a','#4fd8c8','#ff7a6b','#d6f25b','#6e8bff'];
 const GREY='#3b3d3c';
 const mixHex=(a,b,k)=>{const A=hexRGB(a),B=hexRGB(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*k).toString(16).padStart(2,'0')).join('')};
@@ -1195,16 +1176,15 @@ function makeRun(seed){
   const r=mulberry(hash(seed)),pick=a=>a[Math.floor(r()*a.length)];
   const cols=PALETTE.slice();for(let i=cols.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[cols[i],cols[j]]=[cols[j],cols[i]]}
   const used=new Set(),items=[];
-  const late=['swirl','swirl','sharp','sharp'];for(let i=3;i>0;i--){const j=Math.floor(r()*(i+1));[late[i],late[j]]=[late[j],late[i]]}
-  for(let i=0;i<10;i++){const pool=i>=6&&late[i-6]==='sharp'?SHARP[i<8?0:1]:LADDER[i];let name,tries=0;do{name=pick(pool)}while((used.has(name)||(RANDOM.has(name)&&[...used].some(u=>RANDOM.has(u))))&&++tries<20);used.add(name);
-    items.push({name,color:cols[i],seed:Math.floor(r()*2147483647),mirror:!SYM.has(name)&&r()<.5,rev:r()<.5,roll:r(),rot0:i<2?0:(r()-.5)*.5,
+  for(let i=0;i<10;i++){let name,tries=0;do{name=pick(LADDER[i])}while(used.has(name)&&++tries<20);used.add(name);
+    items.push({name,color:cols[i],mirror:!SYM.has(name)&&r()<.5,rev:r()<.5,roll:r(),rot0:i<2?0:(r()-.5)*.5,
       spin:i>=8?(r()<.5?-1:1)*(i===8?.22:.3):0});
   }
   return items;
 }
 // a path in pixels around its own center: dense samples every `step` px, their distance along the path, and the cubes on it
 function buildShape(it,R,cs){
-  let u=SHAPES[it.name](it.seed);
+  let u=SHAPES[it.name]();
   const closed=Math.hypot(u[0][0]-u[u.length-1][0],u[0][1]-u[u.length-1][1])<1e-3;
   if(it.mirror)u=u.map(([x,y])=>[-x,y]);
   if(closed){const body=u.slice(0,-1),k=Math.floor((it.roll||0)*body.length);u=body.slice(k).concat(body.slice(0,k));u.push(u[0])}
