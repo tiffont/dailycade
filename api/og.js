@@ -7,9 +7,9 @@ import { Resvg } from '@resvg/resvg-js';
 
 const GAMES = {
   gambit:   { name: 'Gambit',   tag: 'Throw cards. Combine power-ups. Survive the fall.', blob: '#9deba8', accent: '#9deba8', icon: [34, 44] },
-  dropface: { name: 'Dropface', tag: 'Ten boards, one ball. Call where it lands.',       blob: '#c49bff', accent: '#c49bff', icon: [24, 24] },
-  slice:    { name: 'Slice',    tag: 'Things fly at you. Cut them perfectly in half.',  blob: '#ff8ad8', accent: '#ff8ad8', icon: [324, 457] },
-  trace:    { name: 'Trace',    tag: 'Ten shapes made of cubes. Stay on the line, grow your pile.', blob: '#f2c14e', accent: '#9deba8', icon: [672, 672] },
+  dropface: { name: 'Dropface', tag: 'Ten levels, three drops. Call where it lands.',       blob: '#c49bff', accent: '#c49bff', icon: [24, 24] },
+  slice:    { name: 'Slice',    tag: 'Things fly at you. Cut them in half...perfectly.',  blob: '#ff8ad8', accent: '#ff8ad8', icon: [324, 457] },
+  trace:    { name: 'Trace',    tag: 'Ten shapes. Stay on the line. Build your pile.', blob: '#f2c14e', accent: '#9deba8', icon: [672, 672] },
   spiral:   { name: 'Spiral',   tag: 'Ten throws, one target. Throw the perfect spiral.', blob: '#5fc9f3', accent: '#9deba8', icon: [381, 262] },
   frames:   { name: 'Frames',   tag: 'One lane, ten pins. Knock them all down.', blob: '#ff9f5a', accent: '#9deba8', icon: [200, 200] },
   rings:    { name: 'Rings',    tag: 'Ten balls, six rings. Make them count.', blob: '#3fd4c0', accent: '#9deba8', icon: [187, 222] },
