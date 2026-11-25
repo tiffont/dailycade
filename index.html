@@ -14,7 +14,7 @@
 .signup form button{height:44px;border:0;border-radius:12px;padding:0 18px;font:inherit;font-size:15px;font-weight:600;background:#0d0d0d;color:#fff;cursor:pointer;white-space:nowrap}
 .signup form button:disabled{opacity:.35;cursor:default}
 .signup button{position:relative;overflow:visible}
-.sushake{position:absolute;left:50%;top:50%;z-index:5;font-style:normal;font-size:24px;line-height:1;pointer-events:none;transform:translate(-50%,-50%) scale(.3);opacity:0;animation:suShake 1.6s cubic-bezier(.3,.7,.3,1) forwards}
+.sushake{position:absolute;left:50%;top:50%;z-index:5;font-style:normal;font-size:24px;line-height:1;width:1.25em;height:1.25em;display:grid;place-items:center;transform-origin:50% 50%;pointer-events:none;transform:translate(-50%,-50%) scale(.3);opacity:0;animation:suShake 1.6s cubic-bezier(.3,.7,.3,1) forwards}
 /* grows up out of the button, shakes, then shrinks back and disappears */
 @keyframes suShake{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}
   20%{opacity:1;transform:translate(-50%,-50%) translateY(-46px) scale(2.8) rotate(0)}
