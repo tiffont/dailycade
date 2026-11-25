@@ -242,20 +242,20 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6p
 @media (max-width:940px){.cab.tv{aspect-ratio:auto;width:100%;max-width:300px;justify-self:center;margin:0 auto}.cab.tv .cabimg{display:block}.cab.tv .crt{display:none}}
 @media (prefers-reduced-motion:reduce){.float{position:relative;z-index:1;animation:none}}
 main .panel[hidden],.dots button[hidden],.games a[hidden]{display:none!important}
-/* all-games menu: 9-dot button drops down a glass row of the games' handhelds; scrolls sideways when there are many */
+/* all-games menu: 9-dot button drops down a glass grid of the games' handhelds, four per row */
 .hicons{position:relative}
 .hhmenu{position:absolute;top:calc(100% + 14px);right:0;z-index:60;width:max-content;max-width:calc(100vw - 32px);padding:16px;border-radius:12px;
   background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px); /* same glass as Gambit's hand tray */
   box-shadow:0 9px 25px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.14);transform-origin:top right;animation:hhIn .18s ease-out}
 .hhmenu[hidden]{display:none}
 @keyframes hhIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
-.nav .hhmenu .hhrow{display:flex;gap:14px;margin:-6px 0 0;padding-top:6px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;transform:none;font-size:12px;font-weight:600;color:var(--ink)}
+.nav .hhmenu .hhrow{display:grid;grid-template-columns:repeat(4,minmax(0,72px));gap:16px 12px;margin:0;transform:none;font-size:12px;font-weight:600;color:var(--ink)}
 .nav .hhmenu .hhrow::-webkit-scrollbar{display:none}
-.nav .hhmenu .hhrow a{flex:none;width:72px;display:flex;flex-direction:column;align-items:center;gap:8px;scroll-snap-align:start;color:inherit;text-decoration:none}
-.nav .hhmenu .hhrow img{display:block;width:69px;height:105px;object-fit:contain;transition:transform .18s cubic-bezier(.2,.9,.3,1.4)}
+.nav .hhmenu .hhrow a{min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;scroll-snap-align:start;color:inherit;text-decoration:none}
+.nav .hhmenu .hhrow img{display:block;width:100%;max-width:69px;height:auto;aspect-ratio:69/105;object-fit:contain;transition:transform .18s cubic-bezier(.2,.9,.3,1.4)}
 .nav .hhmenu .hhrow a:hover img,.nav .hhmenu .hhrow a:focus-visible img{transform:translateY(-4px)}
 .nav .hhmenu .hhrow a:active img{transform:scale(.96)}
-.nav .hhmenu .hhblob{width:69px;height:105px;display:grid;place-items:center}
+.nav .hhmenu .hhblob{width:100%;max-width:69px;aspect-ratio:69/105;display:grid;place-items:center}
 .nav .hhmenu .hhblob::after{content:"";width:70%;aspect-ratio:1;background:var(--shape);border-radius:var(--blob);transform:rotate(var(--tilt))}
 html[data-theme="dark"] .nav .hhmenu .hhrow{color:#f2f2f0}
 html[data-theme="dark"] .hhmenu{box-shadow:0 9px 25px rgba(0,0,0,.25),inset 0 0 0 1px rgba(255,255,255,.14)}
@@ -577,7 +577,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
     let pic;if(src){pic=document.createElement('img');pic.src=src.getAttribute('src');pic.alt='';pic.decoding='async'}
     else{pic=document.createElement('span');pic.className='hhblob';const cs=getComputedStyle(p);for(const v of ['--shape','--blob','--tilt'])pic.style.setProperty(v,cs.getPropertyValue(v))}
     const nm=document.createElement('span');nm.textContent=p.getAttribute('aria-label');a.append(pic,nm);row.append(a)});
-  const open=on=>{menu.hidden=!on;btn.setAttribute('aria-expanded',String(on));if(on)row.scrollLeft=0};
+  const open=on=>{menu.hidden=!on;btn.setAttribute('aria-expanded',String(on))};
   btn.onclick=e=>{e.stopPropagation();open(menu.hidden)};
   document.addEventListener('click',e=>{if(!menu.hidden&&!menu.contains(e.target))open(false)});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){open(false);btn.focus()}});
