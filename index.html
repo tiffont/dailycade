@@ -21,6 +21,7 @@
 .signup .err{color:#c2412d}
 .signup p[hidden]{display:none}
 .signup.done form{display:none}
+.signup.done{flex:0 0 auto;width:auto;max-width:100%} /* once joined, the box hugs its message */
 html[data-theme="dark"] .signup{background:#161616}
 html[data-theme="dark"] .signup p{color:#9a9a96}
 html[data-theme="dark"] .signup input{background:#0b0b0b;color:#f2f2f0;border-color:rgba(255,255,255,.14)}
@@ -607,7 +608,7 @@ const rail=$('rail'),allPanels=[...rail.querySelectorAll('.panel')],allDots=[...
 let panels=allPanels.slice(),dots=allDots.slice();
 /* email signup: saved privately in the database (subscribe() function); staging signups stay separate */
 (()=>{const box=$('signup'),form=$('suForm'),inp=$('suEmail'),btn=$('suBtn'),note=$('suT');const NOTE=note.textContent; // errors show in the title line
-  const done=()=>{box.classList.add('done');note.className='';note.textContent="You're on the list";const n=$('suNote');n.textContent="We'll email you when a new game drops.";n.hidden=false};
+  const done=()=>{box.classList.add('done');note.className='';note.textContent='Pleasure to meet you. 🤝';const n=$('suNote');n.textContent="Any news, updates, or game drops, you'll be the first to know.";n.hidden=false};
   try{if(localStorage.getItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed'))done()}catch(e){}
   const RE=/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i,valid=()=>RE.test(inp.value.trim());
   inp.addEventListener('input',()=>{btn.disabled=!valid();if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
