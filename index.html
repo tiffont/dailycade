@@ -14,8 +14,16 @@
 .signup form button{height:44px;border:0;border-radius:12px;padding:0 18px;font:inherit;font-size:15px;font-weight:600;background:#0d0d0d;color:#fff;cursor:pointer;white-space:nowrap}
 .signup form button:disabled{opacity:.35;cursor:default}
 .signup button{position:relative;overflow:visible}
-.sushake{position:absolute;left:50%;top:50%;font-style:normal;font-size:22px;line-height:1;pointer-events:none;transform:translate(-50%,-50%);animation:suShake .9s cubic-bezier(.2,.8,.3,1) forwards}
-@keyframes suShake{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}25%{opacity:1;transform:translate(-50%,-110%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-180%) scale(2.2)}}
+.sushake{position:absolute;left:50%;top:50%;z-index:5;font-style:normal;font-size:24px;line-height:1;pointer-events:none;transform:translate(-50%,-50%) scale(.3);opacity:0;animation:suShake 1.6s cubic-bezier(.3,.7,.3,1) forwards}
+/* grows up out of the button, shakes, then shrinks back and disappears */
+@keyframes suShake{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}
+  20%{opacity:1;transform:translate(-50%,-50%) translateY(-46px) scale(2.8) rotate(0)}
+  30%{transform:translate(-50%,-50%) translateY(-42px) scale(2.8) rotate(-14deg)}
+  40%{transform:translate(-50%,-50%) translateY(-50px) scale(2.8) rotate(12deg)}
+  50%{transform:translate(-50%,-50%) translateY(-42px) scale(2.8) rotate(-12deg)}
+  60%{transform:translate(-50%,-50%) translateY(-50px) scale(2.8) rotate(10deg)}
+  70%{opacity:1;transform:translate(-50%,-50%) translateY(-46px) scale(2.8) rotate(0)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(.15)}}
 @media (prefers-reduced-motion:reduce){.sushake{display:none}}
 .signup .err{color:#c2412d}
 .signup p[hidden]{display:none}
@@ -624,14 +632,14 @@ let panels=allPanels.slice(),dots=allDots.slice();
   const RE=/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i,valid=()=>RE.test(inp.value.trim());
   inp.addEventListener('input',()=>{btn.disabled=!valid();if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
   // one handshake pops up from the button, grows and fades
-  const shake=()=>{const h=document.createElement('i');h.className='sushake';h.textContent='🤝';h.setAttribute('aria-hidden','true');btn.append(h);setTimeout(()=>h.remove(),950)};
+  const shake=()=>{const h=document.createElement('i');h.className='sushake';h.textContent='🤝';h.setAttribute('aria-hidden','true');btn.append(h);setTimeout(()=>h.remove(),1650)};
   form.addEventListener('submit',async e=>{e.preventDefault();const v=inp.value.trim();
     if(!valid()){note.className='err';note.textContent='Enter a valid email address.';inp.focus();return}
     shake();
     if(!window.DCSB){note.className='err';note.textContent="Couldn't connect. Try again in a moment.";return}
     btn.disabled=true;
     try{const r=await DCSB.rpc('subscribe',{p_email:v,p_staging:!!window.DC_STAGING,p_source:'home'});if(r.error)throw r.error;
-      try{localStorage.setItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed','1')}catch(e){}setTimeout(done,800)}
+      try{localStorage.setItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed','1')}catch(e){}setTimeout(done,1650)}
     catch(err){note.className='err';note.textContent=/invalid/.test(err.message||'')?'Enter a valid email address.':"Couldn't sign you up. Try again in a moment."}
     finally{btn.disabled=!valid()}});
 })();
