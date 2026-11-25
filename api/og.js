@@ -6,7 +6,7 @@ import { Resvg } from '@resvg/resvg-js';
 
 
 const GAMES = {
-  gambit:   { name: 'Gambit',   tag: 'Swipe, curve, stack power-ups. Survive the fall.', blob: '#9deba8', accent: '#9deba8', icon: [34, 44] },
+  gambit:   { name: 'Gambit',   tag: 'Throw cards. Combine power-ups. Survive the fall.', blob: '#9deba8', accent: '#9deba8', icon: [34, 44] },
   dropface: { name: 'Dropface', tag: 'Ten boards, one ball. Call where it lands.',       blob: '#c49bff', accent: '#c49bff', icon: [24, 24] },
   slice:    { name: 'Slice',    tag: 'Things fly at you. Cut them perfectly in half.',  blob: '#ff8ad8', accent: '#ff8ad8', icon: [324, 457] },
   trace:    { name: 'Trace',    tag: 'Ten shapes made of cubes. Stay on the line, grow your pile.', blob: '#f2c14e', accent: '#9deba8', icon: [672, 672] },
