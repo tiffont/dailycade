@@ -2,7 +2,25 @@
 /* follow + feedback tiles under the games */
 .wrap.touch{margin-top:40px;margin-bottom:8px}
 .touch h2{margin:0 0 24px;font-size:28px;font-weight:500;letter-spacing:-.025em;line-height:1.2}
-.touch .tiles{display:flex;gap:16px} /* .wrap.touch: beats the page's .wrap{margin:0 auto} so the gap shows */
+.touch .tiles{display:flex;gap:16px}
+/* email signup, beside the Follow and Feedback tiles (below them on phones) */
+.touch .trow{display:flex;gap:16px;flex-wrap:wrap;align-items:stretch}
+.signup{flex:0 1 440px;min-height:100px;box-sizing:border-box;border-radius:22px;padding:16px 18px;background:#f4f4f2;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.signup h3{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.signup p{margin:0;font-size:13px;line-height:1.35;color:#6b6b68}
+.signup form{display:flex;gap:8px}
+.signup input{flex:1;min-width:0;height:44px;box-sizing:border-box;border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:0 14px;font:inherit;font-size:16px;background:#fff;color:#0d0d0d}
+.signup input:focus{outline:none;border-color:#0d0d0d;box-shadow:0 0 0 3px rgba(0,0,0,.08)}
+.signup button{height:44px;border:0;border-radius:12px;padding:0 18px;font:inherit;font-size:15px;font-weight:600;background:#0d0d0d;color:#fff;cursor:pointer;white-space:nowrap}
+.signup button:disabled{opacity:.55;cursor:default}
+.signup .err{color:#c2412d}
+.signup.done form{display:none}
+html[data-theme="dark"] .signup{background:#161616}
+html[data-theme="dark"] .signup p{color:#9a9a96}
+html[data-theme="dark"] .signup input{background:#0b0b0b;color:#f2f2f0;border-color:rgba(255,255,255,.14)}
+html[data-theme="dark"] .signup input:focus{border-color:#f2f2f0;box-shadow:0 0 0 3px rgba(255,255,255,.1)}
+html[data-theme="dark"] .signup button{background:#f2f2f0;color:#0d0d0d}
+@media (max-width:760px){.signup{flex-basis:100%}} /* .wrap.touch: beats the page's .wrap{margin:0 auto} so the gap shows */
 .tile{width:100px;height:100px;border-radius:22px;border:0;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
   font:600 13px/1 var(--sans);cursor:pointer;text-decoration:none;transition:transform .08s,filter .15s,box-shadow .2s}
 .tile svg{width:30px;height:30px}
@@ -505,9 +523,16 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
   </section>
   <section class="wrap touch" aria-labelledby="touchT">
     <h2 id="touchT">Let's keep in touch</h2>
+    <div class="trow">
     <div class="tiles">
     <a class="tile x" href="https://x.com/dailycadegames" target="_blank" rel="noopener" aria-label="Follow Dailycade on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Follow</a>
     <button class="tile fb" type="button" id="ctaFb" aria-label="Send beta feedback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>Feedback</button>
+    </div>
+    <div class="signup" id="signup">
+      <h3 id="suT">Get new games in your inbox</h3>
+      <p id="suNote">An email when a new game drops. No spam, unsubscribe anytime.</p>
+      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="you@email.com" aria-label="Email address" aria-describedby="suNote" required><button type="submit" id="suBtn">Join</button></form>
+    </div>
     </div>
   </section>
 </main>
@@ -515,7 +540,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
 <section class="legal wrap" id="privacy" hidden aria-labelledby="privT">
   <a class="back" href="#top">← Back to games</a>
   <h1 id="privT">Privacy</h1>
-  <p class="eff mono">Effective November 13, 2026</p>
+  <p class="eff mono">Effective November 25, 2026</p>
   <p>Dailycade is a small collection of free daily games. We collect as little as we can, we don't run ads, and we don't sell your information.</p>
   <h2>Dailycade is in beta</h2>
   <p>Dailycade is an early, beta release. Games, features and this policy may change as we go, and we may reset daily challenges, scores or leaderboards while we fine-tune things. If something breaks or feels off, tap the Beta tag at the top of the homepage or Send feedback in any game, or email <a href="mailto:tiffont@gmail.com">tiffont@gmail.com</a>.</p>
@@ -526,8 +551,10 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
     <li><b>Anonymous visit statistics.</b> We use Vercel Web Analytics to count page visits and see which pages and games are used. It doesn't use cookies and doesn't identify you.</li>
     <li><b>Game settings on your device.</b> Your best score, sound settings and whether you've played today's game are kept in your browser's local storage. This stays on your device and is not sent to us.</li>
   </ul>
+  <h2>Email updates</h2>
+  <p>If you sign up for email updates, we save your email address and the date you signed up, and use it only to tell you about new games and big changes to Dailycade. We send these through Resend, our email provider, on our behalf. Every email has an unsubscribe link, and you can also ask us to remove your address through our <a href="#contact">contact page</a>.</p>
   <h2>What we don't collect</h2>
-  <p>No email list (we only keep an email you add to feedback so we can reply), no payment details, no location, no advertising or tracking cookies, and no cross-site tracking.</p>
+  <p>No payment details, no location, no advertising or tracking cookies, and no cross-site tracking.</p>
   <h2>How it's used</h2>
   <p>Only to run and improve the games: showing leaderboards, keeping you to one daily game, remembering your settings, and understanding which games people play.</p>
   <h2>Sharing</h2>
@@ -571,6 +598,20 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
 const $=id=>document.getElementById(id);
 const rail=$('rail'),allPanels=[...rail.querySelectorAll('.panel')],allDots=[...$('dots').children];
 let panels=allPanels.slice(),dots=allDots.slice();
+/* email signup: saved privately in the database (subscribe() function); staging signups stay separate */
+(()=>{const box=$('signup'),form=$('suForm'),inp=$('suEmail'),btn=$('suBtn'),note=$('suNote');const NOTE=note.textContent;
+  const done=()=>{box.classList.add('done');$('suT').textContent="You're on the list";note.className='';note.textContent="We'll email you when a new game drops."};
+  try{if(localStorage.getItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed'))done()}catch(e){}
+  inp.addEventListener('input',()=>{if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
+  form.addEventListener('submit',async e=>{e.preventDefault();const v=inp.value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v)){note.className='err';note.textContent='Enter a valid email address.';inp.focus();return}
+    if(!window.DCSB){note.className='err';note.textContent="Couldn't connect. Try again in a moment.";return}
+    btn.disabled=true;btn.textContent='Joining…';
+    try{const r=await DCSB.rpc('subscribe',{p_email:v,p_staging:!!window.DC_STAGING,p_source:'home'});if(r.error)throw r.error;
+      try{localStorage.setItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed','1')}catch(e){}done()}
+    catch(err){note.className='err';note.textContent=/invalid/.test(err.message||'')?'Enter a valid email address.':"Couldn't sign you up. Try again in a moment."}
+    finally{btn.disabled=false;btn.textContent='Join'}});
+})();
 /* all-games menu: each game's handheld from its panel; hidden games stay hidden (applyHidden covers .games links) */
 (()=>{const row=$('hhRow'),menu=$('hhMenu'),btn=$('appsBtn');
   allPanels.forEach(p=>{if(!p.dataset.base)return;const a=document.createElement('a');a.href='/'+p.id;const src=p.querySelector('img.cabimg');

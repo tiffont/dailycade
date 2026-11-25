@@ -89,6 +89,8 @@ body.stmode .dock{display:none!important}
 body.usmode main>section:not(#usCard){display:none!important}
 body.usmode .dock{display:none!important}
 body.bkmode main>section:not(#bkCard){display:none!important}
+body.sumode main>section:not(#suCard){display:none!important}
+body.sumode .dock{display:none!important}
 body.bkmode .dock{display:none!important}
 .bklist{display:flex;flex-direction:column;margin-top:14px;border-top:1px solid var(--line)}
 .bkrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
@@ -342,6 +344,12 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
     <h2 id="tuneH">Tuning <span class="note">Changes stay a draft until you publish</span></h2>
     <div id="knobs"></div>
   </section>
+  <section class="card" id="suCard" aria-labelledby="suH" hidden>
+    <h2 id="suH">Email signups <span class="note" id="suNote2"></span></h2>
+    <p class="hint" style="margin:0 0 14px">People who joined from "Get new games in your inbox" on the homepage. Only email them about what they signed up for: new games and big changes.</p>
+    <div class="bkbar"><button class="btn small" id="suDl" type="button" disabled>Download list (CSV)</button></div>
+    <div class="bklist" id="suList"></div>
+  </section>
   <section class="card" id="bkCard" aria-labelledby="bkH" hidden>
     <h2 id="bkH">Backups <span class="note" id="bkNote"></span></h2>
     <p class="hint" style="margin:0 0 14px" id="bkHint"></p>
@@ -487,11 +495,12 @@ const IC={
   trophy:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg>',
   chart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
   safe:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.4"/></svg>',
+  mail:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/></svg>',
   gauge:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 17a9 9 0 1 1 17 0"/><path d="M12 13l4-4"/><circle cx="12" cy="13" r="1.2"/></svg>'};
 const PAGES=[['overview','Overview',IC.grid,'How Dailycade is doing today.'],['feedback','Feedback',IC.chat,'Notes and reactions from players.'],
   ['leaderboards','Leaderboards',IC.trophy,'Review scores and remove anything that looks wrong.'],['stats','Activity',IC.chart,'Plays counted by Dailycade, by day (New York time).'],
-  ['usage','Usage',IC.gauge,'How close each service is to its free plan limits.'],['backups','Backups',IC.safe,'Copies of your scores, feedback and settings, and how to put one back.']];
-const curPage=()=>ovOn?'overview':fbOn?'feedback':lbOn?'leaderboards':stOn?'stats':usOn?'usage':bkOn?'backups':game;
+  ['usage','Usage',IC.gauge,'How close each service is to its free plan limits.'],['signups','Email signups',IC.mail,'People who joined the email list on the homepage.'],['backups','Backups',IC.safe,'Copies of your scores, feedback and settings, and how to put one back.']];
+const curPage=()=>ovOn?'overview':fbOn?'feedback':lbOn?'leaderboards':stOn?'stats':usOn?'usage':bkOn?'backups':suOn?'signups':game;
 function paintTabs(){const nav=$('nav');if(!nav)return;nav.replaceChildren();const cur=curPage();
   const item=(k,label,icon,extra)=>{const b=document.createElement('button');b.type='button';b.className='nv';b.setAttribute('aria-current',String(k===cur));b.innerHTML=icon+'<span>'+label+'</span>'+(extra||'');b.onclick=()=>goPage(k);return b};
   for(const [k,l,ic] of PAGES){let ex='';if(k==='feedback'&&fbNew)ex='<em class="badge">'+fbNew+'</em>';if(k==='usage'&&usLevel)ex='<em class="dot'+(usLevel>=2?' bad':'')+'"></em>';nav.append(item(k,l,ic,ex))}
@@ -501,11 +510,11 @@ function paintTabs(){const nav=$('nav');if(!nav)return;nav.replaceChildren();con
   $('pageS').textContent=pg?pg[3]:'Change how '+GAMES[cur].name+' plays. Publish right away or schedule it for a day. Only you can publish.';
   document.title=(pg?pg[1]:GAMES[cur].name)+' · Admin · Dailycade';
   const on=nav.querySelector('[aria-current="true"]');if(on&&nav.scrollWidth>nav.clientWidth)nav.scrollTo({left:Math.max(0,on.offsetLeft-20),behavior:'smooth'})}
-function goPage(k){ovOn=k==='overview';fbOn=k==='feedback';lbOn=k==='leaderboards';stOn=k==='stats';usOn=k==='usage';bkOn=k==='backups';
+function goPage(k){ovOn=k==='overview';fbOn=k==='feedback';lbOn=k==='leaderboards';stOn=k==='stats';usOn=k==='usage';bkOn=k==='backups';suOn=k==='signups';
   try{localStorage.setItem('dc.admin.tab',k)}catch(e){}
   setFb();
   if(GAMES[k]&&k!==game){game=k;load()}else paintTabs();
-  if(ovOn)openOv();if(fbOn){watchFb();markFbSeen()}if(lbOn)watchLb();if(stOn)loadSt();if(usOn)loadUsage();if(bkOn)loadBk();
+  if(ovOn)openOv();if(fbOn){watchFb();markFbSeen()}if(lbOn)watchLb();if(stOn)loadSt();if(usOn)loadUsage();if(bkOn)loadBk();if(suOn)loadSu();
   scrollTo(0,0)}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-go]');if(t)goPage(t.dataset.go)});
 
@@ -672,7 +681,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidd
 /* ---------- beta feedback ---------- */
 let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
 let lbOn=false, lbGame='gambit', lbData={gambit:[],dropface:[],slice:[],trace:[],spiral:[],frames:[],rings:[]}, lbBlocked=[], lbSubs=null;
-function setFb(){document.body.classList.toggle('ovmode',ovOn);$('ovCard').hidden=!ovOn;document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn;document.body.classList.toggle('bkmode',bkOn);$('bkCard').hidden=!bkOn}
+function setFb(){document.body.classList.toggle('ovmode',ovOn);$('ovCard').hidden=!ovOn;document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn;document.body.classList.toggle('bkmode',bkOn);$('bkCard').hidden=!bkOn;document.body.classList.toggle('sumode',suOn);$('suCard').hidden=!suOn}
 /* ---------- stats: daily counts from the track() function ---------- */
 let stOn=false, stRows=[], stGame='all', stT=0;
 /* ---------- backups: copies kept in the database (see the backup_* functions in Supabase) ---------- */
@@ -718,6 +727,26 @@ async function bkRestore(b){
   msg('Restoring…');
   try{const r=await DCSB.rpc('backup_restore',{p_id:b.id});if(r.error)throw r.error;msg('Restored '+fmtN(r.data.restored)+' records. What was there before is saved at the top of the list.','ok');await loadBk()}
   catch(e){msg("Couldn't restore: "+(e.message||e),'err')}}
+
+/* ---------- signups: the email list (subscribers_list / subscriber_remove in Supabase) ---------- */
+let suOn=false, suRows=[];
+async function loadSu(){if(!window.DCSB)return;if(suOn)$('suNote2').textContent='Loading…';
+  try{const r=await DCSB.rpc('subscribers_list',{p_scope:BK_SCOPE()});if(r.error)throw r.error;suRows=(r.data||[]).filter(x=>!x.unsubscribed_at);paintSu()}
+  catch(e){if(suOn)$('suNote2').textContent="Couldn't load signups: "+(e.message||e)}}
+function paintSu(){const list=$('suList');list.replaceChildren();
+  const wk=suRows.filter(x=>Date.now()-new Date(x.created_at)<7*864e5).length;
+  $('suNote2').textContent=suRows.length?fmtN(suRows.length)+' signed up'+(wk?' · '+fmtN(wk)+' this week':''):'';
+  $('suDl').disabled=!suRows.length;
+  if(!suRows.length){const p=document.createElement('p');p.className='hint';p.style.margin='14px 0 0';p.textContent='No signups yet. They come from the "Get new games in your inbox" box on the homepage.';list.append(p);return}
+  for(const x of suRows){const row=document.createElement('div');row.className='bkrow';
+    const t=document.createElement('div');t.className='bkt';const b=document.createElement('b');b.textContent=x.email;const sm=document.createElement('small');sm.textContent='Joined '+bkWhen(x.created_at);t.append(b,sm);
+    const a=document.createElement('div');a.className='bka';const rm=document.createElement('button');rm.type='button';rm.className='btn ghost small';rm.textContent='Remove';
+    rm.onclick=async()=>{if(!await ask('Remove '+x.email+'?',"They won't get any more emails from Dailycade. Use this when someone asks to be taken off the list.",'Remove'))return;
+      try{const r=await DCSB.rpc('subscriber_remove',{p_scope:BK_SCOPE(),p_email:x.email});if(r.error)throw r.error;msg('Removed.','ok');loadSu()}catch(e){msg("Couldn't remove: "+(e.message||e),'err')}};
+    a.append(rm);row.append(t,a);list.append(row)}}
+$('suDl').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const csv='email,joined\n'+suRows.map(x=>q(x.email)+','+q(new Date(x.created_at).toISOString())).join('\n')+'\n';
+  const u=URL.createObjectURL(new Blob([csv],{type:'text/csv'})),a=document.createElement('a');a.href=u;a.download='dailycade-'+(window.DC_STAGING?'staging-':'')+'signups-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)};
 
 /* ---------- usage: how close each service is to its free plan ---------- */
 let usOn=false, usLevel=0, usData=null, usT=0;
@@ -929,7 +958,7 @@ async function toggleGame(g){if(!db){msg("Not connected to the database. Reload 
   if(!await ask(off?'Put '+n+' back?':'Hide '+n+'?',off?n+' comes back on the homepage and is playable again.':n+' comes off the homepage and its page shows a "taking a break" notice. Scores, settings and the daily count are kept.',off?'Put it back':'Hide it'))return;
   try{await saveHome(g,off,boardsOn);msg(n+(off?' is back on the site.':' is hidden from the site.'),'ok')}
   catch(e){msg("Couldn't save. Only the site owner can do this.",'err')}}
-try{const t=localStorage.getItem('dc.admin.tab')||'overview';if(t==='overview')ovOn=true;if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true;if(t==='usage')usOn=true;if(t==='backups')bkOn=true}catch(e){ovOn=true}
+try{const t=localStorage.getItem('dc.admin.tab')||'overview';if(t==='overview')ovOn=true;if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true;if(t==='usage')usOn=true;if(t==='backups')bkOn=true;if(t==='signups')suOn=true}catch(e){ovOn=true}
 setFb();
 try{const t=localStorage.getItem('dc.admin.tab');if(GAMES[t])game=t}catch(e){}
 load();
