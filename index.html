@@ -623,7 +623,7 @@ const rail=$('rail'),allPanels=[...rail.querySelectorAll('.panel')],allDots=[...
 let panels=allPanels.slice(),dots=allDots.slice();
 /* email signup: saved privately in the database (subscribe() function); staging signups stay separate */
 (()=>{const box=$('signup'),form=$('suForm'),inp=$('suEmail'),btn=$('suBtn'),note=$('suT');const NOTE=note.textContent; // errors show in the title line
-  const done=()=>{if(!box.querySelector('.sudone')){const row=document.createElement('div'),th=document.createElement('span'),tx=document.createElement('div');row.className='sudone';th.className='suthumb';th.setAttribute('aria-hidden','true');th.textContent='👍';tx.className='sutext';box.prepend(row);tx.append(note,$('suNote'));row.append(th,tx)}
+  const done=()=>{if(!box.querySelector('.sudone')){const row=document.createElement('div'),th=document.createElement('span'),tx=document.createElement('div');row.className='sudone';th.className='suthumb';th.setAttribute('aria-hidden','true');th.textContent='👍';tx.className='sutext';box.prepend(row);tx.append(note,$('suNote'));row.append(tx,th)}
     box.classList.add('done');note.className='';note.textContent="You'll be the first to know.";const n=$('suNote');n.textContent='';
     const again=document.createElement('button');again.type='button';again.className='suagain';again.textContent='Change email';again.onclick=reset;n.append(again);n.hidden=false};
   // back to the form, to sign up another address from this browser
