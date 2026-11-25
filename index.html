@@ -5,7 +5,7 @@
 .touch .tiles{display:flex;gap:16px}
 /* email signup, beside the Follow and Feedback tiles (below them on phones) */
 .touch .trow{display:flex;gap:16px;flex-wrap:wrap;align-items:stretch}
-.signup{flex:0 1 440px;height:100px;box-sizing:border-box;border-radius:22px;padding:14px 18px;background:#f4f4f2;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.signup{flex:0 1 440px;height:100px;box-sizing:border-box;border-radius:15px;padding:14px 18px;background:#f4f4f2;display:flex;flex-direction:column;justify-content:center;gap:10px}
 .signup h3{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
 .signup p{margin:0;font-size:13px;line-height:1.35;color:#6b6b68}
 .signup form{display:flex;gap:8px}
@@ -21,8 +21,8 @@ html[data-theme="dark"] .signup p{color:#9a9a96}
 html[data-theme="dark"] .signup input{background:#0b0b0b;color:#f2f2f0;border-color:rgba(255,255,255,.14)}
 html[data-theme="dark"] .signup input:focus{border-color:#f2f2f0;box-shadow:0 0 0 3px rgba(255,255,255,.1)}
 html[data-theme="dark"] .signup button{background:#f2f2f0;color:#0d0d0d}
-@media (max-width:760px){.signup{flex-basis:100%}} /* .wrap.touch: beats the page's .wrap{margin:0 auto} so the gap shows */
-.tile{width:100px;height:100px;border-radius:22px;border:0;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+@media (max-width:760px){.signup{flex-basis:100%;height:auto;min-height:100px;padding:16px 18px}} /* the line wraps to two on phones: let the box grow */ /* .wrap.touch: beats the page's .wrap{margin:0 auto} so the gap shows */
+.tile{width:100px;height:100px;border-radius:15px;border:0;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
   font:600 13px/1 var(--sans);cursor:pointer;text-decoration:none;transition:transform .08s,filter .15s,box-shadow .2s}
 .tile svg{width:30px;height:30px}
 .tile svg{transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
@@ -525,15 +525,16 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
   <section class="wrap touch" aria-labelledby="touchT">
     <h2 id="touchT">Let's keep in touch</h2>
     <div class="trow">
+    <div class="signup" id="signup">
+      <h3 id="suT" aria-live="polite">No spam. Just news, updates, and the occasional hello.</h3>
+      <p id="suNote" hidden></p>
+      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="you@email.com" aria-label="Email address" required><button type="submit" id="suBtn">Join</button></form>
+    </div>
     <div class="tiles">
     <a class="tile x" href="https://x.com/dailycadegames" target="_blank" rel="noopener" aria-label="Follow Dailycade on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Follow</a>
     <button class="tile fb" type="button" id="ctaFb" aria-label="Send beta feedback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>Feedback</button>
     </div>
-    <div class="signup" id="signup">
-      <h3 id="suT" aria-live="polite">Get new games in your inbox</h3>
-      <p id="suNote" hidden></p>
-      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="you@email.com" aria-label="Email address" required><button type="submit" id="suBtn">Join</button></form>
-    </div>
+    
     </div>
   </section>
 </main>
