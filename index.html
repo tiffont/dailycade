@@ -5,7 +5,7 @@
 .touch .tiles{display:flex;gap:16px}
 /* email signup, beside the Follow and Feedback tiles (below them on phones) */
 .touch .trow{display:flex;gap:16px;flex-wrap:wrap;align-items:stretch}
-.signup{flex:0 1 440px;min-height:100px;box-sizing:border-box;border-radius:22px;padding:16px 18px;background:#f4f4f2;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.signup{flex:0 1 440px;height:100px;box-sizing:border-box;border-radius:22px;padding:14px 18px;background:#f4f4f2;display:flex;flex-direction:column;justify-content:center;gap:10px}
 .signup h3{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
 .signup p{margin:0;font-size:13px;line-height:1.35;color:#6b6b68}
 .signup form{display:flex;gap:8px}
@@ -14,6 +14,7 @@
 .signup button{height:44px;border:0;border-radius:12px;padding:0 18px;font:inherit;font-size:15px;font-weight:600;background:#0d0d0d;color:#fff;cursor:pointer;white-space:nowrap}
 .signup button:disabled{opacity:.55;cursor:default}
 .signup .err{color:#c2412d}
+.signup p[hidden]{display:none}
 .signup.done form{display:none}
 html[data-theme="dark"] .signup{background:#161616}
 html[data-theme="dark"] .signup p{color:#9a9a96}
@@ -529,9 +530,9 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
     <button class="tile fb" type="button" id="ctaFb" aria-label="Send beta feedback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>Feedback</button>
     </div>
     <div class="signup" id="signup">
-      <h3 id="suT">Get new games in your inbox</h3>
-      <p id="suNote">An email when a new game drops. No spam, unsubscribe anytime.</p>
-      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="you@email.com" aria-label="Email address" aria-describedby="suNote" required><button type="submit" id="suBtn">Join</button></form>
+      <h3 id="suT" aria-live="polite">Get new games in your inbox</h3>
+      <p id="suNote" hidden></p>
+      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="you@email.com" aria-label="Email address" required><button type="submit" id="suBtn">Join</button></form>
     </div>
     </div>
   </section>
@@ -599,8 +600,8 @@ const $=id=>document.getElementById(id);
 const rail=$('rail'),allPanels=[...rail.querySelectorAll('.panel')],allDots=[...$('dots').children];
 let panels=allPanels.slice(),dots=allDots.slice();
 /* email signup: saved privately in the database (subscribe() function); staging signups stay separate */
-(()=>{const box=$('signup'),form=$('suForm'),inp=$('suEmail'),btn=$('suBtn'),note=$('suNote');const NOTE=note.textContent;
-  const done=()=>{box.classList.add('done');$('suT').textContent="You're on the list";note.className='';note.textContent="We'll email you when a new game drops."};
+(()=>{const box=$('signup'),form=$('suForm'),inp=$('suEmail'),btn=$('suBtn'),note=$('suT');const NOTE=note.textContent; // errors show in the title line
+  const done=()=>{box.classList.add('done');note.className='';note.textContent="You're on the list";const n=$('suNote');n.textContent="We'll email you when a new game drops.";n.hidden=false};
   try{if(localStorage.getItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed'))done()}catch(e){}
   inp.addEventListener('input',()=>{if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
   form.addEventListener('submit',async e=>{e.preventDefault();const v=inp.value.trim();
