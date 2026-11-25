@@ -40,7 +40,7 @@
 .dcfb .fbdone{text-align:center;padding:16px 0 4px}
 .dcfb .fbdone b{display:block;font-size:40px;line-height:1;margin-bottom:12px}
 .dcfb .fbdone h3{margin:0 0 6px;font-size:18px}
-.dcquick{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0 6px;font-size:14px;font-weight:600;color:inherit}
+.dcquick{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0 6px;font-size:16px;font-weight:600;color:inherit}
 .dcquick span{opacity:.75}
 .dcquick.dcquick button{all:unset;box-sizing:border-box;border:0;border-radius:999px;padding:7px 14px;font:inherit;font-size:18px;line-height:1;cursor:pointer;background:rgba(127,127,127,.16);color:inherit;transition:transform .12s}
 .dcquick button:active{transform:scale(.92)}
