@@ -163,6 +163,8 @@ const OBJECTS={
   pie:()=>lathe([[0,-.36],[.72,-.36],[.82,-.42],[.94,-.46],[1.02,-.4],[1.02,-.28],[.92,-.22],[.84,.26],[.78,.32],[0,.32]],40),
   cranberry:()=>{const p=[[0,-.95],[.5,-.95],[.56,-.9]];for(let k=0;k<=24;k++){const y=-.85+k/24*1.7;p.push([.58+.03*Math.cos(k*Math.PI),y])} // can-shaped, with the can's ridges
     return lathe(p.concat([[.56,.9],[.5,.95],[0,.95]]),36)},
+  cornbread:()=>radial(d=>{const n=6,a=.85,b=.38,c=.85;const top=d[1]<0?1+.06*(1-Math.abs(d[0]))*(1-Math.abs(d[2])):1; // a square slab with a slightly domed top
+    return top*Math.pow(Math.pow(Math.abs(d[0]/a),n)+Math.pow(Math.abs(d[1]/b),n)+Math.pow(Math.abs(d[2]/c),n),-1/n)},36,64),
   drumstick:()=>combine(radialRaw(blobs([E([-.3,0,0],[.72,.48,.46],-.18),E([.35,.02,0],[.3,.2,.2])],null,.07),28,40),
     tubeRaw(lineP([.5,.04,0],[1.05,.1,0]),10,t=>.1*endR(t,.06),10),
     move(radialRaw(blobs([E([0,-.08,0],[.13,.12,.13]),E([0,.1,0],[.13,.12,.13])]),12,16),1.1,.1,0)),
@@ -205,15 +207,15 @@ const OBJ_COLOR={vase:'#7cc8ff',pawn:'#ece7de',bell:'#f2c14e',apple:'#ff7a6b',pe
   bulb:'#fff2a8',mug:'#9deba8',boot:'#f2c14e',carrot:'#ff9f5a',banana:'#f6d75e',
   teapot:'#7cc8ff',whale:'#6e8bff',rock:'#b9b2a6',sneaker:'#ff8ad8',guitar:'#d08a4e',dino:'#9deba8',cat:'#c9c4bc',octopus:'#c49bff',cloud:'#eef2f6',cactus:'#6fcf7f',
   bust:'#e9e3d8',moai:'#a59d92',anchor:'#a9bccf',crown:'#f6d77a',dragonegg:'#4fd8c8',
-  pie:'#e0a15a',cranberry:'#b3263e',drumstick:'#c98445',pilgrimhat:'#4a4a52',turkey:'#c98445'};
+  pie:'#e0a15a',cranberry:'#b3263e',cornbread:'#e8b64c',drumstick:'#c98445',pilgrimhat:'#4a4a52',turkey:'#c98445'};
 const OBJ_NAMES={vase:'Vase',pawn:'Pawn',bell:'Bell',apple:'Apple',pear:'Pear',spintop:'Top',cupcake:'Cupcake',donut:'Donut',egg:'Egg',pin:'Bowling pin',hourglass:'Hourglass',lamp:'Lamp',trophy:'Trophy',acorn:'Acorn',onion:'Onion',
   mushroom:'Mushroom',duck:'Duck',fish:'Fish',lemon:'Lemon',pumpkin:'Pumpkin',pepper:'Pepper',snail:'Snail',icecream:'Ice cream',rocket:'Rocket',sailboat:'Sailboat',bulb:'Light bulb',mug:'Mug',boot:'Boot',carrot:'Carrot',banana:'Banana',
   teapot:'Teapot',whale:'Whale',rock:'Rock',sneaker:'Sneaker',guitar:'Guitar',dino:'Dinosaur',cat:'Cat',octopus:'Octopus',cloud:'Cloud',cactus:'Cactus',
   bust:'Bust',moai:'Moai',anchor:'Anchor',crown:'Crown',dragonegg:'Dragon egg',
-  pie:'Pumpkin pie',cranberry:'Cranberry sauce',drumstick:'Drumstick',pilgrimhat:'Pilgrim hat',turkey:'Turkey'};
+  pie:'Pumpkin pie',cranberry:'Cranberry sauce',cornbread:'Cornbread',drumstick:'Drumstick',pilgrimhat:'Pilgrim hat',turkey:'Turkey'};
 /* holiday packs: on these dates (the player's local date) every game, daily and single player, uses only these ten objects.
-   Holiday objects never show up on other days. */
-const THEMES={'2026-11-26':{name:'Thanksgiving',emoji:'🦃',objects:['turkey','pie','cranberry','drumstick','pilgrimhat','pumpkin','acorn','apple','pear','carrot']}};
+   Holiday objects never show up on other days. 'last' (optional) is always the tenth object; the rest are shuffled. */
+const THEMES={'2026-11-26':{name:'Thanksgiving',emoji:'🦃',objects:['turkey','pie','cranberry','drumstick','pilgrimhat','pumpkin','acorn','apple','cornbread','carrot'],last:'cranberry'}};
 const TIER_EASY=['vase','pawn','bell','apple','pear','spintop','cupcake','donut','egg','pin','hourglass','lamp','trophy','acorn','onion'];
 const TIER_MED=['mushroom','duck','fish','lemon','pumpkin','pepper','snail','icecream','rocket','sailboat','bulb','mug','boot','carrot','banana'];
 const TIER_HARD=['teapot','whale','rock','sneaker','guitar','dino','cat','octopus','cloud','cactus'];
