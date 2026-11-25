@@ -244,9 +244,9 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6p
 main .panel[hidden],.dots button[hidden],.games a[hidden]{display:none!important}
 /* all-games menu: 9-dot button drops down a glass row of the games' handhelds; scrolls sideways when there are many */
 .hicons{position:relative}
-.hhmenu{position:absolute;top:calc(100% + 14px);right:0;z-index:60;width:max-content;max-width:calc(100vw - 32px);padding:16px;border-radius:24px;
+.hhmenu{position:absolute;top:calc(100% + 14px);right:0;z-index:60;width:max-content;max-width:calc(100vw - 32px);padding:16px;border-radius:12px;
   background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(24px) saturate(1.5);backdrop-filter:blur(24px) saturate(1.5);
-  box-shadow:0 18px 50px rgba(0,0,0,.16),inset 0 0 0 1px rgba(255,255,255,.55);transform-origin:top right;animation:hhIn .18s ease-out}
+  box-shadow:0 9px 25px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.55);transform-origin:top right;animation:hhIn .18s ease-out}
 .hhmenu[hidden]{display:none}
 @keyframes hhIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
 .nav .hhmenu .hhrow{display:flex;gap:14px;margin:-6px 0 0;padding-top:6px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;transform:none;font-size:12px;font-weight:600;color:var(--ink)}
@@ -258,7 +258,7 @@ main .panel[hidden],.dots button[hidden],.games a[hidden]{display:none!important
 .nav .hhmenu .hhblob{width:69px;height:105px;display:grid;place-items:center}
 .nav .hhmenu .hhblob::after{content:"";width:70%;aspect-ratio:1;background:var(--shape);border-radius:var(--blob);transform:rotate(var(--tilt))}
 html[data-theme="dark"] .nav .hhmenu .hhrow{color:#f2f2f0}
-html[data-theme="dark"] .hhmenu{background:rgba(28,28,30,.6);box-shadow:0 18px 50px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.08)}
+html[data-theme="dark"] .hhmenu{background:rgba(28,28,30,.6);box-shadow:0 9px 25px rgba(0,0,0,.25),inset 0 0 0 1px rgba(255,255,255,.08)}
 html.noboards .daybox{display:none!important} /* admin can turn off the Today's daily challenge cards */
 /* ---- dark mode (toggle in the nav; follows the device until you pick) ---- */
 .theme{width:36px;height:36px;margin:-8px -8px -8px auto;border:0;padding:0;border-radius:50%;background:transparent;color:#9a9ea4;display:grid;place-items:center;cursor:pointer;transition:color .15s,background .15s}
