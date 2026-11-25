@@ -11,8 +11,8 @@
 .signup form{display:flex;gap:8px}
 .signup input{flex:1;min-width:0;height:44px;box-sizing:border-box;border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:0 14px;font:inherit;font-size:16px;background:#fff;color:#0d0d0d}
 .signup input:focus{outline:none;border-color:#0d0d0d;box-shadow:0 0 0 3px rgba(0,0,0,.08)}
-.signup button{height:44px;border:0;border-radius:12px;padding:0 18px;font:inherit;font-size:15px;font-weight:600;background:#0d0d0d;color:#fff;cursor:pointer;white-space:nowrap}
-.signup button:disabled{opacity:.35;cursor:default}
+.signup form button{height:44px;border:0;border-radius:12px;padding:0 18px;font:inherit;font-size:15px;font-weight:600;background:#0d0d0d;color:#fff;cursor:pointer;white-space:nowrap}
+.signup form button:disabled{opacity:.35;cursor:default}
 .signup button{position:relative;overflow:visible}
 .sushake{position:absolute;left:50%;top:50%;font-style:normal;font-size:22px;line-height:1;pointer-events:none;transform:translate(-50%,-50%);animation:suShake .9s cubic-bezier(.2,.8,.3,1) forwards}
 @keyframes suShake{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}25%{opacity:1;transform:translate(-50%,-110%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-180%) scale(2.2)}}
@@ -32,7 +32,7 @@ html[data-theme="dark"] .signup{background:#161616}
 html[data-theme="dark"] .signup p{color:#9a9a96}
 html[data-theme="dark"] .signup input{background:#0b0b0b;color:#f2f2f0;border-color:rgba(255,255,255,.14)}
 html[data-theme="dark"] .signup input:focus{border-color:#f2f2f0;box-shadow:0 0 0 3px rgba(255,255,255,.1)}
-html[data-theme="dark"] .signup button{background:#f2f2f0;color:#0d0d0d}
+html[data-theme="dark"] .signup form button{background:#f2f2f0;color:#0d0d0d}
 @media (max-width:760px){.signup{flex-basis:100%;height:auto;min-height:100px;padding:16px 18px}} /* the line wraps to two on phones: let the box grow */ /* .wrap.touch: beats the page's .wrap{margin:0 auto} so the gap shows */
 .tile{width:100px;height:100px;border-radius:15px;border:0;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
   font:600 13px/1 var(--sans);cursor:pointer;text-decoration:none;transition:transform .08s,filter .15s,box-shadow .2s}
