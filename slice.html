@@ -365,9 +365,6 @@ h1 .modetag{font-family:var(--font-body);font-size:.7rem;font-weight:600;letter-
 html,body{background:#000}
 h1{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:26px;letter-spacing:.01em}
 h1 .modetag{font-stretch:100%}
-h1 .themetag{color:#ffb45c;background:rgba(255,159,90,.16)}
-.themepill{display:inline-block;align-self:flex-start;width:max-content;margin:0 0 12px;padding:6px 12px;border-radius:999px;background:rgba(255,159,90,.16);color:#ffb45c;font:600 13px/1.2 var(--font-body);letter-spacing:.02em}
-.themepill[hidden]{display:none}
 .mhead h2{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:1.08rem;letter-spacing:.04em}
 .mhead h2 .titleno{font-family:var(--font-body);font-stretch:100%;text-transform:none;letter-spacing:0;font-weight:400}
 #modeBtn,#idleHelp{display:none!important} /* the mode is picked with Daily / Arcade mode now */
@@ -927,7 +924,7 @@ html,body{touch-action:manipulation}
 
 <div class="app collect flat hudmini">
   <header class="top">
-    <div class="gtitle"><h1>Slice <span class="modetag" id="modeTag" hidden>Single player</span><span class="modetag themetag" id="themeTag" hidden></span></h1></div>
+    <div class="gtitle"><h1>Slice <span class="modetag" id="modeTag" hidden>Single player</span></h1></div>
     <nav class="nav">
       <button class="icon" id="lbBtn" aria-label="Leaderboard">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 3.6M16 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 13v4M9 20h6M10 17h4"/></svg>
@@ -956,7 +953,6 @@ html,body{touch-action:manipulation}
   <div class="dock" id="dock">
     <div class="droprow" id="droprow">
       <div class="home">
-        <span class="themepill" id="themePill" hidden></span>
         <div class="logo" role="img" aria-label="Slice"><span aria-hidden="true">Slice</span><svg viewBox="0 0 324 457" aria-hidden="true"><path fill="var(--mint)" d="M270 159 269 159 257 171 256 171 229 197 228 197 202 222 201 222 175 247 174 247 134 285 133 285 107 310 106 310 80 335 79 335 67 347 66 347 53 360 52 360 39 373 38 373 26 385 25 385 12 398 11 398 9 400 10 401 10 404 12 408 12 411 13 412 14 419 16 423 16 426 17 427 17 430 18 431 19 437 24 446 28 450 37 455 40 455 41 456 51 456 52 455 59 454 63 452 66 452 67 451 74 450 78 448 85 447 89 445 92 445 93 444 100 443 104 441 111 440 115 438 118 438 119 437 126 436 130 434 133 434 134 433 141 432 145 430 152 429 156 427 159 427 160 426 167 425 171 423 174 423 175 422 182 421 186 419 193 418 197 416 200 416 201 415 208 414 212 412 215 412 216 411 223 410 224 409 230 408 231 407 234 407 238 405 241 405 242 404 249 403 250 402 256 401 257 400 260 400 264 398 267 398 268 397 275 396 279 394 282 394 283 393 290 392 294 390 301 389 302 388 304 388 310 385 317 379 322 370 322 367 323 366 323 356 322 355 321 348 319 344 319 341 318 340 317 333 315 329 315 326 314 325 313 318 312 317 311 311 310 310 310 307 308 303 308 300 307 299 306 292 304 288 304 285 303 284 302 277 300 273 300 270 299 269 298 262 296 258 296 255 295 254 294 247 292 243 292 240 291 239 290 232 288 228 287 221 285 217 285 214 284 213 283 206 281 202 281 199 280 198 279 191 277 187 277 184 276 183 276 180 275 179 275 176 273 172 273 169 272 168 272 165 271 164 271 161ZM295 6 286 1 283 1 282 0 272 0 271 1 264 2 260 4 257 4 256 5 249 6 245 8 238 9 234 11 231 11 230 12 223 13 219 15 212 16 208 18 205 18 204 19 197 20 193 22 190 22 189 23 182 24 178 26 171 27 167 29 164 29 163 30 156 31 152 33 149 33 148 34 141 35 137 37 130 38 126 40 123 40 122 41 115 42 111 44 108 44 107 45 100 46 99 47 93 48 92 49 89 49 85 51 82 51 81 52 74 53 73 54 67 55 66 56 63 56 59 58 56 58 55 59 48 60 44 62 41 62 40 63 33 64 29 66 22 67 21 68 19 68 13 71 6 77 1 86 1 89 0 90 0 100 1 101 2 108 4 112 4 115 5 116 6 123 8 127 8 130 9 131 10 138 11 139 12 145 13 146 13 149 15 153 15 156 16 157 17 164 19 168 19 171 20 172 21 179 23 183 23 186 24 187 25 194 27 198 27 201 28 202 29 209 31 213 31 216 32 217 33 224 35 228 36 235 38 239 38 242 39 243 40 250 42 254 42 257 43 258 44 265 46 269 46 272 47 273 47 276 48 277 48 280 50 284 50 287 51 288 51 291 52 292 52 295 53 297 56 294 57 294 69 282 70 282 83 269 84 269 96 257 97 257 137 219 138 219 164 194 165 194 191 169 192 169 232 131 233 131 259 106 260 106 287 80 288 80 300 68 301 68 313 56 313 52 311 48 311 45 310 44 309 37 307 33 307 30 306 29 306 26 305 25 304 19 299 10Z"/></svg></div>
         <p id="homeText">Things fly at you.<br>Cut them perfectly in half.</p>
       </div>
@@ -1360,8 +1356,7 @@ async function markPlayed(){
   playedDay=DAY_NO; playedAt=Date.now(); try{localStorage.setItem('slice.played',String(DAY_NO));localStorage.setItem('slice.playedAt',String(playedAt))}catch(e){}
   try{const m=await myDoc(); if(m)await m.ref.set(Object.assign({},m.d,{playedDay:DAY_NO,playedAt,updatedAt:Date.now()}))}catch(e){}
 }
-const paintTheme=()=>{const t=themeToday();for(const id of ['themeTag','themePill']){const el=document.getElementById(id);if(!el)continue;el.hidden=!t;if(t)el.textContent=t.emoji+' '+t.name+' edition'}};paintTheme();
-setInterval(()=>{paintTheme();const n=dayNo(); if(n!==DAY_NO){DAY_NO=n;hud={}} if(S.mode==='idle'||S.mode==='over')setBar()},20000);
+setInterval(()=>{const n=dayNo(); if(n!==DAY_NO){DAY_NO=n;hud={}} if(S.mode==='idle'||S.mode==='over')setBar()},20000);
 setTimeout(async()=>{
   const use=n=>(window.claude&&window.claude.use)?window.claude.use(n).catch(()=>null):Promise.resolve(null);
   [userNS,dbNS]=await Promise.all([use('user'),use('db')]);
@@ -1531,7 +1526,7 @@ function fillOver(m){
   $('#overT').textContent=m.practice?'Game Summary':'Daily Summary';
   // daily: leaderboard initials sit left of Challenge a friend (saved on this device; posted to the leaderboard when it's reachable)
   {const iw=$('#oIni');iw.replaceChildren();if(isDaily&&!PREVIEW&&window.DCIni)iw.append(DCIni.block(async v=>{if(!(dbNS&&myId&&!postBlocked))return;const ref=dbNS.doc('slice_scores/'+myId),sn=await ref.get();await ref.set(Object.assign({},sn.exists?sn.data():{},{ini:v}))},{feature:true}))}
-  $('#oSub').textContent='Slice '+(m.practice?'Single player':'Daily challenge No. '+m.day)+(themeToday()?' · '+themeToday().emoji+' '+themeToday().name+' edition':'');
+  $('#oSub').textContent='Slice '+(m.practice?'Single player':'Daily challenge No. '+m.day);
   $('#oScore').textContent=fmtN(m.score);
   $('#oNb').hidden=!m.nb;
   const cuts=m.cuts||[];
