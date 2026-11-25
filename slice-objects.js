@@ -159,6 +159,21 @@ const OBJECTS={
     tubeRaw(t=>t<.45?[-.2-t/.45*.45,.15,0]:[-.65-.08*Math.sin((t-.45)/.55*Math.PI/2),.15-(t-.45)/.55*.75,0],16,t=>.17*endR(t,.08),12),
     tubeRaw(t=>t<.4?[.2+t/.4*.4,-.2,0]:[.6+.06*Math.sin((t-.4)/.6*Math.PI/2),-.2-(t-.4)/.6*.6,0],16,t=>.15*endR(t,.08),12)),
 
+  /* ----- holiday: Thanksgiving pack (only on the dates in THEMES) ----- */
+  pie:()=>lathe([[0,-.36],[.72,-.36],[.82,-.42],[.94,-.46],[1.02,-.4],[1.02,-.28],[.92,-.22],[.84,.26],[.78,.32],[0,.32]],40),
+  corn:()=>combine(radialRaw(blobs([E([0,-.15,0],[.36,1.0,.36])],(d,rr)=>{const th=Math.acos(Math.max(-1,Math.min(1,-d[1]))),ph=angOf(d);
+      return rr*(1+.05*Math.abs(Math.sin(9*ph))*Math.abs(Math.sin(16*th))*Math.min(1,Math.hypot(d[0],d[2])*1.6))}),28,40),
+    move(radialRaw(blobs([E([0,0,0],[.2,.55,.06],.35)]),16,20),-.32,.62,.1),move(radialRaw(blobs([E([0,0,0],[.2,.55,.06],-.35)]),16,20),.32,.62,-.1),
+    tubeRaw(lineP([0,.8,0],[0,1.15,0]),6,t=>.08*endR(t,.2),8)),
+  drumstick:()=>combine(radialRaw(blobs([E([-.3,0,0],[.72,.48,.46],-.18),E([.35,.02,0],[.3,.2,.2])],null,.07),28,40),
+    tubeRaw(lineP([.5,.04,0],[1.05,.1,0]),10,t=>.1*endR(t,.06),10),
+    move(radialRaw(blobs([E([0,-.08,0],[.13,.12,.13]),E([0,.1,0],[.13,.12,.13])]),12,16),1.1,.1,0)),
+  pilgrimhat:()=>lathe([[0,-.95],[.48,-.95],[.52,-.9],[.58,.05],[.62,.05],[.62,.28],[.6,.3],[.62,.33],[1.12,.36],[1.16,.42],[1.12,.48],[0,.48]],40),
+  turkey:()=>combine(radialRaw(blobs([E([0,.08,0],[1,.6,.78]),E([-.35,-.18,0],[.62,.42,.6]),
+      E([.62,.1,.42],[.45,.26,.24],-.55),E([.62,.1,-.42],[.45,.26,.24],-.55)],null,.08),32,48),
+    tubeRaw(lineP([.92,-.12,.46],[1.18,-.42,.5]),8,t=>.075*endR(t,.1),8),tubeRaw(lineP([.92,-.12,-.46],[1.18,-.42,-.5]),8,t=>.075*endR(t,.1),8),
+    move(radialRaw(d=>.11,8,10),1.21,-.46,.5),move(radialRaw(d=>.11,8,10),1.21,-.46,-.5)),
+
   /* ----- finales ----- */
   bust:()=>radial(blobs([
       E([0,-.12,.05],[.74,.9,.86]),E([0,.35,-.12],[.55,.5,.6]),E([0,.85,.15],[.38,.55,.38]),E([0,1.25,.12],[.98,.42,.58]),
@@ -191,15 +206,20 @@ const OBJ_COLOR={vase:'#7cc8ff',pawn:'#ece7de',bell:'#f2c14e',apple:'#ff7a6b',pe
   mushroom:'#ff7a6b',duck:'#f2c14e',fish:'#ff9f5a',lemon:'#f6e05e',pumpkin:'#ff9f5a',pepper:'#e5484d',snail:'#c9a27a',icecream:'#f8c0d8',rocket:'#e9e9ef',sailboat:'#7cc8ff',
   bulb:'#fff2a8',mug:'#9deba8',boot:'#f2c14e',carrot:'#ff9f5a',banana:'#f6d75e',
   teapot:'#7cc8ff',whale:'#6e8bff',rock:'#b9b2a6',sneaker:'#ff8ad8',guitar:'#d08a4e',dino:'#9deba8',cat:'#c9c4bc',octopus:'#c49bff',cloud:'#eef2f6',cactus:'#6fcf7f',
-  bust:'#e9e3d8',moai:'#a59d92',anchor:'#a9bccf',crown:'#f6d77a',dragonegg:'#4fd8c8'};
+  bust:'#e9e3d8',moai:'#a59d92',anchor:'#a9bccf',crown:'#f6d77a',dragonegg:'#4fd8c8',
+  pie:'#e0a15a',corn:'#f6d75e',drumstick:'#c98445',pilgrimhat:'#4a4a52',turkey:'#c98445'};
 const OBJ_NAMES={vase:'Vase',pawn:'Pawn',bell:'Bell',apple:'Apple',pear:'Pear',spintop:'Top',cupcake:'Cupcake',donut:'Donut',egg:'Egg',pin:'Bowling pin',hourglass:'Hourglass',lamp:'Lamp',trophy:'Trophy',acorn:'Acorn',onion:'Onion',
   mushroom:'Mushroom',duck:'Duck',fish:'Fish',lemon:'Lemon',pumpkin:'Pumpkin',pepper:'Pepper',snail:'Snail',icecream:'Ice cream',rocket:'Rocket',sailboat:'Sailboat',bulb:'Light bulb',mug:'Mug',boot:'Boot',carrot:'Carrot',banana:'Banana',
   teapot:'Teapot',whale:'Whale',rock:'Rock',sneaker:'Sneaker',guitar:'Guitar',dino:'Dinosaur',cat:'Cat',octopus:'Octopus',cloud:'Cloud',cactus:'Cactus',
-  bust:'Bust',moai:'Moai',anchor:'Anchor',crown:'Crown',dragonegg:'Dragon egg'};
+  bust:'Bust',moai:'Moai',anchor:'Anchor',crown:'Crown',dragonegg:'Dragon egg',
+  pie:'Pumpkin pie',corn:'Corn',drumstick:'Drumstick',pilgrimhat:'Pilgrim hat',turkey:'Turkey'};
+/* holiday packs: on these dates (the player's local date) every game, daily and single player, uses only these ten objects.
+   Holiday objects never show up on other days. */
+const THEMES={'2026-11-26':{name:'Thanksgiving',emoji:'🦃',objects:['turkey','pie','corn','drumstick','pilgrimhat','pumpkin','acorn','apple','pear','carrot']}};
 const TIER_EASY=['vase','pawn','bell','apple','pear','spintop','cupcake','donut','egg','pin','hourglass','lamp','trophy','acorn','onion'];
 const TIER_MED=['mushroom','duck','fish','lemon','pumpkin','pepper','snail','icecream','rocket','sailboat','bulb','mug','boot','carrot','banana'];
 const TIER_HARD=['teapot','whale','rock','sneaker','guitar','dino','cat','octopus','cloud','cactus'];
 const TIER_FINALE=['bust','moai','anchor','crown','dragonegg'];
 
-window.SLICE_LIB={OBJECTS,OBJ_COLOR,OBJ_NAMES,TIER_EASY,TIER_MED,TIER_HARD,TIER_FINALE};
+window.SLICE_LIB={OBJECTS,OBJ_COLOR,OBJ_NAMES,TIER_EASY,TIER_MED,TIER_HARD,TIER_FINALE,THEMES};
 })();

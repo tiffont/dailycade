@@ -1214,15 +1214,19 @@ const LADDER_V1=[['flat',FLAT_SYM],['flat',FLAT_SYM],['flat',FLAT_ASYM],['solid'
   ['object',OBJ_SYM],['object',OBJ_SYM],['object',OBJ_ASYM],['object',OBJ_ASYM],['object',['bust']]];
 
 // every object is 3D now (slice-objects.js). Any of the 45 objects can show up in any of the 10 spots; only the motion gets harder as the game goes on
-const {OBJECTS,OBJ_COLOR,OBJ_NAMES,TIER_EASY,TIER_MED,TIER_HARD,TIER_FINALE}=window.SLICE_LIB;
+const {OBJECTS,OBJ_COLOR,OBJ_NAMES,TIER_EASY,TIER_MED,TIER_HARD,TIER_FINALE,THEMES={}}=window.SLICE_LIB;
+const themeToday=()=>THEMES[todayKey()]||null; // holiday pack for today, if any
 const ALL_OBJ=[...TIER_EASY,...TIER_MED,...TIER_HARD,...TIER_FINALE];
 const LADDER=Array.from({length:10},()=>['object',ALL_OBJ]);
 function makeRun(seed){
   const r=mulberry(hash(seed)),pick=a=>a[Math.floor(r()*a.length)],sg=()=>r()<.5?-1:1;
   const SPIN=[0,0,0,.35,.6,.9,1.3,1.8,2.4,3.1], TUMBLE=[0,0,0,0,0,.7,1,1.4,1.9,2.5], SWAY=[0,0,0,0,0,0,0,.05,.08,.11];
   const items=[],used=new Set();
+  // holiday pack: all ten of its objects, in a shuffled order for the day
+  const th=themeToday(),themeOrder=th?th.objects.slice(0,10).map(n=>[r(),n]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]):null;
   for(let i=0;i<10;i++){
-    const [kind,pool]=LADDER[i];let name,tries=0;do{name=pick(pool)}while(used.has(kind+name)&&++tries<20);used.add(kind+name);
+    let [kind,pool]=LADDER[i];let name,tries=0;
+    if(themeOrder){name=themeOrder[i];kind='object'}else{do{name=pick(pool)}while(used.has(kind+name)&&++tries<20)}used.add(kind+name);
     let mesh;
     if(kind==='object')mesh=OBJECTS[name](r);
     else{const raw=name==='blob'?SHAPES.blob(r):SHAPES[name]();mesh=extrude(normalize(raw),kind==='flat'?.025:.3)}
