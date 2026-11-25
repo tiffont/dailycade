@@ -12,7 +12,12 @@
 .signup input{flex:1;min-width:0;height:44px;box-sizing:border-box;border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:0 14px;font:inherit;font-size:16px;background:#fff;color:#0d0d0d}
 .signup input:focus{outline:none;border-color:#0d0d0d;box-shadow:0 0 0 3px rgba(0,0,0,.08)}
 .signup button{height:44px;border:0;border-radius:12px;padding:0 18px;font:inherit;font-size:15px;font-weight:600;background:#0d0d0d;color:#fff;cursor:pointer;white-space:nowrap}
-.signup button:disabled{opacity:.55;cursor:default}
+.signup button:disabled{opacity:.35;cursor:default}
+.signup button{position:relative;overflow:visible}
+.suheart{position:absolute;left:50%;top:40%;width:14px;height:14px;margin:-7px 0 0 -7px;pointer-events:none;color:#ff5c8a;animation:suHeart .9s cubic-bezier(.2,.7,.3,1) forwards}
+.suheart svg{display:block;width:100%;height:100%}
+@keyframes suHeart{0%{opacity:0;transform:translate(0,0) scale(.3)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(var(--s)) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){.suheart{display:none}}
 .signup .err{color:#c2412d}
 .signup p[hidden]{display:none}
 .signup.done form{display:none}
@@ -526,9 +531,9 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
     <h2 id="touchT">Let's keep in touch</h2>
     <div class="trow">
     <div class="signup" id="signup">
-      <h3 id="suT" aria-live="polite">No spam. Just news, updates, and the occasional hello.</h3>
+      <h3 id="suT" aria-live="polite">No spam. News, updates, and the occasional hello.</h3>
       <p id="suNote" hidden></p>
-      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="you@email.com" aria-label="Email address" required><button type="submit" id="suBtn">Join</button></form>
+      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="Email address" aria-label="Email address" required><button type="submit" id="suBtn" disabled>Touch</button></form>
     </div>
     <div class="tiles">
     <a class="tile x" href="https://x.com/dailycadegames" target="_blank" rel="noopener" aria-label="Follow Dailycade on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Follow</a>
@@ -589,7 +594,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
   <p>If you'd like to confirm what we hold about you or ask us to delete it, contact us at <a href="mailto:tiffont@gmail.com">tiffont@gmail.com</a>. See our <a href="#privacy">privacy page</a> for details.</p>
 </section>
 
-<footer><div class="wrap"><span class="copy">© 2026 Dailycade. All rights reserved.<a class="fx" href="https://x.com/dailycadegames" target="_blank" rel="noopener" aria-label="Dailycade on X" title="Follow us on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a></span><nav class="flinks" aria-label="Site"><a href="#privacy">Privacy</a><a href="#do-not-sell">Don't sell my info</a><a href="#feedback" id="fbLink">Send feedback</a></nav></div></footer>
+<footer><div class="wrap"><span class="copy">© 2026 Dailycade. All rights reserved.</span><nav class="flinks" aria-label="Site"><a href="#privacy">Privacy</a><a href="#do-not-sell">Don't sell my info</a><a href="#feedback" id="fbLink">Send feedback</a></nav></div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="dc-db.js"></script>
@@ -604,15 +609,22 @@ let panels=allPanels.slice(),dots=allDots.slice();
 (()=>{const box=$('signup'),form=$('suForm'),inp=$('suEmail'),btn=$('suBtn'),note=$('suT');const NOTE=note.textContent; // errors show in the title line
   const done=()=>{box.classList.add('done');note.className='';note.textContent="You're on the list";const n=$('suNote');n.textContent="We'll email you when a new game drops.";n.hidden=false};
   try{if(localStorage.getItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed'))done()}catch(e){}
-  inp.addEventListener('input',()=>{if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
+  const RE=/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i,valid=()=>RE.test(inp.value.trim());
+  inp.addEventListener('input',()=>{btn.disabled=!valid();if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
+  // a little burst of hearts from the button
+  const hearts=()=>{const H='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.4 1.1 4.1 2.3.4.6 2.6.6 3 0C14.2 6.1 15.6 5 17.6 5 21 5 23.1 8.4 21.6 11.8 19.5 16.4 12 21 12 21z"/></svg>';
+    for(let i=0;i<9;i++){const h=document.createElement('i');h.className='suheart';h.innerHTML=H;const a=-Math.PI/2+(Math.random()-.5)*2.2,d=34+Math.random()*30;
+      h.style.setProperty('--dx',Math.cos(a)*d+'px');h.style.setProperty('--dy',Math.sin(a)*d+'px');h.style.setProperty('--s',(.7+Math.random()*.7).toFixed(2));h.style.setProperty('--r',((Math.random()-.5)*50).toFixed(0)+'deg');
+      h.style.animationDelay=(i*25)+'ms';h.style.color=['#ff5c8a','#ff8fb1','#c49bff','#9deba8'][i%4];btn.append(h);setTimeout(()=>h.remove(),1100+i*25)}};
   form.addEventListener('submit',async e=>{e.preventDefault();const v=inp.value.trim();
-    if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v)){note.className='err';note.textContent='Enter a valid email address.';inp.focus();return}
+    if(!valid()){note.className='err';note.textContent='Enter a valid email address.';inp.focus();return}
+    hearts();
     if(!window.DCSB){note.className='err';note.textContent="Couldn't connect. Try again in a moment.";return}
-    btn.disabled=true;btn.textContent='Joining…';
+    btn.disabled=true;
     try{const r=await DCSB.rpc('subscribe',{p_email:v,p_staging:!!window.DC_STAGING,p_source:'home'});if(r.error)throw r.error;
-      try{localStorage.setItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed','1')}catch(e){}done()}
+      try{localStorage.setItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed','1')}catch(e){}setTimeout(done,750)}
     catch(err){note.className='err';note.textContent=/invalid/.test(err.message||'')?'Enter a valid email address.':"Couldn't sign you up. Try again in a moment."}
-    finally{btn.disabled=false;btn.textContent='Join'}});
+    finally{btn.disabled=!valid()}});
 })();
 /* all-games menu: each game's handheld from its panel; hidden games stay hidden (applyHidden covers .games links) */
 (()=>{const row=$('hhRow'),menu=$('hhMenu'),btn=$('appsBtn');
