@@ -532,9 +532,9 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
     <h2 id="touchT">Let's keep in touch</h2>
     <div class="trow">
     <div class="signup" id="signup">
-      <h3 id="suT" aria-live="polite">No spam. News, updates, and the occasional hello.</h3>
+      <h3 id="suT" aria-live="polite">Sign up for news, updates, and the occasional hello.</h3>
       <p id="suNote" hidden></p>
-      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="Email address" aria-label="Email address" required><button type="submit" id="suBtn" disabled>Touch</button></form>
+      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="Email address" aria-label="Email address" required><button type="submit" id="suBtn" disabled>Sign up</button></form>
     </div>
     <div class="tiles">
     <a class="tile x" href="https://x.com/dailycadegames" target="_blank" rel="noopener" aria-label="Follow Dailycade on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Follow</a>
@@ -608,7 +608,7 @@ const rail=$('rail'),allPanels=[...rail.querySelectorAll('.panel')],allDots=[...
 let panels=allPanels.slice(),dots=allDots.slice();
 /* email signup: saved privately in the database (subscribe() function); staging signups stay separate */
 (()=>{const box=$('signup'),form=$('suForm'),inp=$('suEmail'),btn=$('suBtn'),note=$('suT');const NOTE=note.textContent; // errors show in the title line
-  const done=()=>{box.classList.add('done');note.className='';note.textContent='Pleasure to meet you. 🤝';const n=$('suNote');n.textContent="Any news, updates, or game drops, you'll be the first to know.";n.hidden=false};
+  const done=()=>{box.classList.add('done');note.className='';note.textContent="You'll be the first to know.";const n=$('suNote');n.textContent='News, updates, game drops and more, right to your inbox.';n.hidden=false};
   try{if(localStorage.getItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed'))done()}catch(e){}
   const RE=/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i,valid=()=>RE.test(inp.value.trim());
   inp.addEventListener('input',()=>{btn.disabled=!valid();if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
