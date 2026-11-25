@@ -22,6 +22,9 @@
 .signup.done form{display:none}
 .signup .sudone{display:flex;align-items:center;gap:14px}
 .signup .suthumb{font-size:30px;line-height:1;flex:none}
+.signup:not(.done) .suthumb{display:none}
+.signup .suagain{all:unset;cursor:pointer;color:inherit;font-weight:600;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.signup .suagain:focus-visible{outline:2px solid currentColor;outline-offset:2px;border-radius:2px}
 .signup .sutext{display:flex;flex-direction:column;gap:6px}
 .signup.done{flex:0 0 auto;width:auto;max-width:100%} /* once joined, the box hugs its message */
 html[data-theme="dark"] .signup{background:#161616}
@@ -611,7 +614,11 @@ let panels=allPanels.slice(),dots=allDots.slice();
 /* email signup: saved privately in the database (subscribe() function); staging signups stay separate */
 (()=>{const box=$('signup'),form=$('suForm'),inp=$('suEmail'),btn=$('suBtn'),note=$('suT');const NOTE=note.textContent; // errors show in the title line
   const done=()=>{if(!box.querySelector('.sudone')){const row=document.createElement('div'),th=document.createElement('span'),tx=document.createElement('div');row.className='sudone';th.className='suthumb';th.setAttribute('aria-hidden','true');th.textContent='👍';tx.className='sutext';box.prepend(row);tx.append(note,$('suNote'));row.append(th,tx)}
-    box.classList.add('done');note.className='';note.textContent="You'll be the first to know.";const n=$('suNote');n.textContent='News, updates, game drops and more, right to your inbox.';n.hidden=false};
+    box.classList.add('done');note.className='';note.textContent="You'll be the first to know.";const n=$('suNote');n.textContent='News, updates, game drops and more, right to your inbox. ';
+    const again=document.createElement('button');again.type='button';again.className='suagain';again.textContent='Use a different email';again.onclick=reset;n.append(again);n.hidden=false};
+  // back to the form, to sign up another address from this browser
+  const reset=()=>{box.classList.remove('done');note.className='';note.textContent=NOTE;$('suNote').hidden=true;inp.value='';btn.disabled=true;
+    try{localStorage.removeItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed')}catch(e){}inp.focus()};
   try{if(localStorage.getItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed'))done()}catch(e){}
   const RE=/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i,valid=()=>RE.test(inp.value.trim());
   inp.addEventListener('input',()=>{btn.disabled=!valid();if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
