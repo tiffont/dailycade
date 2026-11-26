@@ -1125,6 +1125,7 @@ load();
     if(lbOn)watchLb();
     if(stOn)loadSt();
     if(ovOn)openOv();
+    if(bkOn)loadBk();if(suOn)loadSu();if(nwOn)loadNw(); // the page you reloaded on fills in once sign-in is confirmed
     loadUsage(); // also powers the warning banner on every tab
     try{db.doc('site_config/home').onSnapshot(sn=>{readHome(sn.exists?sn.data():{});boardsOn=!(sn.exists&&sn.data().boards===false);paintVis();paintBoards()},()=>{})}catch(e){}
     load();
