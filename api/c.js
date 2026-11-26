@@ -3,7 +3,7 @@
 // people who tap the link are sent straight on to the game.
 
 const GAMES = {
-  gambit:   { name: 'Gambit',   page: '/gambit',   tag: 'Throw cards. Combine power-ups. Survive the fall.' },
+  gambit:   { name: 'Gambit',   page: '/gambit',   tag: 'Throw cards. Combine powers. Survive the fall.' },
   dropface: { name: 'Dropface', page: '/dropface', tag: 'Ten levels, three drops. Call where it lands.' },
   slice:    { name: 'Slice',    page: '/slice',    tag: 'Things fly at you. Cut them in half...perfectly.' },
   trace:    { name: 'Trace',    page: '/trace',    tag: 'Ten shapes. Stay on the line. Build your pile.' },
