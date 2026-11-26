@@ -79,6 +79,13 @@ h1{font-size:34px;letter-spacing:-.02em;margin:32px 0 6px;font-weight:700}
 .modal h3{margin:0 0 8px;font-size:18px}
 .modal p{margin:0 0 18px;color:var(--muted)}
 .modal .row{justify-content:flex-end}
+.nwmodal{place-items:start center;overflow:auto;padding:40px 20px}
+.modal .box.nwbox{max-width:640px;padding:24px 28px 28px}
+.nwmh{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}.nwmh h2{margin:0}
+.nwx{width:36px;height:36px;display:grid;place-items:center;border:0;border-radius:8px;background:none;color:inherit;cursor:pointer}.nwx:hover{background:rgba(0,0,0,.06)}
+html[data-theme="dark"] .nwx:hover{background:rgba(255,255,255,.08)}
+.nwtop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.nwtop h2{margin:0}
+body.nwopen{overflow:hidden}
 .login{display:grid;gap:12px;max-width:420px}.login input{border:1px solid #d9d9d9;border-radius:11px;padding:11px 14px;background:#fff}.login p{margin:0;color:var(--muted);font-size:14px}.whoami{font-size:13px;color:var(--muted);margin:-8px 0 16px}.whoami button{border:0;background:none;padding:0;text-decoration:underline;color:inherit;cursor:pointer}
 body.fbmode main>section:not(#fbCard){display:none!important}
 body.fbmode .dock{display:none!important}
@@ -90,7 +97,7 @@ body.usmode main>section:not(#usCard){display:none!important}
 body.usmode .dock{display:none!important}
 body.bkmode main>section:not(#bkCard){display:none!important}
 body.sumode main>section:not(#suCard){display:none!important}
-body.nwmode main>section:not(#nwCard):not(#nwListCard){display:none!important}
+body.nwmode main>section:not(#nwListCard){display:none!important}
 body.nwmode .dock{display:none!important}
 .nwform{display:grid;gap:12px}
 .nwform label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
@@ -371,27 +378,8 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
     <h2 id="tuneH">Tuning <span class="note">Changes stay a draft until you publish</span></h2>
     <div id="knobs"></div>
   </section>
-  <section class="card" id="nwCard" aria-labelledby="nwFormH" hidden>
-    <h2 id="nwFormH">New post</h2>
-    <p class="hint" style="margin:0 0 14px">Posts show in the bell on the homepage, newest first, with a dot until each visitor has seen them. Save a draft, publish now, or pick a date and time to schedule it.</p>
-    <div class="nwform">
-      <label>Title<input id="nwTitle" maxlength="120" autocomplete="off" placeholder="Meet Trace, our newest game"></label>
-      <label><span>Message <small id="nwBodyN">0 / 600</small></span><textarea id="nwBody" maxlength="600" placeholder="Ten shapes. Stay on the line. Build your pile. Play today's Trace on the homepage."></textarea></label>
-      <div class="two"><label>Link <small>optional</small><input id="nwUrl" maxlength="300" autocomplete="off" placeholder="/trace or https://…"></label><label>Link text <small>optional</small><input id="nwLink" maxlength="40" autocomplete="off" placeholder="Play Trace"></label></div>
-      <div class="nwimg"><div class="nwthumb" id="nwThumb" aria-hidden="true"></div><div><span class="nwlab">Image <small>optional · PNG, JPG, WebP or GIF up to 3 MB. Sits on top of the colored shape; a transparent PNG looks best.</small></span>
-        <div class="bkbar"><label class="btn ghost small nwpick">Choose image<input type="file" id="nwFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button class="btn ghost small" id="nwImgX" type="button" hidden>Remove</button><span class="hint" id="nwImgNote"></span></div></div></div>
-      <div class="nwtags"><span class="nwlab">Categories <small>players filter the Updates page by these. The first game picked shows above the post; with no game it's Dailycade. Linking to a game picks it for you.</small></span>
-        <div class="nwchips" id="nwCats"></div></div>
-      <div class="nwtags"><span class="nwlab">Tags <small>small labels on the post, like New game or Holiday.</small></span>
-        <div class="nwchips" id="nwChips"></div>
-        <div class="nwaddtag"><input id="nwTagNew" maxlength="24" placeholder="Add a tag" autocomplete="off"><button class="btn ghost small" type="button" id="nwTagAdd">Add</button></div></div>
-      <label class="nwfeat"><input type="checkbox" id="nwFeat"> <span><b>Featured</b> <small>shows as the big card at the top of the news page. Only one post is featured at a time.</small></span></label>
-      <label>Publish at <small>leave empty to publish right away</small><input type="datetime-local" id="nwWhen"></label>
-      <div class="bkbar"><button class="btn small" id="nwPub" type="button">Publish now</button><button class="btn ghost small" id="nwDraft" type="button">Save draft</button><button class="btn ghost small" id="nwCancel" type="button" hidden>Cancel edit</button></div>
-    </div>
-  </section>
   <section class="card" id="nwListCard" aria-labelledby="nwH" hidden>
-    <h2 id="nwH">Posts <span class="note" id="nwNote"></span></h2>
+    <div class="nwtop"><h2 id="nwH">Posts <span class="note" id="nwNote"></span></h2><button class="btn small" id="nwNew" type="button">New post</button></div>
     <div class="bklist" id="nwList"></div>
   </section>
   <section class="card" id="suCard" aria-labelledby="suH" hidden>
@@ -448,6 +436,25 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
 </div></div>
 <footer></footer>
 
+<div class="modal nwmodal" id="nwModal" hidden role="dialog" aria-modal="true" aria-labelledby="nwFormH"><div class="box nwbox">
+    <div class="nwmh"><h2 id="nwFormH">New post</h2><button class="nwx" id="nwX" type="button" aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <p class="hint" style="margin:0 0 14px">Posts show in the bell on the homepage, newest first, with a dot until each visitor has seen them. Save a draft, publish now, or pick a date and time to schedule it.</p>
+    <div class="nwform">
+      <label>Title<input id="nwTitle" maxlength="120" autocomplete="off" placeholder="Meet Trace, our newest game"></label>
+      <label><span>Message <small id="nwBodyN">0 / 600</small></span><textarea id="nwBody" maxlength="600" placeholder="Ten shapes. Stay on the line. Build your pile. Play today's Trace on the homepage."></textarea></label>
+      <div class="two"><label>Link <small>optional</small><input id="nwUrl" maxlength="300" autocomplete="off" placeholder="/trace or https://…"></label><label>Link text <small>optional</small><input id="nwLink" maxlength="40" autocomplete="off" placeholder="Play Trace"></label></div>
+      <div class="nwimg"><div class="nwthumb" id="nwThumb" aria-hidden="true"></div><div><span class="nwlab">Image <small>optional · PNG, JPG, WebP or GIF up to 3 MB. Sits on top of the colored shape; a transparent PNG looks best.</small></span>
+        <div class="bkbar"><label class="btn ghost small nwpick">Choose image<input type="file" id="nwFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button class="btn ghost small" id="nwImgX" type="button" hidden>Remove</button><span class="hint" id="nwImgNote"></span></div></div></div>
+      <div class="nwtags"><span class="nwlab">Categories <small>players filter the Updates page by these. The first game picked shows above the post; with no game it's Dailycade. Linking to a game picks it for you.</small></span>
+        <div class="nwchips" id="nwCats"></div></div>
+      <div class="nwtags"><span class="nwlab">Tags <small>small labels on the post, like New game or Holiday.</small></span>
+        <div class="nwchips" id="nwChips"></div>
+        <div class="nwaddtag"><input id="nwTagNew" maxlength="24" placeholder="Add a tag" autocomplete="off"><button class="btn ghost small" type="button" id="nwTagAdd">Add</button></div></div>
+      <label class="nwfeat"><input type="checkbox" id="nwFeat"> <span><b>Featured</b> <small>shows as the big card at the top of the Updates page. Only one post is featured at a time.</small></span></label>
+      <label>Publish at <small>leave empty to publish right away</small><input type="datetime-local" id="nwWhen"></label>
+      <div class="bkbar"><button class="btn small" id="nwPub" type="button">Publish now</button><button class="btn ghost small" id="nwDraft" type="button">Save draft</button><button class="btn ghost small" id="nwCancel" type="button">Cancel</button></div>
+    </div>
+</div></div>
 <div class="modal" id="wipe" hidden role="dialog" aria-modal="true" aria-labelledby="wT">
   <div class="box"><h3 id="wT"></h3><p id="wB"></p>
     <label for="wIn" style="display:block;font-size:13px;font-weight:600;margin:0 0 6px">Type <b id="wWord"></b> to confirm</label>
@@ -732,7 +739,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidd
 /* ---------- beta feedback ---------- */
 let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
 let lbOn=false, lbGame='gambit', lbData={gambit:[],dropface:[],slice:[],trace:[],spiral:[],frames:[],rings:[]}, lbBlocked=[], lbSubs=null;
-function setFb(){document.body.classList.toggle('ovmode',ovOn);$('ovCard').hidden=!ovOn;document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn;document.body.classList.toggle('bkmode',bkOn);$('bkCard').hidden=!bkOn;document.body.classList.toggle('sumode',suOn);$('suCard').hidden=!suOn;document.body.classList.toggle('nwmode',nwOn);$('nwCard').hidden=$('nwListCard').hidden=!nwOn}
+function setFb(){document.body.classList.toggle('ovmode',ovOn);$('ovCard').hidden=!ovOn;document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn;document.body.classList.toggle('bkmode',bkOn);$('bkCard').hidden=!bkOn;document.body.classList.toggle('sumode',suOn);$('suCard').hidden=!suOn;document.body.classList.toggle('nwmode',nwOn);$('nwListCard').hidden=!nwOn;if(!nwOn)nwClose()}
 /* ---------- stats: daily counts from the track() function ---------- */
 let stOn=false, stRows=[], stGame='all', stT=0;
 /* ---------- backups: copies kept in the database (see the backup_* functions in Supabase) ---------- */
@@ -809,7 +816,7 @@ const nwTagName=t=>t.split('-').map((w,i)=>i?w:w[0].toUpperCase()+w.slice(1)).jo
 const nwSlug=t=>t.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
 let nwTags=new Set();
 function nwPaintTags(){const chip=t=>{const c=document.createElement('button');c.type='button';c.className='nwchip';
-    c.textContent=t==='dailycade'?'Dailycade':nwTagName(t);if(NW_GAMES[t])c.style.setProperty('--c',NW_GAMES[t]);c.setAttribute('aria-pressed',String(nwTags.has(t)));
+    c.textContent=t==='dailycade'?'Dailycade':nwTagName(t);if(NW_GAMES[t])c.style.setProperty('--c',NW_GAMES[t]);if(t==='dailycade')c.style.setProperty('--c','conic-gradient(#9deba8 0 25%,#c49bff 0 50%,#ff8ad8 0 75%,#f2c14e 0)');c.setAttribute('aria-pressed',String(nwTags.has(t)));
     c.onclick=()=>{nwTags.has(t)?nwTags.delete(t):nwTags.size<8&&nwTags.add(t);nwPaintTags()};return c};
   $('nwCats').replaceChildren(...NW_CATS.map(chip));
   $('nwChips').replaceChildren(...[...new Set([...NW_PRESET,...[...nwTags].filter(t=>!NW_CATS.includes(t))])].map(chip))}
@@ -817,7 +824,7 @@ function nwAddTag(){const t=nwSlug($('nwTagNew').value);if(t&&nwTags.size<8){nwT
 nwPaintTags();$('nwTagAdd').onclick=nwAddTag;$('nwTagNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nwAddTag()}});
 $('nwUrl').addEventListener('change',()=>{const m=$('nwUrl').value.trim().match(/^(?:https?:\/\/(?:www\.|staging\.)?dailycadegames\.com)?\/([a-z]+)/i);const g=m&&m[1].toLowerCase();if(g&&NW_GAMES[g]&&!nwTags.has(g)&&nwTags.size<8){nwTags.add(g);nwPaintTags()}});
 function nwForm(row){nwEdit=row||null;$('nwTitle').value=row?row.title:'';$('nwBody').value=row?row.body||'':'';$('nwUrl').value=row?row.link_url||'':'';$('nwLink').value=row?row.link_text||'':'';
-  $('nwWhen').value=row&&row.publish_at?nwLocal(new Date(row.publish_at)):'';nwImg(row?row.image_url:null);$('nwFeat').checked=!!(row&&row.featured);nwTags=new Set(row&&row.tags||[]);nwPaintTags();$('nwFile').value='';$('nwFormH').textContent=row?'Edit post':'New post';$('nwCancel').hidden=!row;nwCount()}
+  $('nwWhen').value=row&&row.publish_at?nwLocal(new Date(row.publish_at)):'';nwImg(row?row.image_url:null);$('nwFeat').checked=!!(row&&row.featured);nwTags=new Set(row&&row.tags||[]);nwPaintTags();$('nwFile').value='';$('nwFormH').textContent=row?'Edit post':'New post';nwCount()}
 function nwCount(){$('nwBodyN').textContent=$('nwBody').value.length+' / 600'}
 async function loadNw(){if(!window.DCSB)return;if(nwOn)$('nwNote').textContent='Loading…';
   try{const r=await DCSB.from('news').select('*').eq('scope',NW_SCOPE()).order('created_at',{ascending:false});if(r.error)throw r.error;nwRows=r.data||[];paintNw()}
@@ -830,7 +837,7 @@ function paintNw(){const list=$('nwList');list.replaceChildren();const live=nwRo
     const b=document.createElement('b');b.textContent=x.title;const sm=document.createElement('small');sm.textContent=(x.body||'').slice(0,90)+((x.body||'').length>90?'…':'');t.append(b,sm);
     const [lab,cls]=nwState(x),k=document.createElement('span');k.className='bkk'+(cls?' nw-'+cls:'');k.textContent=lab;
     const a=document.createElement('div');a.className='bka';
-    const ed=document.createElement('button');ed.type='button';ed.className='btn ghost small';ed.textContent='Edit';ed.onclick=()=>{nwForm(x);$('nwCard').scrollIntoView({behavior:'smooth',block:'start'})};
+    const ed=document.createElement('button');ed.type='button';ed.className='btn ghost small';ed.textContent='Edit';ed.onclick=()=>nwOpen(x);
     const del=document.createElement('button');del.type='button';del.className='btn danger small';del.textContent='Delete';
     del.onclick=async()=>{if(!await ask('Delete "'+x.title+'"?',"It's removed from the bell and the news page"+(window.DC_STAGING?' on staging':'')+'. This can\'t be undone.','Delete'))return;
       try{const r=await DCSB.from('news').delete().eq('id',x.id);if(r.error)throw r.error;if(nwEdit&&nwEdit.id===x.id)nwForm(null);msg('Deleted.','ok');loadNw()}catch(e){msg("Couldn't delete: "+(e.message||e),'err')}};
@@ -864,9 +871,14 @@ async function nwSave(publish){const title=$('nwTitle').value.trim(),body=$('nwB
   if(publish&&!await ask(when>new Date()?'Schedule this post?':'Publish this post now?',(when>new Date()?'It shows in the bell'+(window.DC_STAGING?' on staging':'')+' on '+bkWhen(when)+'.':'It shows in the bell'+(window.DC_STAGING?' on staging':'')+' right away, with a dot for everyone who hasn\'t seen it.'),when>new Date()?'Schedule':'Publish'))return;
   try{if(row.featured)await nwUnfeatureOthers(nwEdit&&nwEdit.id);
     const r=nwEdit?await DCSB.from('news').update(row).eq('id',nwEdit.id):await DCSB.from('news').insert(row);if(r.error)throw r.error;
-    msg(publish?(when>new Date()?'Scheduled.':'Published.'):'Draft saved.','ok');nwForm(null);loadNw()}catch(e){msg("Couldn't save: "+(e.message||e),'err')}}
+    msg(publish?(when>new Date()?'Scheduled.':'Published.'):'Draft saved.','ok');nwClose();loadNw()}catch(e){msg("Couldn't save: "+(e.message||e),'err')}}
 $('nwBody').addEventListener('input',nwCount);
-$('nwDraft').onclick=()=>nwSave(false);$('nwPub').onclick=()=>nwSave(true);$('nwCancel').onclick=()=>nwForm(null);
+$('nwDraft').onclick=()=>nwSave(false);$('nwPub').onclick=()=>nwSave(true);
+function nwOpen(row){nwForm(row||null);$('nwModal').hidden=false;document.body.classList.add('nwopen');$('nwModal').scrollTop=0;setTimeout(()=>$('nwTitle').focus(),30)}
+function nwClose(){if($('nwModal').hidden)return;$('nwModal').hidden=true;document.body.classList.remove('nwopen');nwForm(null)}
+$('nwNew').onclick=()=>nwOpen(null);$('nwCancel').onclick=$('nwX').onclick=nwClose;
+$('nwModal').addEventListener('mousedown',e=>{if(e.target===$('nwModal'))nwClose()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('nwModal').hidden&&$('modal').hidden)nwClose()});
 $('nwWhen').addEventListener('input',()=>{const w=$('nwWhen').value;$('nwPub').textContent=w&&new Date(w)>new Date()?'Schedule':'Publish now'});
 
 /* ---------- usage: how close each service is to its free plan ---------- */
