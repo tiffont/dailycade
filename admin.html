@@ -98,6 +98,14 @@ body.nwmode .dock{display:none!important}
 .nwform input,.nwform textarea{font:inherit;font-size:15px;font-weight:400;border:1px solid #d9d9d9;border-radius:11px;padding:11px 14px;background:#fff;color:inherit;width:100%;box-sizing:border-box}
 .nwform textarea{min-height:96px;resize:vertical;line-height:1.45}
 html[data-theme="dark"] .nwform input,html[data-theme="dark"] .nwform textarea{background:#2a2a2a;border-color:#3a3a3a}
+.nwimg{display:flex;gap:14px;align-items:center}
+.nwthumb{flex:0 0 72px;height:72px;border-radius:12px;background:rgba(0,0,0,.05) center/contain no-repeat}
+html[data-theme="dark"] .nwthumb{background-color:rgba(255,255,255,.06)}
+.nwlab{display:block;font-size:14px;font-weight:600;margin-bottom:8px}.nwlab small{display:block;font-weight:400;opacity:.65;margin-top:2px}
+.nwpick{cursor:pointer}
+.nwfeat{display:flex!important;flex-direction:row!important;gap:10px;align-items:flex-start;cursor:pointer}.nwfeat input{width:18px;height:18px;margin:2px 0 0}.nwfeat small{display:block;opacity:.65;font-weight:400}
+.bkk.nw-feat{background:#efe4ff;color:#5b2ea6}html[data-theme="dark"] .bkk.nw-feat{background:#2e2340;color:#c49bff}
+.bkrow .nwmini{flex:0 0 40px;height:40px;border-radius:8px;background:rgba(0,0,0,.05) center/contain no-repeat}
 .nwform .two{display:grid;grid-template-columns:2fr 1fr;gap:12px}
 @media (max-width:640px){.nwform .two{grid-template-columns:1fr}}
 .bkk.nw-live{background:#d9f5df;color:#1d6b33}.bkk.nw-sched{background:#fdf0cc;color:#7a5a00}
@@ -363,6 +371,9 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
       <label>Title<input id="nwTitle" maxlength="120" autocomplete="off" placeholder="Meet Trace, our newest game"></label>
       <label><span>Message <small id="nwBodyN">0 / 600</small></span><textarea id="nwBody" maxlength="600" placeholder="Ten shapes. Stay on the line. Build your pile. Play today's Trace on the homepage."></textarea></label>
       <div class="two"><label>Link <small>optional</small><input id="nwUrl" maxlength="300" autocomplete="off" placeholder="/trace or https://…"></label><label>Link text <small>optional</small><input id="nwLink" maxlength="40" autocomplete="off" placeholder="Play Trace"></label></div>
+      <div class="nwimg"><div class="nwthumb" id="nwThumb" aria-hidden="true"></div><div><span class="nwlab">Image <small>optional · PNG, JPG, WebP or GIF up to 3 MB. Sits on top of the colored shape; a transparent PNG looks best.</small></span>
+        <div class="bkbar"><label class="btn ghost small nwpick">Choose image<input type="file" id="nwFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button class="btn ghost small" id="nwImgX" type="button" hidden>Remove</button><span class="hint" id="nwImgNote"></span></div></div></div>
+      <label class="nwfeat"><input type="checkbox" id="nwFeat"> <span><b>Featured</b> <small>shows as the big card at the top of the news page. Only one post is featured at a time.</small></span></label>
       <label>Publish at <small>leave empty to publish right away</small><input type="datetime-local" id="nwWhen"></label>
       <div class="bkbar"><button class="btn small" id="nwPub" type="button">Publish now</button><button class="btn ghost small" id="nwDraft" type="button">Save draft</button><button class="btn ghost small" id="nwCancel" type="button" hidden>Cancel edit</button></div>
     </div>
@@ -781,7 +792,7 @@ let nwOn=false, nwRows=[], nwEdit=null;
 const NW_SCOPE=()=>window.DC_STAGING?'staging':'live';
 const nwLocal=d=>{const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())};
 function nwForm(row){nwEdit=row||null;$('nwTitle').value=row?row.title:'';$('nwBody').value=row?row.body||'':'';$('nwUrl').value=row?row.link_url||'':'';$('nwLink').value=row?row.link_text||'':'';
-  $('nwWhen').value=row&&row.publish_at?nwLocal(new Date(row.publish_at)):'';$('nwFormH').textContent=row?'Edit post':'New post';$('nwCancel').hidden=!row;nwCount()}
+  $('nwWhen').value=row&&row.publish_at?nwLocal(new Date(row.publish_at)):'';nwImg(row?row.image_url:null);$('nwFeat').checked=!!(row&&row.featured);$('nwFile').value='';$('nwFormH').textContent=row?'Edit post':'New post';$('nwCancel').hidden=!row;nwCount()}
 function nwCount(){$('nwBodyN').textContent=$('nwBody').value.length+' / 600'}
 async function loadNw(){if(!window.DCSB)return;if(nwOn)$('nwNote').textContent='Loading…';
   try{const r=await DCSB.from('news').select('*').eq('scope',NW_SCOPE()).order('created_at',{ascending:false});if(r.error)throw r.error;nwRows=r.data||[];paintNw()}
@@ -798,15 +809,36 @@ function paintNw(){const list=$('nwList');list.replaceChildren();const live=nwRo
     const del=document.createElement('button');del.type='button';del.className='btn danger small';del.textContent='Delete';
     del.onclick=async()=>{if(!await ask('Delete "'+x.title+'"?',"It's removed from the bell and the news page"+(window.DC_STAGING?' on staging':'')+'. This can\'t be undone.','Delete'))return;
       try{const r=await DCSB.from('news').delete().eq('id',x.id);if(r.error)throw r.error;if(nwEdit&&nwEdit.id===x.id)nwForm(null);msg('Deleted.','ok');loadNw()}catch(e){msg("Couldn't delete: "+(e.message||e),'err')}};
-    a.append(ed,del);row.append(t,k,a);list.append(row)}}
+    if(x.status!=='published'||cls==='sched'){const pb=document.createElement('button');pb.type='button';pb.className='btn small';pb.textContent='Publish';pb.onclick=()=>nwQuick(x);a.prepend(pb)} // quick publish
+    const fb=document.createElement('button');fb.type='button';fb.className='btn ghost small';fb.textContent=x.featured?'Unfeature':'Feature';fb.onclick=()=>nwFeature(x,!x.featured);
+    a.append(fb,ed,del);
+    if(x.image_url){const m=document.createElement('span');m.className='nwmini';m.style.backgroundImage='url("'+encodeURI(x.image_url)+'")';row.append(m)}
+    row.append(t);if(x.featured){const f=document.createElement('span');f.className='bkk nw-feat';f.textContent='★ Featured';row.append(f)}row.append(k,a);list.append(row)}}
+async function nwQuick(x){if(!await ask('Publish "'+x.title+'" now?','It shows in the bell'+(window.DC_STAGING?' on staging':'')+' right away, with a dot for everyone who hasn\'t seen it.','Publish'))return;
+  try{const r=await DCSB.from('news').update({status:'published',publish_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',x.id);if(r.error)throw r.error;msg('Published.','ok');loadNw()}catch(e){msg("Couldn't publish: "+(e.message||e),'err')}}
+async function nwUnfeatureOthers(id){const q=DCSB.from('news').update({featured:false}).eq('scope',NW_SCOPE()).eq('featured',true);const r=await(id?q.neq('id',id):q);if(r.error)throw r.error}
+async function nwFeature(x,on){try{if(on)await nwUnfeatureOthers(x.id);const r=await DCSB.from('news').update({featured:on}).eq('id',x.id);if(r.error)throw r.error;
+  msg(on?'Featured. It leads the news page once it\'s live.':'No longer featured. The newest post leads instead.','ok');loadNw()}catch(e){msg("Couldn't update: "+(e.message||e),'err')}}
+let nwImgUrl=null;
+function nwImg(u){nwImgUrl=u||null;$('nwThumb').style.backgroundImage=u?'url("'+encodeURI(u)+'")':'';$('nwImgX').hidden=!u;$('nwImgNote').textContent=''}
+$('nwFile').addEventListener('change',async()=>{const f=$('nwFile').files[0];if(!f)return;
+  if(f.size>3145728){msg('That image is over 3 MB.','err');$('nwFile').value='';return}
+  $('nwImgNote').textContent='Uploading…';
+  try{const ext=(f.name.split('.').pop()||'png').toLowerCase().replace(/[^a-z0-9]/g,''),path=NW_SCOPE()+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
+    const r=await DCSB.storage.from('news').upload(path,f,{contentType:f.type,upsert:false});if(r.error)throw r.error;
+    nwImg(DCSB.storage.from('news').getPublicUrl(path).data.publicUrl)}
+  catch(e){$('nwImgNote').textContent='';msg("Couldn't upload: "+(e.message||e),'err')}
+  $('nwFile').value=''});
+$('nwImgX').onclick=()=>nwImg(null);
 async function nwSave(publish){const title=$('nwTitle').value.trim(),body=$('nwBody').value.trim(),url=$('nwUrl').value.trim(),lt=$('nwLink').value.trim(),w=$('nwWhen').value;
   if(!title){msg('Give the post a title.','err');$('nwTitle').focus();return}
   if(url&&!/^(https?:\/\/|\/)/.test(url)){msg('The link should start with https:// or /','err');$('nwUrl').focus();return}
   const when=publish?(w?new Date(w):new Date()):null;
   if(publish&&w&&isNaN(when)){msg('That date and time don\'t look right.','err');return}
-  const row={scope:NW_SCOPE(),title,body,link_url:url||null,link_text:url?(lt||null):null,status:publish?'published':'draft',publish_at:when?when.toISOString():(nwEdit&&!publish?null:null),updated_at:new Date().toISOString()};
+  const row={scope:NW_SCOPE(),title,body,link_url:url||null,link_text:url?(lt||null):null,image_url:nwImgUrl,featured:$('nwFeat').checked,status:publish?'published':'draft',publish_at:when?when.toISOString():(nwEdit&&!publish?null:null),updated_at:new Date().toISOString()};
   if(publish&&!await ask(when>new Date()?'Schedule this post?':'Publish this post now?',(when>new Date()?'It shows in the bell'+(window.DC_STAGING?' on staging':'')+' on '+bkWhen(when)+'.':'It shows in the bell'+(window.DC_STAGING?' on staging':'')+' right away, with a dot for everyone who hasn\'t seen it.'),when>new Date()?'Schedule':'Publish'))return;
-  try{const r=nwEdit?await DCSB.from('news').update(row).eq('id',nwEdit.id):await DCSB.from('news').insert(row);if(r.error)throw r.error;
+  try{if(row.featured)await nwUnfeatureOthers(nwEdit&&nwEdit.id);
+    const r=nwEdit?await DCSB.from('news').update(row).eq('id',nwEdit.id):await DCSB.from('news').insert(row);if(r.error)throw r.error;
     msg(publish?(when>new Date()?'Scheduled.':'Published.'):'Draft saved.','ok');nwForm(null);loadNw()}catch(e){msg("Couldn't save: "+(e.message||e),'err')}}
 $('nwBody').addEventListener('input',nwCount);
 $('nwDraft').onclick=()=>nwSave(false);$('nwPub').onclick=()=>nwSave(true);$('nwCancel').onclick=()=>nwForm(null);

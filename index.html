@@ -47,6 +47,9 @@ html[data-theme="dark"] a.nitem:hover,html[data-theme="dark"] .nmenu .nempty{bac
 .ncard .nart{position:absolute;right:-30px;bottom:-34px;width:150px;height:150px;pointer-events:none}
 .ncard .nart::before{content:"";position:absolute;inset:0;background:var(--shape);border-radius:var(--blob);transform:rotate(var(--tilt))}
 .ncard .nart img{position:absolute;left:28px;bottom:30px;height:118px;width:auto;transform:rotate(-8deg);filter:drop-shadow(0 8px 12px rgba(0,0,0,.18))}
+.ncard .nart.own img{width:78%;height:78%;left:11%;top:11%;bottom:auto;object-fit:contain;transform:rotate(-4deg)}
+.ncard.lead .nart.own img{width:84%;height:84%;left:8%;top:8%;transform:rotate(-4deg)}
+.nitem .nico img{max-width:40px;object-fit:contain}
 .ncard .ntxt{position:relative;max-width:calc(100% - 110px);display:flex;flex-direction:column;flex:1}
 .npill{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#fff;font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--ink);margin-bottom:16px}
 .npill::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--shape)}
@@ -739,17 +742,18 @@ let panels=allPanels.slice(),dots=allDots.slice();
     if(u){const x=new URL(u);if(x.host===location.host||/dailycadegames\.com$/.test(x.host))g=GAMES[x.pathname.split('/')[1]]}
     if(!g){const t=(p.title+' '+(p.body||'')).toLowerCase();g=Object.entries(GAMES).find(([k])=>new RegExp('\\b'+k+'\\b').test(t))?.[1]||null}
     return g||{shape:PAL[i%PAL.length]?.shape||'#9deba8',blob:PAL[i%PAL.length]?.blob,tilt:PAL[i%PAL.length]?.tilt}};
+  const pic=(p,g)=>p.image_url&&safeUrl(p.image_url)||g.img;
   const paint=(el,g)=>{el.style.setProperty('--shape',g.shape);if(g.blob)el.style.setProperty('--blob',g.blob);if(g.tilt)el.style.setProperty('--tilt',g.tilt)};
   const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
   const ARROW='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
   // dropdown row
   const item=(p,i)=>{const u=p.link_url&&safeUrl(p.link_url),g=gameOf(p,i),a=el(u?'a':'div','nitem');if(u)a.href=u;paint(a,g);
-    const ico=el('span','nico');if(g.img){const im=el('img');im.src=g.img;im.alt='';ico.append(im)}a.append(ico);
+    const ico=el('span','nico');if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';ico.append(im)}a.append(ico);
     const tx=el('div');const t=el('time',null,when(p.publish_at));t.dateTime=p.publish_at;tx.append(t,el('h3',null,p.title));
     if(p.body)tx.append(el('p',null,p.body));if(u)tx.append(el('span','ngo',(p.link_text||'Learn more')+' →'));a.append(tx);return a};
   // news page card; the first is the lead
   const card=(p,i,isNew)=>{const u=p.link_url&&safeUrl(p.link_url),g=gameOf(p,i),c=el('article','ncard'+(i===0?' lead':''));paint(c,g);
-    const art=el('div','nart');art.setAttribute('aria-hidden','true');if(g.img){const im=el('img');im.src=g.img;im.alt='';im.decoding='async';art.append(im)}c.append(art);
+    const art=el('div','nart'+(p.image_url?' own':''));art.setAttribute('aria-hidden','true');if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';im.decoding='async';art.append(im)}c.append(art);
     const tx=el('div','ntxt'),pill=el('span','npill'+(isNew?' new':''));const t=el('time',null,when(p.publish_at));t.dateTime=p.publish_at;
     pill.append(t);if(isNew)pill.append(document.createTextNode(' · New'));tx.append(pill,el('h3',null,p.title));if(p.body)tx.append(el('p',null,p.body));
     if(u){const l=el('a',i===0?'btn':'nlink');l.href=u;
@@ -757,9 +761,9 @@ let panels=allPanels.slice(),dots=allDots.slice();
     c.append(tx);return c};
   const paintDot=()=>{const n=fresh().length;dot.hidden=!n;btn.setAttribute('aria-label',n?'News, '+n+' new':'News')};
   let newIds=new Set();
-  const paintAll=()=>{all.replaceChildren();if(!posts.length){all.append(el('p','nempty','No news yet.'));return}posts.forEach((p,i)=>all.append(card(p,i,newIds.has(p.id))))};
+  const paintAll=()=>{all.replaceChildren();if(!posts.length){all.append(el('p','nempty','No news yet.'));return}const lead=posts.find(p=>p.featured)||posts[0];[lead,...posts.filter(p=>p!==lead)].forEach((p,i)=>all.append(card(p,i,newIds.has(p.id))))};
   async function load(){if(!window.DCSB){setTimeout(load,400);return}
-    try{const r=await DCSB.from('news').select('id,title,body,link_url,link_text,publish_at').eq('scope',window.DC_STAGING?'staging':'live').eq('status','published').lte('publish_at',new Date().toISOString()).order('publish_at',{ascending:false}).limit(50);
+    try{const r=await DCSB.from('news').select('id,title,body,link_url,link_text,publish_at,image_url,featured').eq('scope',window.DC_STAGING?'staging':'live').eq('status','published').lte('publish_at',new Date().toISOString()).order('publish_at',{ascending:false}).limit(50);
       if(r.error)throw r.error;posts=r.data||[];newIds=new Set(fresh().map(p=>p.id));paintDot();paintAll()}catch(e){}}
   const games=$('hhMenu'),gbtn=$('appsBtn');
   const open=on=>{if(on){games.hidden=true;gbtn.setAttribute('aria-expanded','false'); // one menu at a time
