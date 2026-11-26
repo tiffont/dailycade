@@ -5,12 +5,13 @@
 .touch .tiles{display:flex;gap:16px}
 /* phones: once you scroll past the header, it drops back in as a sticky glass bar; back at the top it settles into place */
 @media (max-width:760px){
-  .nav.stuck{position:fixed;top:0;left:0;right:0;z-index:70;background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:0 1px 0 rgba(0,0,0,.06);animation:navDrop .28s cubic-bezier(.2,.8,.2,1)}
+  .nav.stuck{position:fixed;top:max(16px,env(safe-area-inset-top,0px));left:16px;right:16px;z-index:70;border-radius:18px;background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:0 8px 24px rgba(0,0,0,.08),inset 0 0 0 1px rgba(0,0,0,.05);animation:navDrop .3s cubic-bezier(.2,.8,.2,1)}
+  .nav.stuck .wrap{height:56px;padding-left:16px;padding-right:12px}
   .nav.stuck.calm{animation:none;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
-  html[data-theme="dark"] .nav.stuck:not(.calm){background:rgba(14,15,15,.68);box-shadow:0 1px 0 rgba(255,255,255,.06)}
+  html[data-theme="dark"] .nav.stuck:not(.calm){background:rgba(28,30,30,.72);box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.07)}
   body.navstuck{padding-top:var(--navH,68px)}
 }
-@keyframes navDrop{from{transform:translateY(-100%)}to{transform:none}}
+@keyframes navDrop{from{transform:translateY(calc(-100% - 20px))}to{transform:none}}
 @media (prefers-reduced-motion:reduce){.nav.stuck{animation:none}}
 /* email signup, beside the Follow and Feedback tiles (below them on phones) */
 .touch .trow{display:flex;gap:16px;flex-wrap:wrap;align-items:stretch}
