@@ -24,8 +24,8 @@ a.nitem:hover h3{text-decoration:underline;text-underline-offset:3px}
 .nitem .nico::before{content:"";position:absolute;inset:4px;background:var(--shape);border-radius:var(--blob);transform:rotate(var(--tilt))}
 .nitem .nico img{position:relative;height:40px;width:auto}
 .nitem .nico b{position:relative;font-size:16px}
-.nitem.unread time::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff5c8a;margin-right:6px;vertical-align:1px}
-.nitem time{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.nitem.unread .ncat::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff5c8a;margin-right:6px;vertical-align:1px}
+.nitem .ncat{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
 .nitem h3{margin:0;font-size:14px;font-weight:700;line-height:1.3}
 .nitem p{margin:3px 0 0;font-size:13px;line-height:1.45;color:#5b6068;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .nitem .ngo{display:inline-block;margin-top:5px;font-size:13px;font-weight:700}
@@ -74,6 +74,7 @@ html[data-theme="dark"] .ntags span,html[data-theme="dark"] .ntags button{backgr
 .ncard .ntxt{position:relative;max-width:calc(100% - 110px);display:flex;flex-direction:column;flex:1}
 .npill{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#fff;font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--ink);margin-bottom:16px}
 .npill::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--shape)}
+.npill.dc::before{background:conic-gradient(#9deba8 0 25%,#c49bff 0 50%,#ff8ad8 0 75%,#f2c14e 0)}
 .npill.new{background:var(--ink);color:#fff}
 .ncard h3{margin:0 0 8px;font-size:22px;font-weight:700;line-height:1.2;letter-spacing:-.02em}
 .ncard p{margin:0;font-size:15px;line-height:1.55;color:#5b6068}
@@ -772,6 +773,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
     if(u){const x=new URL(u);if(x.host===location.host||/dailycadegames\.com$/.test(x.host))g=GAMES[x.pathname.split('/')[1]]}
     if(!g){const t=(p.title+' '+(p.body||'')).toLowerCase();g=Object.entries(GAMES).find(([k])=>new RegExp('\\b'+k+'\\b').test(t))?.[1]||null}
     return g||{shape:PAL[i%PAL.length]?.shape||'#9deba8',blob:PAL[i%PAL.length]?.blob,tilt:PAL[i%PAL.length]?.tilt}};
+  const catOf=p=>{const g=(p.tags||[]).find(t=>GAMES[t]);return g?GAMES[g].name:'Dailycade'}; // the label above each post
   const pic=(p,g)=>p.image_url&&safeUrl(p.image_url)||g.img;
   const paint=(el,g)=>{el.style.setProperty('--shape',g.shape);if(g.blob)el.style.setProperty('--blob',g.blob);if(g.tilt)el.style.setProperty('--tilt',g.tilt)};
   const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
@@ -779,13 +781,13 @@ let panels=allPanels.slice(),dots=allDots.slice();
   // dropdown row
   const item=(p,i)=>{const u=p.link_url&&safeUrl(p.link_url),g=gameOf(p,i),a=el(u?'a':'div','nitem');if(u)a.href=u;paint(a,g);
     const ico=el('span','nico');if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';ico.append(im)}a.append(ico);
-    const tx=el('div');const t=el('time',null,when(p.publish_at));t.dateTime=p.publish_at;tx.append(t,el('h3',null,p.title));
+    const tx=el('div');tx.append(el('span','ncat',catOf(p)),el('h3',null,p.title));
     if(p.body)tx.append(el('p',null,p.body));if(u)tx.append(el('span','ngo',(p.link_text||'Learn more')+' →'));a.append(tx);return a};
   // news page card; the first is the lead
   const card=(p,i,isNew)=>{const u=p.link_url&&safeUrl(p.link_url),g=gameOf(p,i),c=el('article','ncard'+(i===0?' lead':''));paint(c,g);
     const art=el('div','nart'+(p.image_url?' own':''));art.setAttribute('aria-hidden','true');if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';im.decoding='async';art.append(im)}c.append(art);
-    const tx=el('div','ntxt'),pill=el('span','npill'+(isNew?' new':''));const t=el('time',null,when(p.publish_at));t.dateTime=p.publish_at;
-    pill.append(t);if(isNew)pill.append(document.createTextNode(' · New'));tx.append(pill,el('h3',null,p.title));if(p.body)tx.append(el('p',null,p.body));
+    const tx=el('div','ntxt'),pill=el('span','npill'+(isNew?' new':'')+(catOf(p)==='Dailycade'?' dc':''),catOf(p));
+    if(isNew)pill.append(document.createTextNode(' · New'));tx.append(pill,el('h3',null,p.title));if(p.body)tx.append(el('p',null,p.body));
     if(p.tags&&p.tags.length){const tg=el('div','ntags');p.tags.forEach(t=>{if(GAMES[t]||t==='dailycade'){const b=el('button',null,tagName(t));b.type='button';b.onclick=()=>setTag(t);tg.append(b)}else tg.append(el('span',null,tagName(t)))});tx.append(tg)}
     if(u){const l=el('a',i===0?'btn':'nlink');l.href=u;
       if(i===0){l.textContent=p.link_text||'Learn more';l.insertAdjacentHTML('beforeend',ARROW)}else{l.textContent=(p.link_text||'Learn more')+' ';l.append(el('span',null,'→'))}tx.append(l)}
