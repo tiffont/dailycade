@@ -7,6 +7,9 @@
 @media (max-width:760px){
   .nav.stuck{position:fixed;top:max(16px,env(safe-area-inset-top,0px));left:16px;right:16px;z-index:70;border-radius:18px;background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:0 8px 24px rgba(0,0,0,.08),inset 0 0 0 1px rgba(0,0,0,.05);animation:navDrop .3s cubic-bezier(.2,.8,.2,1)}
   .nav.stuck .wrap{height:56px;padding-left:16px;padding-right:12px}
+  /* the games menu opens inside the tray: the tray grows down to hold it (script moves the menu into the tray) */
+  .nav.stuck>.hhmenu{position:static;width:auto;max-width:none;margin:0;padding:4px 16px 18px;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;animation:hhGrow .2s ease-out}
+  .nav.stuck>.hhmenu .hhrow{justify-content:space-between}
   .nav.stuck.calm{animation:none;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
   html[data-theme="dark"] .nav.stuck:not(.calm){background:rgba(28,30,30,.72);box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.07)}
   body.navstuck{padding-top:var(--navH,68px)}
@@ -298,6 +301,7 @@ main .panel[hidden],.dots button[hidden],.games a[hidden]{display:none!important
   background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px); /* same glass as Gambit's hand tray */
   box-shadow:0 9px 25px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.14);transform-origin:top right;animation:hhIn .18s ease-out}
 .hhmenu[hidden]{display:none}
+@keyframes hhGrow{from{opacity:0}to{opacity:1}}
 @keyframes hhIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
 .nav .hhmenu .hhrow{display:grid;grid-template-columns:repeat(4,minmax(0,72px));gap:16px 12px;margin:0;transform:none;font-size:12px;font-weight:600;color:var(--ink)}
 .nav .hhmenu .hhrow::-webkit-scrollbar{display:none}
@@ -634,8 +638,9 @@ let panels=allPanels.slice(),dots=allDots.slice();
 /* sticky header on phones */
 (()=>{const nav=document.querySelector('header.nav'),mq=matchMedia('(max-width:760px)');let stuck=false,H=0;
   const set=on=>{if(on===stuck)return;stuck=on;
-    if(on){H=nav.offsetHeight;document.body.style.setProperty('--navH',H+'px');document.body.classList.add('navstuck');nav.classList.add('stuck')}
-    else{nav.classList.remove('stuck','calm');document.body.classList.remove('navstuck')}};
+    const menu=document.getElementById('hhMenu'),home=document.querySelector('.nav .hicons');
+    if(on){H=nav.offsetHeight;document.body.style.setProperty('--navH',H+'px');document.body.classList.add('navstuck');nav.classList.add('stuck');nav.append(menu)}
+    else{nav.classList.remove('stuck','calm');document.body.classList.remove('navstuck');home.append(menu)}};
   const tick=()=>{const y=scrollY;if(!mq.matches){set(false);return}
     if(!stuck&&y>(H||nav.offsetHeight)+40)set(true);
     else if(stuck&&y<=2)set(false);};
