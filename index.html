@@ -759,7 +759,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
   let newIds=new Set();
   const paintAll=()=>{all.replaceChildren();if(!posts.length){all.append(el('p','nempty','No news yet.'));return}posts.forEach((p,i)=>all.append(card(p,i,newIds.has(p.id))))};
   async function load(){if(!window.DCSB){setTimeout(load,400);return}
-    try{const r=await DCSB.from('news').select('id,title,body,link_url,link_text,publish_at').eq('scope',window.DC_STAGING?'staging':'live').order('publish_at',{ascending:false}).limit(50);
+    try{const r=await DCSB.from('news').select('id,title,body,link_url,link_text,publish_at').eq('scope',window.DC_STAGING?'staging':'live').eq('status','published').lte('publish_at',new Date().toISOString()).order('publish_at',{ascending:false}).limit(50);
       if(r.error)throw r.error;posts=r.data||[];newIds=new Set(fresh().map(p=>p.id));paintDot();paintAll()}catch(e){}}
   const games=$('hhMenu'),gbtn=$('appsBtn');
   const open=on=>{if(on){games.hidden=true;gbtn.setAttribute('aria-expanded','false'); // one menu at a time
