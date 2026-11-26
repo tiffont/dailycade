@@ -103,6 +103,13 @@ html[data-theme="dark"] .nwform input,html[data-theme="dark"] .nwform textarea{b
 html[data-theme="dark"] .nwthumb{background-color:rgba(255,255,255,.06)}
 .nwlab{display:block;font-size:14px;font-weight:600;margin-bottom:8px}.nwlab small{display:block;font-weight:400;opacity:.65;margin-top:2px}
 .nwpick{cursor:pointer}
+.nwchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.nwchip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(0,0,0,.14);background:none;font:600 13px/1 inherit;font-family:inherit;color:inherit;cursor:pointer}
+.nwchip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c,#bbb)}
+.nwchip[aria-pressed="true"]{background:#0d0d0d;border-color:#0d0d0d;color:#fff}
+html[data-theme="dark"] .nwchip{border-color:rgba(255,255,255,.18)}html[data-theme="dark"] .nwchip[aria-pressed="true"]{background:#f2f2f0;border-color:#f2f2f0;color:#0d0d0d}
+.nwaddtag{display:flex;gap:8px;max-width:320px}.nwaddtag input{flex:1;min-width:0}
+.bkrow .nwtl{font-size:12px;opacity:.6}
 .nwfeat{display:flex!important;flex-direction:row!important;gap:10px;align-items:flex-start;cursor:pointer}.nwfeat input{width:18px;height:18px;margin:2px 0 0}.nwfeat small{display:block;opacity:.65;font-weight:400}
 .bkk.nw-feat{background:#efe4ff;color:#5b2ea6}html[data-theme="dark"] .bkk.nw-feat{background:#2e2340;color:#c49bff}
 .bkrow .nwmini{flex:0 0 40px;height:40px;border-radius:8px;background:rgba(0,0,0,.05) center/contain no-repeat}
@@ -373,6 +380,9 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
       <div class="two"><label>Link <small>optional</small><input id="nwUrl" maxlength="300" autocomplete="off" placeholder="/trace or https://…"></label><label>Link text <small>optional</small><input id="nwLink" maxlength="40" autocomplete="off" placeholder="Play Trace"></label></div>
       <div class="nwimg"><div class="nwthumb" id="nwThumb" aria-hidden="true"></div><div><span class="nwlab">Image <small>optional · PNG, JPG, WebP or GIF up to 3 MB. Sits on top of the colored shape; a transparent PNG looks best.</small></span>
         <div class="bkbar"><label class="btn ghost small nwpick">Choose image<input type="file" id="nwFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button class="btn ghost small" id="nwImgX" type="button" hidden>Remove</button><span class="hint" id="nwImgNote"></span></div></div></div>
+      <div class="nwtags"><span class="nwlab">Tags <small>players can filter the Updates page by these. Linking to a game tags it for you.</small></span>
+        <div class="nwchips" id="nwChips"></div>
+        <div class="nwaddtag"><input id="nwTagNew" maxlength="24" placeholder="Add a tag" autocomplete="off"><button class="btn ghost small" type="button" id="nwTagAdd">Add</button></div></div>
       <label class="nwfeat"><input type="checkbox" id="nwFeat"> <span><b>Featured</b> <small>shows as the big card at the top of the news page. Only one post is featured at a time.</small></span></label>
       <label>Publish at <small>leave empty to publish right away</small><input type="datetime-local" id="nwWhen"></label>
       <div class="bkbar"><button class="btn small" id="nwPub" type="button">Publish now</button><button class="btn ghost small" id="nwDraft" type="button">Save draft</button><button class="btn ghost small" id="nwCancel" type="button" hidden>Cancel edit</button></div>
@@ -778,7 +788,7 @@ function paintSu(){const list=$('suList');list.replaceChildren();
   $('suDl').disabled=!suRows.length;
   if(!suRows.length){const p=document.createElement('p');p.className='hint';p.style.margin='14px 0 0';p.textContent='No signups yet. They come from the "Get new games in your inbox" box on the homepage.';list.append(p);return}
   for(const x of suRows){const row=document.createElement('div');row.className='bkrow';
-    const t=document.createElement('div');t.className='bkt';const b=document.createElement('b');b.textContent=x.email;const sm=document.createElement('small');sm.textContent='Joined '+bkWhen(x.created_at);t.append(b,sm);
+    const t=document.createElement('div');t.className='bkt';const b=document.createElement('b');b.textContent=x.email;const sm=document.createElement('small');sm.textContent='Joined '+bkWhen(x.created_at);t.append(b,sm);if(x.tags&&x.tags.length){const tl=document.createElement('small');tl.className='nwtl';tl.textContent=x.tags.map(nwTagName).join(' · ');t.append(tl)}
     const a=document.createElement('div');a.className='bka';const rm=document.createElement('button');rm.type='button';rm.className='btn ghost small';rm.textContent='Remove';
     rm.onclick=async()=>{if(!await ask('Remove '+x.email+'?',"They won't get any more emails from Dailycade. Use this when someone asks to be taken off the list.",'Remove'))return;
       try{const r=await DCSB.rpc('subscriber_remove',{p_scope:BK_SCOPE(),p_email:x.email});if(r.error)throw r.error;msg('Removed.','ok');loadSu()}catch(e){msg("Couldn't remove: "+(e.message||e),'err')}};
@@ -791,8 +801,19 @@ $('suDl').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
 let nwOn=false, nwRows=[], nwEdit=null;
 const NW_SCOPE=()=>window.DC_STAGING?'staging':'live';
 const nwLocal=d=>{const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())};
+const NW_GAMES={gambit:'#9deba8',dropface:'#c49bff',slice:'#ff8ad8',trace:'#f2c14e',spiral:'#5fc9f3',frames:'#ff9f5a',rings:'#3fd4c0'};
+const NW_PRESET=[...Object.keys(NW_GAMES),'new-game','update','holiday','event','site'];
+const nwTagName=t=>t.split('-').map((w,i)=>i?w:w[0].toUpperCase()+w.slice(1)).join(' ');
+const nwSlug=t=>t.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
+let nwTags=new Set();
+function nwPaintTags(){const box=$('nwChips');box.replaceChildren();[...new Set([...NW_PRESET,...nwTags])].forEach(t=>{const c=document.createElement('button');c.type='button';c.className='nwchip';
+  c.textContent=nwTagName(t);if(NW_GAMES[t])c.style.setProperty('--c',NW_GAMES[t]);c.setAttribute('aria-pressed',String(nwTags.has(t)));
+  c.onclick=()=>{nwTags.has(t)?nwTags.delete(t):nwTags.size<8&&nwTags.add(t);nwPaintTags()};box.append(c)})}
+function nwAddTag(){const t=nwSlug($('nwTagNew').value);if(t&&nwTags.size<8){nwTags.add(t);nwPaintTags()}$('nwTagNew').value=''}
+nwPaintTags();$('nwTagAdd').onclick=nwAddTag;$('nwTagNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nwAddTag()}});
+$('nwUrl').addEventListener('change',()=>{const m=$('nwUrl').value.trim().match(/^(?:https?:\/\/(?:www\.|staging\.)?dailycadegames\.com)?\/([a-z]+)/i);const g=m&&m[1].toLowerCase();if(g&&NW_GAMES[g]&&!nwTags.has(g)&&nwTags.size<8){nwTags.add(g);nwPaintTags()}});
 function nwForm(row){nwEdit=row||null;$('nwTitle').value=row?row.title:'';$('nwBody').value=row?row.body||'':'';$('nwUrl').value=row?row.link_url||'':'';$('nwLink').value=row?row.link_text||'':'';
-  $('nwWhen').value=row&&row.publish_at?nwLocal(new Date(row.publish_at)):'';nwImg(row?row.image_url:null);$('nwFeat').checked=!!(row&&row.featured);$('nwFile').value='';$('nwFormH').textContent=row?'Edit post':'New post';$('nwCancel').hidden=!row;nwCount()}
+  $('nwWhen').value=row&&row.publish_at?nwLocal(new Date(row.publish_at)):'';nwImg(row?row.image_url:null);$('nwFeat').checked=!!(row&&row.featured);nwTags=new Set(row&&row.tags||[]);nwPaintTags();$('nwFile').value='';$('nwFormH').textContent=row?'Edit post':'New post';$('nwCancel').hidden=!row;nwCount()}
 function nwCount(){$('nwBodyN').textContent=$('nwBody').value.length+' / 600'}
 async function loadNw(){if(!window.DCSB)return;if(nwOn)$('nwNote').textContent='Loading…';
   try{const r=await DCSB.from('news').select('*').eq('scope',NW_SCOPE()).order('created_at',{ascending:false});if(r.error)throw r.error;nwRows=r.data||[];paintNw()}
@@ -835,7 +856,7 @@ async function nwSave(publish){const title=$('nwTitle').value.trim(),body=$('nwB
   if(url&&!/^(https?:\/\/|\/)/.test(url)){msg('The link should start with https:// or /','err');$('nwUrl').focus();return}
   const when=publish?(w?new Date(w):new Date()):null;
   if(publish&&w&&isNaN(when)){msg('That date and time don\'t look right.','err');return}
-  const row={scope:NW_SCOPE(),title,body,link_url:url||null,link_text:url?(lt||null):null,image_url:nwImgUrl,featured:$('nwFeat').checked,status:publish?'published':'draft',publish_at:when?when.toISOString():(nwEdit&&!publish?null:null),updated_at:new Date().toISOString()};
+  const row={scope:NW_SCOPE(),title,body,link_url:url||null,link_text:url?(lt||null):null,image_url:nwImgUrl,featured:$('nwFeat').checked,tags:[...nwTags].slice(0,8),status:publish?'published':'draft',publish_at:when?when.toISOString():(nwEdit&&!publish?null:null),updated_at:new Date().toISOString()};
   if(publish&&!await ask(when>new Date()?'Schedule this post?':'Publish this post now?',(when>new Date()?'It shows in the bell'+(window.DC_STAGING?' on staging':'')+' on '+bkWhen(when)+'.':'It shows in the bell'+(window.DC_STAGING?' on staging':'')+' right away, with a dot for everyone who hasn\'t seen it.'),when>new Date()?'Schedule':'Publish'))return;
   try{if(row.featured)await nwUnfeatureOthers(nwEdit&&nwEdit.id);
     const r=nwEdit?await DCSB.from('news').update(row).eq('id',nwEdit.id):await DCSB.from('news').insert(row);if(r.error)throw r.error;
