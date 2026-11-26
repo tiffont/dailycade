@@ -90,6 +90,18 @@ body.usmode main>section:not(#usCard){display:none!important}
 body.usmode .dock{display:none!important}
 body.bkmode main>section:not(#bkCard){display:none!important}
 body.sumode main>section:not(#suCard){display:none!important}
+body.nwmode main>section:not(#nwCard):not(#nwListCard){display:none!important}
+body.nwmode .dock{display:none!important}
+.nwform{display:grid;gap:12px}
+.nwform label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
+.nwform label small{font-weight:500;opacity:.6}
+.nwform input,.nwform textarea{font:inherit;font-size:15px;font-weight:400;border:1px solid #d9d9d9;border-radius:11px;padding:11px 14px;background:#fff;color:inherit;width:100%;box-sizing:border-box}
+.nwform textarea{min-height:96px;resize:vertical;line-height:1.45}
+html[data-theme="dark"] .nwform input,html[data-theme="dark"] .nwform textarea{background:#2a2a2a;border-color:#3a3a3a}
+.nwform .two{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+@media (max-width:640px){.nwform .two{grid-template-columns:1fr}}
+.bkk.nw-live{background:#d9f5df;color:#1d6b33}.bkk.nw-sched{background:#fdf0cc;color:#7a5a00}
+html[data-theme="dark"] .bkk.nw-live{background:#20392a;color:#9deba8}html[data-theme="dark"] .bkk.nw-sched{background:#3a3115;color:#f2c14e}
 body.sumode .dock{display:none!important}
 body.bkmode .dock{display:none!important}
 .bklist{display:flex;flex-direction:column;margin-top:14px;border-top:1px solid var(--line)}
@@ -344,6 +356,21 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
     <h2 id="tuneH">Tuning <span class="note">Changes stay a draft until you publish</span></h2>
     <div id="knobs"></div>
   </section>
+  <section class="card" id="nwCard" aria-labelledby="nwFormH" hidden>
+    <h2 id="nwFormH">New post</h2>
+    <p class="hint" style="margin:0 0 14px">Posts show in the bell on the homepage, newest first, with a dot until each visitor has seen them. Save a draft, publish now, or pick a date and time to schedule it.</p>
+    <div class="nwform">
+      <label>Title<input id="nwTitle" maxlength="120" autocomplete="off" placeholder="Meet Trace, our newest game"></label>
+      <label><span>Message <small id="nwBodyN">0 / 600</small></span><textarea id="nwBody" maxlength="600" placeholder="Ten shapes. Stay on the line. Build your pile. Play today's Trace on the homepage."></textarea></label>
+      <div class="two"><label>Link <small>optional</small><input id="nwUrl" maxlength="300" autocomplete="off" placeholder="/trace or https://…"></label><label>Link text <small>optional</small><input id="nwLink" maxlength="40" autocomplete="off" placeholder="Play Trace"></label></div>
+      <label>Publish at <small>leave empty to publish right away</small><input type="datetime-local" id="nwWhen"></label>
+      <div class="bkbar"><button class="btn small" id="nwPub" type="button">Publish now</button><button class="btn ghost small" id="nwDraft" type="button">Save draft</button><button class="btn ghost small" id="nwCancel" type="button" hidden>Cancel edit</button></div>
+    </div>
+  </section>
+  <section class="card" id="nwListCard" aria-labelledby="nwH" hidden>
+    <h2 id="nwH">Posts <span class="note" id="nwNote"></span></h2>
+    <div class="bklist" id="nwList"></div>
+  </section>
   <section class="card" id="suCard" aria-labelledby="suH" hidden>
     <h2 id="suH">Email signups <span class="note" id="suNote2"></span></h2>
     <p class="hint" style="margin:0 0 14px">People who joined from "Get new games in your inbox" on the homepage. Only email them about what they signed up for: new games and big changes.</p>
@@ -496,11 +523,12 @@ const IC={
   chart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
   safe:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.4"/></svg>',
   mail:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 4.5 1.8 6.3 2.5 7H3.5C4.2 15.3 6 13.5 6 9z"/><path d="M10 19.5a2.2 2.2 0 0 0 4 0"/></svg>',
   gauge:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 17a9 9 0 1 1 17 0"/><path d="M12 13l4-4"/><circle cx="12" cy="13" r="1.2"/></svg>'};
 const PAGES=[['overview','Overview',IC.grid,'How Dailycade is doing today.'],['feedback','Feedback',IC.chat,'Notes and reactions from players.'],
   ['leaderboards','Leaderboards',IC.trophy,'Review scores and remove anything that looks wrong.'],['stats','Activity',IC.chart,'Plays counted by Dailycade, by day (New York time).'],
-  ['usage','Usage',IC.gauge,'How close each service is to its free plan limits.'],['signups','Email signups',IC.mail,'People who joined the email list on the homepage.'],['backups','Backups',IC.safe,'Copies of your scores, feedback and settings, and how to put one back.']];
-const curPage=()=>ovOn?'overview':fbOn?'feedback':lbOn?'leaderboards':stOn?'stats':usOn?'usage':bkOn?'backups':suOn?'signups':game;
+  ['usage','Usage',IC.gauge,'How close each service is to its free plan limits.'],['news','News',IC.bell,'Draft, schedule and publish the posts in the homepage bell.'],['signups','Email signups',IC.mail,'People who joined the email list on the homepage.'],['backups','Backups',IC.safe,'Copies of your scores, feedback and settings, and how to put one back.']];
+const curPage=()=>ovOn?'overview':fbOn?'feedback':lbOn?'leaderboards':stOn?'stats':usOn?'usage':bkOn?'backups':suOn?'signups':nwOn?'news':game;
 function paintTabs(){const nav=$('nav');if(!nav)return;nav.replaceChildren();const cur=curPage();
   const item=(k,label,icon,extra)=>{const b=document.createElement('button');b.type='button';b.className='nv';b.setAttribute('aria-current',String(k===cur));b.innerHTML=icon+'<span>'+label+'</span>'+(extra||'');b.onclick=()=>goPage(k);return b};
   for(const [k,l,ic] of PAGES){let ex='';if(k==='feedback'&&fbNew)ex='<em class="badge">'+fbNew+'</em>';if(k==='usage'&&usLevel)ex='<em class="dot'+(usLevel>=2?' bad':'')+'"></em>';nav.append(item(k,l,ic,ex))}
@@ -510,11 +538,11 @@ function paintTabs(){const nav=$('nav');if(!nav)return;nav.replaceChildren();con
   $('pageS').textContent=pg?pg[3]:'Change how '+GAMES[cur].name+' plays. Publish right away or schedule it for a day. Only you can publish.';
   document.title=(pg?pg[1]:GAMES[cur].name)+' · Admin · Dailycade';
   const on=nav.querySelector('[aria-current="true"]');if(on&&nav.scrollWidth>nav.clientWidth)nav.scrollTo({left:Math.max(0,on.offsetLeft-20),behavior:'smooth'})}
-function goPage(k){ovOn=k==='overview';fbOn=k==='feedback';lbOn=k==='leaderboards';stOn=k==='stats';usOn=k==='usage';bkOn=k==='backups';suOn=k==='signups';
+function goPage(k){ovOn=k==='overview';fbOn=k==='feedback';lbOn=k==='leaderboards';stOn=k==='stats';usOn=k==='usage';bkOn=k==='backups';suOn=k==='signups';nwOn=k==='news';
   try{localStorage.setItem('dc.admin.tab',k)}catch(e){}
   setFb();
   if(GAMES[k]&&k!==game){game=k;load()}else paintTabs();
-  if(ovOn)openOv();if(fbOn){watchFb();markFbSeen()}if(lbOn)watchLb();if(stOn)loadSt();if(usOn)loadUsage();if(bkOn)loadBk();if(suOn)loadSu();
+  if(ovOn)openOv();if(fbOn){watchFb();markFbSeen()}if(lbOn)watchLb();if(stOn)loadSt();if(usOn)loadUsage();if(bkOn)loadBk();if(suOn)loadSu();if(nwOn)loadNw();
   scrollTo(0,0)}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-go]');if(t)goPage(t.dataset.go)});
 
@@ -681,7 +709,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidd
 /* ---------- beta feedback ---------- */
 let fbOn=false, fbRows=[], fbFilter='all', fbUnsub=null;
 let lbOn=false, lbGame='gambit', lbData={gambit:[],dropface:[],slice:[],trace:[],spiral:[],frames:[],rings:[]}, lbBlocked=[], lbSubs=null;
-function setFb(){document.body.classList.toggle('ovmode',ovOn);$('ovCard').hidden=!ovOn;document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn;document.body.classList.toggle('bkmode',bkOn);$('bkCard').hidden=!bkOn;document.body.classList.toggle('sumode',suOn);$('suCard').hidden=!suOn}
+function setFb(){document.body.classList.toggle('ovmode',ovOn);$('ovCard').hidden=!ovOn;document.body.classList.toggle('fbmode',fbOn);$('fbCard').hidden=!fbOn;document.body.classList.toggle('lbmode',lbOn);$('lbCard').hidden=!lbOn;document.body.classList.toggle('stmode',stOn);$('stCard').hidden=!stOn;document.body.classList.toggle('usmode',usOn);$('usCard').hidden=!usOn;document.body.classList.toggle('bkmode',bkOn);$('bkCard').hidden=!bkOn;document.body.classList.toggle('sumode',suOn);$('suCard').hidden=!suOn;document.body.classList.toggle('nwmode',nwOn);$('nwCard').hidden=$('nwListCard').hidden=!nwOn}
 /* ---------- stats: daily counts from the track() function ---------- */
 let stOn=false, stRows=[], stGame='all', stT=0;
 /* ---------- backups: copies kept in the database (see the backup_* functions in Supabase) ---------- */
@@ -747,6 +775,42 @@ function paintSu(){const list=$('suList');list.replaceChildren();
 $('suDl').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   const csv='email,joined\n'+suRows.map(x=>q(x.email)+','+q(new Date(x.created_at).toISOString())).join('\n')+'\n';
   const u=URL.createObjectURL(new Blob([csv],{type:'text/csv'})),a=document.createElement('a');a.href=u;a.download='dailycade-'+(window.DC_STAGING?'staging-':'')+'signups-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)};
+
+/* ---------- news: the homepage bell's posts (news table). Draft, schedule or publish; visitors only see published posts once their time comes ---------- */
+let nwOn=false, nwRows=[], nwEdit=null;
+const NW_SCOPE=()=>window.DC_STAGING?'staging':'live';
+const nwLocal=d=>{const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())};
+function nwForm(row){nwEdit=row||null;$('nwTitle').value=row?row.title:'';$('nwBody').value=row?row.body||'':'';$('nwUrl').value=row?row.link_url||'':'';$('nwLink').value=row?row.link_text||'':'';
+  $('nwWhen').value=row&&row.publish_at?nwLocal(new Date(row.publish_at)):'';$('nwFormH').textContent=row?'Edit post':'New post';$('nwCancel').hidden=!row;nwCount()}
+function nwCount(){$('nwBodyN').textContent=$('nwBody').value.length+' / 600'}
+async function loadNw(){if(!window.DCSB)return;if(nwOn)$('nwNote').textContent='Loading…';
+  try{const r=await DCSB.from('news').select('*').eq('scope',NW_SCOPE()).order('created_at',{ascending:false});if(r.error)throw r.error;nwRows=r.data||[];paintNw()}
+  catch(e){if(nwOn)$('nwNote').textContent="Couldn't load news: "+(e.message||e)}}
+function nwState(x){if(x.status!=='published')return['Draft',''];const t=new Date(x.publish_at);return t>new Date()?['Scheduled · '+bkWhen(x.publish_at),'sched']:['Live · '+bkWhen(x.publish_at),'live']}
+function paintNw(){const list=$('nwList');list.replaceChildren();const live=nwRows.filter(x=>nwState(x)[1]==='live').length,sch=nwRows.filter(x=>nwState(x)[1]==='sched').length,dr=nwRows.filter(x=>x.status!=='published').length;
+  $('nwNote').textContent=[live&&live+' live',sch&&sch+' scheduled',dr&&dr+' draft'+(dr>1?'s':'')].filter(Boolean).join(' · ');
+  if(!nwRows.length){const p=document.createElement('p');p.className='hint';p.style.margin='14px 0 0';p.textContent='No posts yet. Write one above.';list.append(p);return}
+  for(const x of nwRows){const row=document.createElement('div');row.className='bkrow';const t=document.createElement('div');t.className='bkt';
+    const b=document.createElement('b');b.textContent=x.title;const sm=document.createElement('small');sm.textContent=(x.body||'').slice(0,90)+((x.body||'').length>90?'…':'');t.append(b,sm);
+    const [lab,cls]=nwState(x),k=document.createElement('span');k.className='bkk'+(cls?' nw-'+cls:'');k.textContent=lab;
+    const a=document.createElement('div');a.className='bka';
+    const ed=document.createElement('button');ed.type='button';ed.className='btn ghost small';ed.textContent='Edit';ed.onclick=()=>{nwForm(x);$('nwCard').scrollIntoView({behavior:'smooth',block:'start'})};
+    const del=document.createElement('button');del.type='button';del.className='btn danger small';del.textContent='Delete';
+    del.onclick=async()=>{if(!await ask('Delete "'+x.title+'"?',"It's removed from the bell and the news page"+(window.DC_STAGING?' on staging':'')+'. This can\'t be undone.','Delete'))return;
+      try{const r=await DCSB.from('news').delete().eq('id',x.id);if(r.error)throw r.error;if(nwEdit&&nwEdit.id===x.id)nwForm(null);msg('Deleted.','ok');loadNw()}catch(e){msg("Couldn't delete: "+(e.message||e),'err')}};
+    a.append(ed,del);row.append(t,k,a);list.append(row)}}
+async function nwSave(publish){const title=$('nwTitle').value.trim(),body=$('nwBody').value.trim(),url=$('nwUrl').value.trim(),lt=$('nwLink').value.trim(),w=$('nwWhen').value;
+  if(!title){msg('Give the post a title.','err');$('nwTitle').focus();return}
+  if(url&&!/^(https?:\/\/|\/)/.test(url)){msg('The link should start with https:// or /','err');$('nwUrl').focus();return}
+  const when=publish?(w?new Date(w):new Date()):null;
+  if(publish&&w&&isNaN(when)){msg('That date and time don\'t look right.','err');return}
+  const row={scope:NW_SCOPE(),title,body,link_url:url||null,link_text:url?(lt||null):null,status:publish?'published':'draft',publish_at:when?when.toISOString():(nwEdit&&!publish?null:null),updated_at:new Date().toISOString()};
+  if(publish&&!await ask(when>new Date()?'Schedule this post?':'Publish this post now?',(when>new Date()?'It shows in the bell'+(window.DC_STAGING?' on staging':'')+' on '+bkWhen(when)+'.':'It shows in the bell'+(window.DC_STAGING?' on staging':'')+' right away, with a dot for everyone who hasn\'t seen it.'),when>new Date()?'Schedule':'Publish'))return;
+  try{const r=nwEdit?await DCSB.from('news').update(row).eq('id',nwEdit.id):await DCSB.from('news').insert(row);if(r.error)throw r.error;
+    msg(publish?(when>new Date()?'Scheduled.':'Published.'):'Draft saved.','ok');nwForm(null);loadNw()}catch(e){msg("Couldn't save: "+(e.message||e),'err')}}
+$('nwBody').addEventListener('input',nwCount);
+$('nwDraft').onclick=()=>nwSave(false);$('nwPub').onclick=()=>nwSave(true);$('nwCancel').onclick=()=>nwForm(null);
+$('nwWhen').addEventListener('input',()=>{const w=$('nwWhen').value;$('nwPub').textContent=w&&new Date(w)>new Date()?'Schedule':'Publish now'});
 
 /* ---------- usage: how close each service is to its free plan ---------- */
 let usOn=false, usLevel=0, usData=null, usT=0;
@@ -958,7 +1022,7 @@ async function toggleGame(g){if(!db){msg("Not connected to the database. Reload 
   if(!await ask(off?'Put '+n+' back?':'Hide '+n+'?',off?n+' comes back on the homepage and is playable again.':n+' comes off the homepage and its page shows a "taking a break" notice. Scores, settings and the daily count are kept.',off?'Put it back':'Hide it'))return;
   try{await saveHome(g,off,boardsOn);msg(n+(off?' is back on the site.':' is hidden from the site.'),'ok')}
   catch(e){msg("Couldn't save. Only the site owner can do this.",'err')}}
-try{const t=localStorage.getItem('dc.admin.tab')||'overview';if(t==='overview')ovOn=true;if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true;if(t==='usage')usOn=true;if(t==='backups')bkOn=true;if(t==='signups')suOn=true}catch(e){ovOn=true}
+try{const t=localStorage.getItem('dc.admin.tab')||'overview';if(t==='overview')ovOn=true;if(t==='feedback')fbOn=true;if(t==='leaderboards')lbOn=true;if(t==='stats')stOn=true;if(t==='usage')usOn=true;if(t==='backups')bkOn=true;if(t==='signups')suOn=true;if(t==='news')nwOn=true}catch(e){ovOn=true}
 setFb();
 try{const t=localStorage.getItem('dc.admin.tab');if(GAMES[t])game=t}catch(e){}
 load();
