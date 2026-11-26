@@ -380,7 +380,9 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
       <div class="two"><label>Link <small>optional</small><input id="nwUrl" maxlength="300" autocomplete="off" placeholder="/trace or https://…"></label><label>Link text <small>optional</small><input id="nwLink" maxlength="40" autocomplete="off" placeholder="Play Trace"></label></div>
       <div class="nwimg"><div class="nwthumb" id="nwThumb" aria-hidden="true"></div><div><span class="nwlab">Image <small>optional · PNG, JPG, WebP or GIF up to 3 MB. Sits on top of the colored shape; a transparent PNG looks best.</small></span>
         <div class="bkbar"><label class="btn ghost small nwpick">Choose image<input type="file" id="nwFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button class="btn ghost small" id="nwImgX" type="button" hidden>Remove</button><span class="hint" id="nwImgNote"></span></div></div></div>
-      <div class="nwtags"><span class="nwlab">Tags <small>players can filter the Updates page by these. Linking to a game tags it for you.</small></span>
+      <div class="nwtags"><span class="nwlab">Categories <small>players filter the Updates page by these. The first game picked shows above the post; with no game it's Dailycade. Linking to a game picks it for you.</small></span>
+        <div class="nwchips" id="nwCats"></div></div>
+      <div class="nwtags"><span class="nwlab">Tags <small>small labels on the post, like New game or Holiday.</small></span>
         <div class="nwchips" id="nwChips"></div>
         <div class="nwaddtag"><input id="nwTagNew" maxlength="24" placeholder="Add a tag" autocomplete="off"><button class="btn ghost small" type="button" id="nwTagAdd">Add</button></div></div>
       <label class="nwfeat"><input type="checkbox" id="nwFeat"> <span><b>Featured</b> <small>shows as the big card at the top of the news page. Only one post is featured at a time.</small></span></label>
@@ -802,13 +804,15 @@ let nwOn=false, nwRows=[], nwEdit=null;
 const NW_SCOPE=()=>window.DC_STAGING?'staging':'live';
 const nwLocal=d=>{const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())};
 const NW_GAMES={gambit:'#9deba8',dropface:'#c49bff',slice:'#ff8ad8',trace:'#f2c14e',spiral:'#5fc9f3',frames:'#ff9f5a',rings:'#3fd4c0'};
-const NW_PRESET=['dailycade',...Object.keys(NW_GAMES),'new-game','update','holiday','event','site'];
+const NW_CATS=['dailycade',...Object.keys(NW_GAMES)],NW_PRESET=['new-game','update','holiday','event','site'];
 const nwTagName=t=>t.split('-').map((w,i)=>i?w:w[0].toUpperCase()+w.slice(1)).join(' ');
 const nwSlug=t=>t.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
 let nwTags=new Set();
-function nwPaintTags(){const box=$('nwChips');box.replaceChildren();[...new Set([...NW_PRESET,...nwTags])].forEach(t=>{const c=document.createElement('button');c.type='button';c.className='nwchip';
-  c.textContent=t==='dailycade'?'Dailycade':nwTagName(t);if(NW_GAMES[t])c.style.setProperty('--c',NW_GAMES[t]);c.setAttribute('aria-pressed',String(nwTags.has(t)));
-  c.onclick=()=>{nwTags.has(t)?nwTags.delete(t):nwTags.size<8&&nwTags.add(t);nwPaintTags()};box.append(c)})}
+function nwPaintTags(){const chip=t=>{const c=document.createElement('button');c.type='button';c.className='nwchip';
+    c.textContent=t==='dailycade'?'Dailycade':nwTagName(t);if(NW_GAMES[t])c.style.setProperty('--c',NW_GAMES[t]);c.setAttribute('aria-pressed',String(nwTags.has(t)));
+    c.onclick=()=>{nwTags.has(t)?nwTags.delete(t):nwTags.size<8&&nwTags.add(t);nwPaintTags()};return c};
+  $('nwCats').replaceChildren(...NW_CATS.map(chip));
+  $('nwChips').replaceChildren(...[...new Set([...NW_PRESET,...[...nwTags].filter(t=>!NW_CATS.includes(t))])].map(chip))}
 function nwAddTag(){const t=nwSlug($('nwTagNew').value);if(t&&nwTags.size<8){nwTags.add(t);nwPaintTags()}$('nwTagNew').value=''}
 nwPaintTags();$('nwTagAdd').onclick=nwAddTag;$('nwTagNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nwAddTag()}});
 $('nwUrl').addEventListener('change',()=>{const m=$('nwUrl').value.trim().match(/^(?:https?:\/\/(?:www\.|staging\.)?dailycadegames\.com)?\/([a-z]+)/i);const g=m&&m[1].toLowerCase();if(g&&NW_GAMES[g]&&!nwTags.has(g)&&nwTags.size<8){nwTags.add(g);nwPaintTags()}});
