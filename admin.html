@@ -472,7 +472,7 @@ const GAMES={
       ['Health',[['lives','Hit points per life',1,15,1,v=>v],['lifeCount','Lives',1,6,1,v=>v],['bombCost','Bomb damage',0,5,1,v=>v+' HP']]],
       ['Speed',[['step','Speed-up every',15,240,5,v=>v+'s'],['inc','Each speed-up adds',.05,1,.05,v=>'+'+(+v).toFixed(2)+'x'],['cap','Top speed',1.5,8,.1,v=>(+v).toFixed(1)+'x'],
         ['fall','Fall speed',.4,2.5,.05,pct],['spawn','Targets per second',.25,3,.05,pct],['splitFall','Split pieces fall at',.2,1,.05,pct]]],
-      ['Power-ups',[['pool','Power-ups players can pick from',null],['dur','Power-up length',.5,3,.1,pct],['refall','Used power-up returns after',0,120,5,v=>v+'s'],['fw','Firework blast size',40,200,5,v=>v+'px']]],
+      ['Power cards',[['pool','Power cards players can pick from',null],['dur','Power card length',.5,3,.1,pct],['refall','Used power card returns after',0,120,5,v=>v+'s'],['fw','Firework blast size',40,200,5,v=>v+'px']]],
       ['Events',[['bombAt','First bomb at',0,600,5,mmss],['flushAt','First Royal Flush at',0,300,5,mmss],['flushHp','Royal Flush hits to clear',1,20,1,v=>v]]],
     ]},
   dropface:{name:'Dropface',color:'var(--dropface)',

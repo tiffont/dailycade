@@ -835,7 +835,7 @@ html,body{touch-action:manipulation}
 <div class="board" id="board">
   <canvas id="cv" aria-label="Play area. Swipe up to throw cards."></canvas>
   <div class="idle" id="idle">
-    <p id="idleText">Pick 5 power-ups.<br>Swipe to throw.<br>Get up the leaderboard.</p>
+    <p id="idleText">Pick 5 power cards.<br>Swipe to throw.<br>Get up the leaderboard.</p>
     <button class="chip" id="idleHelp">How to play</button>
   </div>
   <div class="count" id="count" aria-live="polite"></div>
@@ -889,10 +889,10 @@ html,body{touch-action:manipulation}
 
   <div class="dock" id="dock">
     <div class="liferow"><b id="score" aria-label="Score">0</b><div class="bars"><div class="pips lifecount" id="lifeCount" role="img" aria-label="3 lives left"></div><div class="pips lifebar" id="lives" role="img" aria-label="6 hit points"></div></div></div>
-    <p class="wildhint" id="wildHint" hidden>Tap a power-up to put it back in your hand</p>
-    <div class="wildban" id="wildBan" aria-live="polite"><span class="wbi"><img id="wildBanIc" alt=""></span><span><b>Wild card!</b><small id="wildBanT">Tap a glowing power-up to get it back</small></span></div>
+    <p class="wildhint" id="wildHint" hidden>Tap a power card to put it back in your hand</p>
+    <div class="wildban" id="wildBan" aria-live="polite"><span class="wbi"><img id="wildBanIc" alt=""></span><span><b>Wild card!</b><small id="wildBanT">Tap a glowing power card to get it back</small></span></div>
     <div class="wildarrows" aria-hidden="true"><i></i><i></i><i></i></div>
-    <div class="slots" id="slots" aria-label="Power-ups"></div>
+    <div class="slots" id="slots" aria-label="Power cards"></div>
     <div class="tally" id="tally" hidden><span id="caption"></span></div>
     <div class="droprow" id="droprow">
       <div class="home">
@@ -923,7 +923,7 @@ html,body{touch-action:manipulation}
   <div class="sbody">
     <ul class="slist setlist">
       <li style="--c:var(--violet)"><span class="sl">Game music<small>The soundtrack while you play</small></span><span class="volw"><input type="range" id="setMusicVol" min="0" max="100" step="5" aria-label="Game music volume"><output id="setMusicOut">80%</output></span></li>
-      <li style="--c:var(--amber)"><span class="sl">Game sound effects<small>Throws, hits, explosions and power-ups</small></span><button class="toggle" id="setSfx" role="switch" aria-checked="true" aria-label="Game sound effects"><i></i></button></li>
+      <li style="--c:var(--amber)"><span class="sl">Game sound effects<small>Throws, hits, explosions and powers</small></span><button class="toggle" id="setSfx" role="switch" aria-checked="true" aria-label="Game sound effects"><i></i></button></li>
       <li style="--c:var(--pink)"><span class="sl">Mute everything<small>Silence everything at once</small></span><button class="toggle" id="setMute" role="switch" aria-checked="false" aria-label="Mute everything"><i></i></button></li>
     </ul>
   </div>
@@ -942,7 +942,7 @@ html,body{touch-action:manipulation}
       <li style="--c:var(--mint)"><span class="sic2">4</span><span class="sl">Hold the line<small>Anything that crosses it costs you health</small></span></li>
     </ol>
     <div class="hwatch">
-      <p class="hcombo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="10" height="14" rx="2"/><path d="M6 6.5v11A2.5 2.5 0 0 0 8.5 20H15"/><path d="M3 9.5v9A2.5 2.5 0 0 0 5.5 21H11"/><path d="M14 7.5v4M12 9.5h4"/></svg><span>Stack power-up cards to combine their effects, with up to 5 active at once.</span></p>
+      <p class="hcombo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="10" height="14" rx="2"/><path d="M6 6.5v11A2.5 2.5 0 0 0 8.5 20H15"/><path d="M3 9.5v9A2.5 2.5 0 0 0 5.5 21H11"/><path d="M14 7.5v4M12 9.5h4"/></svg><span>Stack power cards to combine their effects, with up to 5 active at once.</span></p>
     </div>
     <div class="hwatch"><i>Watch for</i><ul class="slist" id="helpBonus"></ul></div>
     <div id="specials" hidden></div>
@@ -1114,9 +1114,9 @@ buildBoard();
 {const d=document.createElement('div'); d.className='sp';
  d.innerHTML=`<i style="--c:var(--pink);--t:#3A1833"><img src="${iconURL('crown',C('pink'))}" width="24" height="24" alt=""></i><b>Royal Flush</b><span>Takes 10 hits. When it breaks, it clears every stone on the screen.</span>`; spEl.appendChild(d);}
 {const d=document.createElement('div'); d.className='sp';
- d.innerHTML=`<i style="--c:var(--fg);--t:#2C3130"><img src="${iconURL('wild',C('fg'))}" width="24" height="24" alt=""></i><b>Wild Card</b><span>Rare. Pick a power-up you have used and get it back.</span>`; spEl.appendChild(d);}
+ d.innerHTML=`<i style="--c:var(--fg);--t:#2C3130"><img src="${iconURL('wild',C('fg'))}" width="24" height="24" alt=""></i><b>Wild Card</b><span>Rare. Pick a power card you have used and get it back.</span>`; spEl.appendChild(d);}
 {const d=document.createElement('div'); d.className='sp';
- d.innerHTML=`<i class="hz">💣</i><b>Bomb</b><span>Not a power-up. Hitting it costs 2 hit points.</span>`; spEl.appendChild(d);}
+ d.innerHTML=`<i class="hz">💣</i><b>Bomb</b><span>Not a power card. Hitting it costs 2 hit points.</span>`; spEl.appendChild(d);}
 
 const livesEl=$('#lives');
 let livesFill, bonusFill, barSegs=0;
@@ -2728,8 +2728,8 @@ function openWildBar(){
   if(S.mode!=='play')return;
   S.wild='bar'; SFX.life(); // the game keeps running: pick when you can
   const opts=wildOptions(); for(const k in slotEls)slotEls[k].classList.toggle('pick',opts.includes(k));
-  $('#wildHint').textContent=COLLECT?'Tap a power-up to put it back in your hand':'Tap a power-up to use it for 15s';
-  $('#wildBanT').textContent=COLLECT?'Tap a glowing power-up to get it back':'Tap a glowing power-up to use it for 15s'; $('#wildBanIc').src=iconURL('wild','#fff');
+  $('#wildHint').textContent=COLLECT?'Tap a power card to put it back in your hand':'Tap a power card to use it for 15s';
+  $('#wildBanT').textContent=COLLECT?'Tap a glowing power card to get it back':'Tap a glowing power card to use it for 15s'; $('#wildBanIc').src=iconURL('wild','#fff');
   document.querySelector('.app').classList.add('wildpick');
 }
 function closeWildBar(){
