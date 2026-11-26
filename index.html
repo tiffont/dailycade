@@ -15,10 +15,10 @@ html[data-theme="dark"] .ndot{box-shadow:0 0 0 2px #0e0f0f}
 .nmenu .nhead h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
 .nmenu .nhead span{font-size:12px;font-weight:600;color:var(--muted)}
 .nmenu .nlist{overflow:auto;padding:4px 12px;display:flex;flex-direction:column;gap:8px;overscroll-behavior:contain}
-.nitem{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start;padding:12px;border-radius:12px;color:var(--ink);text-decoration:none;background:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.nitem{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start;padding:12px;border-radius:12px;color:var(--ink);text-decoration:none;background:rgba(255,255,255,.6);box-shadow:none}
 html[data-theme="dark"] .hhmenu.nmenu{background:rgba(18,18,18,.72)}
-html[data-theme="dark"] .nitem{background:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
-a.nitem:hover{box-shadow:inset 0 0 0 1px rgba(0,0,0,.3)}
+html[data-theme="dark"] .nitem{background:rgba(255,255,255,.07)}
+a.nitem:hover{background:rgba(255,255,255,.85)}
 .nitem .nico{width:40px;height:40px;display:grid;place-items:center;position:relative}
 .nitem .nico::before{content:"";position:absolute;inset:4px;background:var(--shape);border-radius:var(--blob);transform:rotate(var(--tilt))}
 .nitem .nico img{position:relative;height:40px;width:auto}
@@ -31,7 +31,7 @@ a.nitem:hover{box-shadow:inset 0 0 0 1px rgba(0,0,0,.3)}
 .nmenu .nall{display:block;margin:8px 16px 16px;padding:11px 0;border-radius:10px;text-align:center;font-weight:700;font-size:14px;background:var(--ink);color:#fff;text-decoration:none}
 .nmenu .nall:hover{opacity:.88}
 html[data-theme="dark"] .nmenu .nall{color:#0d0d0d}
-html[data-theme="dark"] a.nitem:hover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.32)}
+html[data-theme="dark"] a.nitem:hover{background:rgba(255,255,255,.12)}
 html[data-theme="dark"] .nitem p{color:#a9aca9}
 .nmenu .nempty{background:none!important;padding:4px 6px 6px!important;margin:0!important}
 /* news page */
