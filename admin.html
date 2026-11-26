@@ -84,6 +84,7 @@ h1{font-size:34px;letter-spacing:-.02em;margin:32px 0 6px;font-weight:700}
 .nwmh{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}.nwmh h2{margin:0}
 .nwx{width:36px;height:36px;display:grid;place-items:center;border:0;border-radius:8px;background:none;color:inherit;cursor:pointer}.nwx:hover{background:rgba(0,0,0,.06)}
 html[data-theme="dark"] .nwx:hover{background:rgba(255,255,255,.08)}
+.nwnew{display:inline-flex;align-items:center;gap:6px}
 .nwtop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.nwtop h2{margin:0}
 body.nwopen{overflow:hidden}
 .login{display:grid;gap:12px;max-width:420px}.login input{border:1px solid #d9d9d9;border-radius:11px;padding:11px 14px;background:#fff}.login p{margin:0;color:var(--muted);font-size:14px}.whoami{font-size:13px;color:var(--muted);margin:-8px 0 16px}.whoami button{border:0;background:none;padding:0;text-decoration:underline;color:inherit;cursor:pointer}
@@ -379,7 +380,7 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
     <div id="knobs"></div>
   </section>
   <section class="card" id="nwListCard" aria-labelledby="nwH" hidden>
-    <div class="nwtop"><h2 id="nwH">Posts <span class="note" id="nwNote"></span></h2><button class="btn small" id="nwNew" type="button">New post</button></div>
+    <div class="nwtop"><h2 id="nwH">Posts <span class="note" id="nwNote"></span></h2><button class="btn small nwnew" id="nwNew" type="button"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New post</button></div>
     <div class="bklist" id="nwList"></div>
   </section>
   <section class="card" id="suCard" aria-labelledby="suH" hidden>
