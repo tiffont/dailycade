@@ -1664,9 +1664,10 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmtN=n=>Math.round(n).toLocaleString('en-US');
 const pad2=n=>String(n).padStart(2,'0');
 const K='spiral1.'; // local storage prefix
-const TF_DEF={size:1,move:1,spiral:1};const TF=Object.assign({},TF_DEF);let TF_PENDING=null;
+const TF_DEF={size:1,move:1,spiral:1,assist:.2};const TF=Object.assign({},TF_DEF);let TF_PENDING=null;
 const PREVIEW_VALS=window.DCTune?DCTune.preview('spiral'):null,PREVIEW=!!PREVIEW_VALS; // admin test mode
-function applyTF(v){Object.assign(TF,TF_DEF);for(const k in TF_DEF){const n=Number(v&&v[k]);if(isFinite(n)&&n>0)TF[k]=Math.max(.25,Math.min(3,n))}TF_PENDING=null}
+function applyTF(v){Object.assign(TF,TF_DEF);for(const k in TF_DEF){if(k==='assist')continue;const n=Number(v&&v[k]);if(isFinite(n)&&n>0)TF[k]=Math.max(.25,Math.min(3,n))}
+  const as=Number(v&&v.assist);if(v&&v.assist!=null&&isFinite(as))TF.assist=Math.max(0,Math.min(1,as));TF_PENDING=null} // aim assist: 0 = none, 1 = every throw lands dead center
 if(PREVIEW)applyTF(PREVIEW_VALS);
 const tunedCourse=seed=>Field.course(seed).map(T=>Object.assign({},T,{R:T.R*TF.size,a:T.a*TF.move,b:T.b*TF.move}));
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(K+k);return v==null?d:v}catch(e){return d}};
@@ -2007,8 +2008,20 @@ function renderLB(){
 }
 
 /* ---------- a throw ---------- */
+/* aim assist: fly the throw ahead of time, see where it would cross the target, and steer its launch
+   that share of the way toward the target's center (where the target will be by then). Throws that fall short stay short. */
+function aimAssist(b,k){if(!(k>0)||!W)return;
+  const fly=(vx,vy)=>{const w=Field.world(W.T,W.t);w.shake=Object.assign({},W.shake);w.ball=Object.assign({},b,{vx,vy});
+    for(let i=0;i<900;i++){const pb=Object.assign({},w.ball),pt=w.t;Field.step(w,1/240);const T=Field.targetAt(W.T,w.t);
+      if(pb.z<T.z&&w.ball.z>=T.z){const u=(T.z-pb.z)/((w.ball.z-pb.z)||1),x=pb.x+(w.ball.x-pb.x)*u,y=pb.y+(w.ball.y-pb.y)*u;return{dx:x-T.x,dy:y-T.y,tf:pt-W.t+(w.t-pt)*u}}
+      if(w.ball.y<Field.BALL_R||w.ball.rest)return null}return null};
+  let vx=b.vx,vy=b.vy;for(let it=0;it<4;it++){const m=fly(vx,vy);if(!m||m.tf<=.05)break;vx-=m.dx/m.tf;vy-=m.dy/m.tf}
+  if(!fly(vx,vy))return; // couldn't find a clean line: leave the throw alone
+  b.vx+=(vx-b.vx)*k;b.vy+=(vy-b.vy)*k}
+const fly0Reaches=b=>{const w=Field.world(W.T,W.t);w.ball=Object.assign({},b);for(let i=0;i<900;i++){Field.step(w,1/240);const T=Field.targetAt(W.T,w.t);if(w.ball.z>=T.z)return true;if(w.ball.y<Field.BALL_R||w.ball.rest)return false}return false};
 function throwBall(f){
   const b=Field.newBall(f);b.x=hand.x;b.y=hand.y;b.z=hand.z;b.spin=hand.spin;b.side=hand.side;b.tilt0=hand.tilt;disp=null;
+  if(fly0Reaches(b))aimAssist(b,TF.assist);
   const perfect=isPerfect(f);W.snap={t:W.t,shake:Object.assign({},W.shake),ball:Object.assign({},b)};W.ball=b;W.perfect=perfect;W.flick=f;W.res=null;W.marks=[];acc=0;
   showcase=perfect&&!reduced;tScale=showcase?.65:1; // a perfect spiral flies in gentle slow motion
   trail={pts:[],perfect,t1:0};

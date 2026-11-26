@@ -531,9 +531,10 @@ const GAMES={
       ['Scoring',[['tol','How close counts as on the line',.5,2,.05,pct]]],
     ]},
   spiral:{name:'Spiral',color:'var(--spiral)',
-    defaults:{size:1,move:1,spiral:1},
+    defaults:{size:1,move:1,spiral:1,assist:.2},
     groups:[
       ['Target',[['size','Target size',.5,2,.05,pct],['move','How far the target moves',0,2,.05,pct]]],
+      ['Aim assist',[['assist','How much each throw is steered toward the center (0% = none)',0,1,.05,pct]]],
       ['Perfect spiral',[['spiral','How easy it is to throw',.5,2,.05,pct]]],
     ]},
   frames:{name:'Frames',color:'var(--frames)',
