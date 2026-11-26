@@ -802,12 +802,12 @@ let nwOn=false, nwRows=[], nwEdit=null;
 const NW_SCOPE=()=>window.DC_STAGING?'staging':'live';
 const nwLocal=d=>{const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())};
 const NW_GAMES={gambit:'#9deba8',dropface:'#c49bff',slice:'#ff8ad8',trace:'#f2c14e',spiral:'#5fc9f3',frames:'#ff9f5a',rings:'#3fd4c0'};
-const NW_PRESET=[...Object.keys(NW_GAMES),'new-game','update','holiday','event','site'];
+const NW_PRESET=['dailycade',...Object.keys(NW_GAMES),'new-game','update','holiday','event','site'];
 const nwTagName=t=>t.split('-').map((w,i)=>i?w:w[0].toUpperCase()+w.slice(1)).join(' ');
 const nwSlug=t=>t.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
 let nwTags=new Set();
 function nwPaintTags(){const box=$('nwChips');box.replaceChildren();[...new Set([...NW_PRESET,...nwTags])].forEach(t=>{const c=document.createElement('button');c.type='button';c.className='nwchip';
-  c.textContent=nwTagName(t);if(NW_GAMES[t])c.style.setProperty('--c',NW_GAMES[t]);c.setAttribute('aria-pressed',String(nwTags.has(t)));
+  c.textContent=t==='dailycade'?'Dailycade':nwTagName(t);if(NW_GAMES[t])c.style.setProperty('--c',NW_GAMES[t]);c.setAttribute('aria-pressed',String(nwTags.has(t)));
   c.onclick=()=>{nwTags.has(t)?nwTags.delete(t):nwTags.size<8&&nwTags.add(t);nwPaintTags()};box.append(c)})}
 function nwAddTag(){const t=nwSlug($('nwTagNew').value);if(t&&nwTags.size<8){nwTags.add(t);nwPaintTags()}$('nwTagNew').value=''}
 nwPaintTags();$('nwTagAdd').onclick=nwAddTag;$('nwTagNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nwAddTag()}});

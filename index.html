@@ -52,6 +52,7 @@ html[data-theme="dark"] .nitem p{color:#a9aca9}
 .nfilter{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px}
 .nfilter[hidden]{display:none}
 .nchip{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;border:1px solid rgba(0,0,0,.14);background:none;color:var(--ink);font:600 14px/1 var(--sans);cursor:pointer;transition:background .15s,border-color .15s}
+.nchip.dc::before{content:"";width:10px;height:10px;border-radius:50%;background:conic-gradient(#9deba8 0 25%,#c49bff 0 50%,#ff8ad8 0 75%,#f2c14e 0)}
 .nchip.g::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--shape)}
 .nchip:hover{border-color:rgba(0,0,0,.35)}
 .nchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
@@ -782,20 +783,23 @@ let panels=allPanels.slice(),dots=allDots.slice();
     const art=el('div','nart'+(p.image_url?' own':''));art.setAttribute('aria-hidden','true');if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';im.decoding='async';art.append(im)}c.append(art);
     const tx=el('div','ntxt'),pill=el('span','npill'+(isNew?' new':''));const t=el('time',null,when(p.publish_at));t.dateTime=p.publish_at;
     pill.append(t);if(isNew)pill.append(document.createTextNode(' · New'));tx.append(pill,el('h3',null,p.title));if(p.body)tx.append(el('p',null,p.body));
-    if(p.tags&&p.tags.length){const tg=el('div','ntags');p.tags.forEach(t=>{if(GAMES[t]){const b=el('button',null,tagName(t));b.type='button';b.onclick=()=>setTag(t);tg.append(b)}else tg.append(el('span',null,tagName(t)))});tx.append(tg)}
+    if(p.tags&&p.tags.length){const tg=el('div','ntags');p.tags.forEach(t=>{if(GAMES[t]||t==='dailycade'){const b=el('button',null,tagName(t));b.type='button';b.onclick=()=>setTag(t);tg.append(b)}else tg.append(el('span',null,tagName(t)))});tx.append(tg)}
     if(u){const l=el('a',i===0?'btn':'nlink');l.href=u;
       if(i===0){l.textContent=p.link_text||'Learn more';l.insertAdjacentHTML('beforeend',ARROW)}else{l.textContent=(p.link_text||'Learn more')+' ';l.append(el('span',null,'→'))}tx.append(l)}
     c.append(tx);return c};
   const paintDot=()=>{const n=fresh().length;dot.hidden=!n;btn.setAttribute('aria-label',n?'Updates, '+n+' new':'Updates')};
   let newIds=new Set();
-  let tag=null;const tagName=t=>GAMES[t]?GAMES[t].name:t.split('-').map((w,i)=>i?w:w[0].toUpperCase()+w.slice(1)).join(' ');
+  let tag=null;
+  const isDc=p=>{const t=p.tags||[];return t.includes('dailycade')||!t.some(x=>GAMES[x])}; // general site news: tagged Dailycade, or about no game
+  const tagName=t=>t==='dailycade'?'Dailycade':GAMES[t]?GAMES[t].name:t.split('-').map((w,i)=>i?w:w[0].toUpperCase()+w.slice(1)).join(' ');
   const setTag=t=>{tag=t;paintAll();const f=$('newsFilter');if(!f.hidden)f.scrollIntoView({block:'nearest',behavior:'smooth'})};
   const paintFilter=()=>{const f=$('newsFilter'),cnt={};posts.forEach(p=>(p.tags||[]).forEach(t=>cnt[t]=(cnt[t]||0)+1));
     const games=Object.keys(GAMES).filter(t=>cnt[t]); // only games that have posts
-    f.replaceChildren();f.hidden=!games.length;if(tag&&!cnt[tag])tag=null;
-    [null,...games].forEach(t=>{const b=el('button','nchip',t?tagName(t):'All');b.type='button';b.setAttribute('aria-pressed',String(tag===t));
-      if(t&&GAMES[t]){b.classList.add('g');b.style.setProperty('--shape',GAMES[t].shape)}b.onclick=()=>setTag(t);f.append(b)})};
-  const paintAll=()=>{paintFilter();all.replaceChildren();const list=tag?posts.filter(p=>(p.tags||[]).includes(tag)):posts;
+    const dc=posts.some(isDc);
+    f.replaceChildren();f.hidden=!(games.length+dc);if(tag&&tag!=='dailycade'&&!cnt[tag])tag=null;
+    [null,...(dc?['dailycade']:[]),...games].forEach(t=>{const b=el('button','nchip',t?tagName(t):'All');b.type='button';b.setAttribute('aria-pressed',String(tag===t));
+      if(t&&GAMES[t]){b.classList.add('g');b.style.setProperty('--shape',GAMES[t].shape)}if(t==='dailycade')b.classList.add('dc');b.onclick=()=>setTag(t);f.append(b)})};
+  const paintAll=()=>{paintFilter();all.replaceChildren();const list=tag==='dailycade'?posts.filter(isDc):tag?posts.filter(p=>(p.tags||[]).includes(tag)):posts;
     if(!list.length){all.append(el('p','nempty',posts.length?'Nothing here yet.':'No updates yet.'));return}
     const lead=list.find(p=>p.featured)||list[0];[lead,...list.filter(p=>p!==lead)].forEach((p,i)=>all.append(card(p,i,newIds.has(p.id))))};
   async function load(){if(!window.DCSB){setTimeout(load,400);return}
