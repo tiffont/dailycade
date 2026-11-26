@@ -154,12 +154,14 @@ html[data-theme="dark"] .signup form button{background:#f2f2f0;color:#0d0d0d}
   .tile:hover{transform:translateY(-4px);box-shadow:0 10px 20px -8px rgba(0,0,0,.35)}
   .tile.x:hover svg{transform:rotate(-12deg) scale(1.12)}
   .tile.fb:hover svg{animation:bubble .6s ease-in-out}
+  .tile.up svg{transform-origin:50% 10%}.tile.up:hover svg{animation:ring .6s ease-in-out}
 }
 @keyframes bubble{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg) scale(1.08)}50%{transform:rotate(9deg) scale(1.08)}75%{transform:rotate(-5deg)}}
 .tile:active{transform:scale(.96);box-shadow:none}
 @media (prefers-reduced-motion:reduce){.tile,.tile svg{transition:none!important;animation:none!important}.tile:hover{transform:none}}
 .tile.x{background:#0d0d0d;color:#fff}
 .tile.fb{background:#c49bff;color:#0d0d0d}
+.tile.up{background:#9deba8;color:#0d0d0d}
 html[data-theme="dark"] .tile.x{background:#f2f2f0;color:#0d0d0d}
 @media (max-width:760px){.wrap.touch{margin-top:44px}.touch h2{font-size:24px;margin-bottom:20px}}
 </style></head><body>
@@ -391,6 +393,7 @@ main .panel[hidden],.dots button[hidden],.games a[hidden]{display:none!important
   background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px); /* same glass as Gambit's hand tray */
   box-shadow:0 9px 25px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.14);transform-origin:top right;animation:hhIn .18s ease-out}
 .hhmenu[hidden]{display:none}
+@keyframes ring{0%,100%{transform:rotate(0)}20%{transform:rotate(14deg)}40%{transform:rotate(-12deg)}60%{transform:rotate(8deg)}80%{transform:rotate(-4deg)}}
 @keyframes hhGrow{from{opacity:0}to{opacity:1}}
 @keyframes hhIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
 .nav .hhmenu .hhrow{display:grid;grid-template-columns:repeat(4,minmax(0,72px));gap:16px 12px;margin:0;transform:none;font-size:12px;font-weight:600;color:var(--ink)}
@@ -659,6 +662,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
     </div>
     <div class="tiles">
     <a class="tile x" href="https://x.com/dailycadegames" target="_blank" rel="noopener" aria-label="Follow Dailycade on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Follow</a>
+    <a class="tile up" href="#news" aria-label="See all updates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 4.5 1.8 6.3 2.5 7H3.5C4.2 15.3 6 13.5 6 9z"/><path d="M10 19.5a2.2 2.2 0 0 0 4 0"/></svg>Updates</a>
     <button class="tile fb" type="button" id="ctaFb" aria-label="Send beta feedback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>Feedback</button>
     </div>
     
@@ -775,7 +779,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
   const games=$('hhMenu'),gbtn=$('appsBtn');
   const open=on=>{if(on){games.hidden=true;gbtn.setAttribute('aria-expanded','false'); // one menu at a time
       const f=fresh();list.replaceChildren();
-      if(f.length){f.forEach((p,i)=>{const it=item(p,i);it.classList.add('unread');list.append(it)}); // unread first, then a few already read
+      if(f.length){f.slice(0,5).forEach((p,i)=>{const it=item(p,i);it.classList.add('unread');list.append(it)}); // unread first, then a few already read
         posts.filter(p=>!f.includes(p)).slice(0,Math.max(0,5-f.length)).forEach((p,i)=>list.append(item(p,f.length+i)))}
       else posts.slice(0,5).forEach((p,i)=>list.append(item(p,i)));
       if(!posts.length)list.append(el('p','nempty','No updates yet.'));
