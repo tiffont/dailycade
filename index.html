@@ -9,7 +9,7 @@
 html[data-theme="dark"] .ndot{box-shadow:0 0 0 2px #0e0f0f}
 .ndot[hidden]{display:none}
 /* bell dropdown: same glass as the games menu */
-.hhmenu.nmenu{background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.08),inset 0 0 0 1px rgba(0,0,0,.05);width:min(380px,calc(100vw - 32px));padding:6px 0 0;display:flex;flex-direction:column;max-height:min(70vh,560px)}
+.hhmenu.nmenu{background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08),inset 0 0 0 1px rgba(0,0,0,.05);width:min(380px,calc(100vw - 32px));padding:6px 0 0;display:flex;flex-direction:column;max-height:min(70vh,560px)}
 .nmenu[hidden]{display:none}
 .nmenu .nhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 18px 12px}
 .nmenu .nhead h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
@@ -64,7 +64,7 @@ html[data-theme="dark"] .nchip[aria-pressed="true"]{color:#0d0d0d}
 html[data-theme="dark"] .ntags span,html[data-theme="dark"] .ntags button{background:rgba(255,255,255,.08)}html[data-theme="dark"] .ntags button:hover{background:rgba(255,255,255,.16)}
 @media (max-width:760px){.nfilter{flex-wrap:nowrap;overflow-x:auto;margin:0 -20px 18px;padding:0 20px;scrollbar-width:none}.nfilter::-webkit-scrollbar{display:none}.nchip{flex:none}}
 .nfeed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
-.ncard{position:relative;overflow:hidden;background:#f4f4f2;border-radius:24px;padding:28px 28px 26px;display:flex;flex-direction:column;min-height:240px}
+.ncard{position:relative;overflow:hidden;background:#f4f4f2;border-radius:16px;padding:28px 28px 26px;display:flex;flex-direction:column;min-height:240px}
 .ncard .nart{position:absolute;right:-30px;bottom:-34px;width:150px;height:150px;pointer-events:none}
 .ncard .nart::before{content:"";position:absolute;inset:0;background:var(--shape);border-radius:var(--blob);transform:rotate(var(--tilt))}
 .ncard .nart img{position:absolute;left:28px;bottom:30px;height:118px;width:auto;transform:rotate(-8deg);filter:drop-shadow(0 8px 12px rgba(0,0,0,.18))}
@@ -83,7 +83,7 @@ html[data-theme="dark"] .ntags span,html[data-theme="dark"] .ntags button{backgr
 .ncard .nlink span{display:inline-block;transition:transform .15s}
 .ncard .nlink:hover span{transform:translateX(4px)}
 /* the newest post leads, panel-sized */
-.ncard.lead{grid-column:1/-1;min-height:340px;padding:48px 56px;border-radius:32px}
+.ncard.lead{grid-column:1/-1;min-height:340px;padding:48px 56px;border-radius:20px}
 .ncard.lead .ntxt{max-width:min(560px,calc(100% - 320px))}
 .ncard.lead h3{font-size:clamp(30px,3.6vw,44px);letter-spacing:-.035em;line-height:1.05;margin-bottom:14px}
 .ncard.lead p{font-size:18px;line-height:1.6}
@@ -99,17 +99,17 @@ html[data-theme="dark"] .npill.new{background:#f2f2f0;color:#0d0d0d}
   .nhero{margin-bottom:24px}.nblobs{position:absolute;right:0;top:4px;width:220px;height:150px;transform:scale(.5);transform-origin:top right}
   .nhero .eff{font-size:17px}
   .nfeed{grid-template-columns:1fr;gap:14px}
-  .ncard{padding:22px 20px 22px;min-height:0;border-radius:22px}
+  .ncard{padding:22px 20px 22px;min-height:0;border-radius:14px}
   .ncard .ntxt{max-width:none}.ncard p{max-width:calc(100% - 64px)}.ncard.lead p{max-width:none}
   .ncard .nart{width:120px;height:120px;right:-30px;bottom:-30px}.ncard .nart img{height:92px;left:22px;bottom:26px}
-  .ncard.lead{padding:28px 22px 24px;border-radius:24px;min-height:0}
+  .ncard.lead{padding:28px 22px 24px;border-radius:16px;min-height:0}
   .ncard.lead .nart{position:relative;right:auto;top:auto;transform:none;width:190px;height:190px;margin:-6px auto 18px;order:-1}
   .ncard.lead .nart img{height:170px}
   .ncard.lead .ntxt{max-width:none}
   .ncard.lead h3{font-size:30px}.ncard.lead p{font-size:16px}
 }
 /* once you scroll past the header, it drops back in as a sticky glass tray; back at the top it settles into place */
-.nav.stuck{position:fixed;top:max(16px,env(safe-area-inset-top,0px));left:max(16px,calc((100vw - 1124px)/2 - 16px));right:max(16px,calc((100vw - 1124px)/2 - 16px));z-index:70;border-radius:18px;animation:navDrop .3s cubic-bezier(.2,.8,.2,1)}
+.nav.stuck{position:fixed;top:max(16px,env(safe-area-inset-top,0px));left:max(16px,calc((100vw - 1124px)/2 - 16px));right:max(16px,calc((100vw - 1124px)/2 - 16px));z-index:70;border-radius:12px;animation:navDrop .3s cubic-bezier(.2,.8,.2,1)}
 /* the glass lives on a layer behind the bar, so the dropdowns inside it can blur the page too */
 .nav.stuck::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:0 8px 24px rgba(0,0,0,.08),inset 0 0 0 1px rgba(0,0,0,.05)}
 .nav.stuck .wrap{height:64px;max-width:none;padding-left:16px;padding-right:12px}
@@ -126,7 +126,7 @@ body.navstuck{padding-top:var(--navH,80px)}
 @media (prefers-reduced-motion:reduce){.nav.stuck{animation:none}}
 /* email signup, beside the Follow and Feedback tiles (below them on phones) */
 .touch .trow{display:flex;gap:16px;flex-wrap:wrap;align-items:stretch}
-.signup{flex:0 1 440px;height:100px;box-sizing:border-box;border-radius:15px;padding:16px;background:#f4f4f2;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.signup{flex:0 1 440px;height:100px;box-sizing:border-box;border-radius:10px;padding:16px;background:#f4f4f2;display:flex;flex-direction:column;justify-content:center;gap:4px}
 .signup h3{margin:0;font-size:14px;font-weight:600;letter-spacing:-.01em}
 .signup p{margin:0;font-size:13px;line-height:1.35;color:#6b6b68}
 .signup form{display:flex;gap:8px}
@@ -164,7 +164,7 @@ html[data-theme="dark"] .signup input{background:#0b0b0b;color:#f2f2f0;border-co
 html[data-theme="dark"] .signup input:focus{border-color:#f2f2f0;box-shadow:0 0 0 3px rgba(255,255,255,.1)}
 html[data-theme="dark"] .signup form button{background:#f2f2f0;color:#0d0d0d}
 @media (max-width:760px){.signup{flex-basis:100%;height:auto;min-height:100px;padding:16px 18px}.signup.done{flex:1 1 100%;width:100%}.signup .sudone{justify-content:space-between}} /* phones: the joined box spans the width too */ /* the line wraps to two on phones: let the box grow */ /* .wrap.touch: beats the page's .wrap{margin:0 auto} so the gap shows */
-.tile{width:100px;height:100px;border-radius:15px;border:0;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+.tile{width:100px;height:100px;border-radius:10px;border:0;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
   font:600 13px/1 var(--sans);cursor:pointer;text-decoration:none;transition:transform .08s,filter .15s,box-shadow .2s}
 .tile svg{width:30px;height:30px}
 .tile svg{transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
@@ -266,7 +266,7 @@ html[data-theme="dark"] .gtimer small{color:var(--ink)}
 .rail{--gut:max(28px,calc((100vw - 1180px)/2 + 28px));display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--gut);padding-inline:var(--gut);scrollbar-width:none;overscroll-behavior-x:contain}
 .rail::-webkit-scrollbar{display:none}
 .rail:focus-visible{outline:none}
-.panel{flex:0 0 calc(100vw - 2*var(--gut));max-width:1124px;scroll-snap-align:start;background:#f4f4f2;border-radius:32px;padding:48px 64px 44px;overflow:hidden}
+.panel{flex:0 0 calc(100vw - 2*var(--gut));max-width:1124px;scroll-snap-align:start;background:#f4f4f2;border-radius:20px;padding:48px 64px 44px;overflow:hidden}
 .railnav{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
 .dots{display:flex;gap:8px}
 .dots button{width:8px;height:8px;border-radius:4px;border:0;padding:0;background:#d4d4d0;cursor:pointer;transition:width .25s,background .25s}
@@ -392,7 +392,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6p
   .nav .wrap{gap:20px;height:68px}
   .nav .games{gap:16px;font-size:13px}
   .lede{font-size:20px;line-height:28px}
-  .panel{padding:32px 20px 28px;border-radius:24px}
+  .panel{padding:32px 20px 28px;border-radius:16px}
   .bhead{margin:32px 0 10px;font-size:14px}
   .cell{margin-right:12px;padding-top:4px}
   .daybox{margin-top:28px;max-width:none;padding:0 16px 14px}
@@ -408,7 +408,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6p
 main .panel[hidden],.dots button[hidden],.games a[hidden]{display:none!important}
 /* all-games menu: 9-dot button drops down a glass grid of the games' handhelds, four per row */
 .hicons{position:relative}
-.hhmenu{position:absolute;top:calc(100% + 14px);right:0;z-index:60;width:max-content;max-width:calc(100vw - 32px);padding:16px;border-radius:18px;
+.hhmenu{position:absolute;top:calc(100% + 14px);right:0;z-index:60;width:max-content;max-width:calc(100vw - 32px);padding:16px;border-radius:12px;
   background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6); /* same glass as the sticky header and updates menu */
   box-shadow:0 8px 24px rgba(0,0,0,.08),inset 0 0 0 1px rgba(0,0,0,.05);transform-origin:top right;animation:hhIn .18s ease-out}
 .hhmenu[hidden]{display:none}
