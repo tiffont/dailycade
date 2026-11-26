@@ -407,9 +407,9 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6p
 main .panel[hidden],.dots button[hidden],.games a[hidden]{display:none!important}
 /* all-games menu: 9-dot button drops down a glass grid of the games' handhelds, four per row */
 .hicons{position:relative}
-.hhmenu{position:absolute;top:calc(100% + 14px);right:0;z-index:60;width:max-content;max-width:calc(100vw - 32px);padding:16px;border-radius:12px;
-  background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px); /* same glass as Gambit's hand tray */
-  box-shadow:0 9px 25px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.14);transform-origin:top right;animation:hhIn .18s ease-out}
+.hhmenu{position:absolute;top:calc(100% + 14px);right:0;z-index:60;width:max-content;max-width:calc(100vw - 32px);padding:16px;border-radius:18px;
+  background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6); /* same glass as the sticky header and updates menu */
+  box-shadow:0 8px 24px rgba(0,0,0,.08),inset 0 0 0 1px rgba(0,0,0,.05);transform-origin:top right;animation:hhIn .18s ease-out}
 .hhmenu[hidden]{display:none}
 @keyframes ring{0%,100%{transform:rotate(0)}20%{transform:rotate(14deg)}40%{transform:rotate(-12deg)}60%{transform:rotate(8deg)}80%{transform:rotate(-4deg)}}
 @keyframes hhGrow{from{opacity:0}to{opacity:1}}
@@ -423,7 +423,7 @@ main .panel[hidden],.dots button[hidden],.games a[hidden]{display:none!important
 .nav .hhmenu .hhblob{width:100%;max-width:69px;aspect-ratio:69/105;display:grid;place-items:center}
 .nav .hhmenu .hhblob::after{content:"";width:70%;aspect-ratio:1;background:var(--shape);border-radius:var(--blob);transform:rotate(var(--tilt))}
 html[data-theme="dark"] .nav .hhmenu .hhrow{color:#f2f2f0}
-html[data-theme="dark"] .hhmenu{box-shadow:0 9px 25px rgba(0,0,0,.25),inset 0 0 0 1px rgba(255,255,255,.14)}
+html[data-theme="dark"] .hhmenu{background:rgba(28,30,30,.72);box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.07)}
 html.noboards .daybox{display:none!important} /* admin can turn off the Today's daily challenge cards */
 /* ---- dark mode (toggle in the nav; follows the device until you pick) ---- */
 .theme{width:36px;height:36px;margin:-8px -8px -8px auto;border:0;padding:0;border-radius:50%;background:transparent;color:#9a9ea4;display:grid;place-items:center;cursor:pointer;transition:color .15s,background .15s}
