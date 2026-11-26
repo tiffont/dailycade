@@ -27,6 +27,7 @@ a.nitem:hover{background:rgba(255,255,255,.85)}
 .nitem h3{margin:0;font-size:14px;font-weight:700;line-height:1.3}
 .nitem p{margin:3px 0 0;font-size:13px;line-height:1.45;color:#5b6068;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .nitem .ngo{display:inline-block;margin-top:5px;font-size:13px;font-weight:700}
+.nmenu .nempty svg{flex:none;color:var(--ink)}
 .nmenu .nempty{display:flex;align-items:center;gap:10px;margin:6px 8px 10px;padding:12px;border-radius:12px;background:rgba(0,0,0,.035);color:var(--muted);font-size:14px}
 .nmenu .nall{display:block;margin:8px 16px 16px;padding:11px 0;border-radius:10px;text-align:center;font-weight:700;font-size:14px;background:var(--ink);color:#fff;text-decoration:none}
 .nmenu .nall:hover{opacity:.88}
@@ -773,7 +774,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
   const open=on=>{if(on){games.hidden=true;gbtn.setAttribute('aria-expanded','false'); // one menu at a time
       const f=fresh();list.replaceChildren();
       if(f.length)f.forEach((p,i)=>list.append(item(p,i)));
-      else{const e=el('p','nempty');e.append(el('span',null,'👍'),document.createTextNode("You're all caught up."));list.append(e);posts.slice(0,3).forEach((p,i)=>list.append(item(p,i)))} // and the latest few underneath
+      else{const e=el('p','nempty');e.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg>');e.append(document.createTextNode("You're all caught up."));list.append(e);posts.slice(0,3).forEach((p,i)=>list.append(item(p,i)))} // and the latest few underneath
       $('newsH').textContent=f.length?(f.length===1?'1 new update':f.length+' new updates'):'News';
       if(posts[0])try{localStorage.setItem(SEEN,String(+new Date(posts[0].publish_at)))}catch(e){};paintDot()}
     menu.hidden=!on;btn.setAttribute('aria-expanded',String(on))};
