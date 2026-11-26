@@ -774,7 +774,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
   const open=on=>{if(on){games.hidden=true;gbtn.setAttribute('aria-expanded','false'); // one menu at a time
       const f=fresh();list.replaceChildren();
       if(f.length)f.forEach((p,i)=>list.append(item(p,i)));
-      else{const e=el('p','nempty');e.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg>');e.append(document.createTextNode("You're all caught up."));list.append(e);posts.slice(0,3).forEach((p,i)=>list.append(item(p,i)))} // and the latest few underneath
+      else{const e=el('p','nempty');e.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg>');e.append(document.createTextNode("You're all caught up."));list.append(e);posts.slice(0,3).forEach((p,i)=>list.append(item(p,i)))} // and the latest few underneath
       $('newsH').textContent=f.length?(f.length===1?'1 new update':f.length+' new updates'):'News';
       if(posts[0])try{localStorage.setItem(SEEN,String(+new Date(posts[0].publish_at)))}catch(e){};paintDot()}
     menu.hidden=!on;btn.setAttribute('aria-expanded',String(on))};
