@@ -9,14 +9,13 @@
 html[data-theme="dark"] .ndot{box-shadow:0 0 0 2px #0e0f0f}
 .ndot[hidden]{display:none}
 /* bell dropdown: same glass as the games menu */
-.hhmenu.nmenu{background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);width:min(380px,calc(100vw - 32px));padding:6px 0 0;display:flex;flex-direction:column;max-height:min(70vh,560px)}
+.hhmenu.nmenu{background:rgba(255,255,255,.84);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);width:min(380px,calc(100vw - 32px));padding:6px 0 0;display:flex;flex-direction:column;max-height:min(70vh,560px)}
 .nmenu[hidden]{display:none}
 .nmenu .nhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 18px 6px}
 .nmenu .nhead h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
 .nmenu .nhead span{font-size:12px;font-weight:600;color:var(--muted)}
 .nmenu .nlist{overflow:auto;padding:4px 18px;display:flex;flex-direction:column;gap:0;overscroll-behavior:contain}
 .nitem{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start;padding:14px 0;border-radius:0;color:var(--ink);text-decoration:none;background:none;border-top:1px solid rgba(0,0,0,.1)}
-.nmenu .nlist>.nitem:first-child,.nmenu .nempty+.nitem{border-top:0}
 html[data-theme="dark"] .hhmenu.nmenu{background:rgba(18,18,18,.72)}
 html[data-theme="dark"] .nitem{border-color:rgba(255,255,255,.12)}
 a.nitem:hover h3{text-decoration:underline;text-underline-offset:3px}
@@ -442,10 +441,10 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
       <svg class="mark" viewBox="0 0 53 69" aria-hidden="true"><path d="M4.03865 58.5444L28.7422 58.4145C32.5052 58.5538 35.6995 56.1602 36.9927 53.1536C37.5344 51.894 37.6625 50.7215 37.359 49.7708C37.3251 49.1516 37.1874 48.5274 36.9324 47.9231L32.7664 38.051L40.2475 38.07C50.5051 38.3367 55.1171 45.5211 51.5191 53.6912C48.1059 61.8232 37.5355 68.4919 27.3734 68.0026L0 67.9357L4.03865 58.5444Z"/><path d="M24.7505 47.5023L8.75173 47.5868L12.8741 38.0031L20.749 38.0218L24.7505 47.5023Z"/><path d="M16.5587 0.738192C8.75457 3.285 4.48766 11.6712 7.02349 19.4788C9.55916 27.2863 17.9392 31.5651 25.7505 29.0404C33.5774 26.5107 37.8665 18.1101 35.3257 10.2869C32.785 2.4635 24.3783 -1.8137 16.5587 0.738192Z"/></svg>Dailycade
     </a><button class="beta" id="betaBtn" type="button" aria-label="Beta: send feedback" title="Send feedback">Beta</button></div>
     <div class="hicons">
-    <button class="theme nbell" id="newsBtn" type="button" aria-label="News" aria-haspopup="true" aria-expanded="false" aria-controls="newsMenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 4.5 1.8 6.3 2.5 7H3.5C4.2 15.3 6 13.5 6 9z"/><path d="M10 19.5a2.2 2.2 0 0 0 4 0"/></svg><span class="ndot" id="newsDot" hidden></span></button>
+    <button class="theme nbell" id="newsBtn" type="button" aria-label="Updates" aria-haspopup="true" aria-expanded="false" aria-controls="newsMenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 4.5 1.8 6.3 2.5 7H3.5C4.2 15.3 6 13.5 6 9z"/><path d="M10 19.5a2.2 2.2 0 0 0 4 0"/></svg><span class="ndot" id="newsDot" hidden></span></button>
     <button class="theme" id="themeBtn" type="button" aria-label="Switch to dark mode"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
     <button class="theme" id="appsBtn" type="button" aria-label="All games" aria-haspopup="true" aria-expanded="false" aria-controls="hhMenu" title="All games"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg></button>
-    <div class="hhmenu nmenu" id="newsMenu" hidden role="region" aria-labelledby="newsH"><div class="nhead"><h2 id="newsH">News</h2></div><div class="nlist" id="newsList"></div><a class="nall" id="newsSeeAll" href="#news">See all news</a></div>
+    <div class="hhmenu nmenu" id="newsMenu" hidden role="region" aria-labelledby="newsH"><div class="nhead"><h2 id="newsH">Updates</h2></div><div class="nlist" id="newsList"></div><a class="nall" id="newsSeeAll" href="#news">See all updates</a></div>
     <div class="hhmenu" id="hhMenu" hidden><nav class="games hhrow" id="hhRow" aria-label="All games"></nav></div></div>
   </div>
 </header>
@@ -703,7 +702,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
 
 <section class="legal wrap" id="news" hidden aria-labelledby="newsT">
   <a class="back" href="#top">← Back to games</a>
-  <div class="nhero"><div><h1 id="newsT">News</h1>
+  <div class="nhero"><div><h1 id="newsT">Updates</h1>
   <p class="eff">New games, updates and what's changed on Dailycade.</p></div><div class="nblobs" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
   <div class="nfeed" id="newsAll"></div>
 </section>
@@ -767,9 +766,9 @@ let panels=allPanels.slice(),dots=allDots.slice();
     if(u){const l=el('a',i===0?'btn':'nlink');l.href=u;
       if(i===0){l.textContent=p.link_text||'Learn more';l.insertAdjacentHTML('beforeend',ARROW)}else{l.textContent=(p.link_text||'Learn more')+' ';l.append(el('span',null,'→'))}tx.append(l)}
     c.append(tx);return c};
-  const paintDot=()=>{const n=fresh().length;dot.hidden=!n;btn.setAttribute('aria-label',n?'News, '+n+' new':'News')};
+  const paintDot=()=>{const n=fresh().length;dot.hidden=!n;btn.setAttribute('aria-label',n?'Updates, '+n+' new':'Updates')};
   let newIds=new Set();
-  const paintAll=()=>{all.replaceChildren();if(!posts.length){all.append(el('p','nempty','No news yet.'));return}const lead=posts.find(p=>p.featured)||posts[0];[lead,...posts.filter(p=>p!==lead)].forEach((p,i)=>all.append(card(p,i,newIds.has(p.id))))};
+  const paintAll=()=>{all.replaceChildren();if(!posts.length){all.append(el('p','nempty','No updates yet.'));return}const lead=posts.find(p=>p.featured)||posts[0];[lead,...posts.filter(p=>p!==lead)].forEach((p,i)=>all.append(card(p,i,newIds.has(p.id))))};
   async function load(){if(!window.DCSB){setTimeout(load,400);return}
     try{const r=await DCSB.from('news').select('id,title,body,link_url,link_text,publish_at,image_url,featured').eq('scope',window.DC_STAGING?'staging':'live').eq('status','published').lte('publish_at',new Date().toISOString()).order('publish_at',{ascending:false}).limit(50);
       if(r.error)throw r.error;posts=r.data||[];if(previewUnread!=null){const p=posts[previewUnread];try{localStorage.setItem(SEEN,String(p?+new Date(p.publish_at):0))}catch(e){}previewUnread=null}newIds=new Set(fresh().map(p=>p.id));paintDot();paintAll()}catch(e){}}
@@ -778,8 +777,9 @@ let panels=allPanels.slice(),dots=allDots.slice();
       const f=fresh();list.replaceChildren();
       if(f.length){f.forEach((p,i)=>{const it=item(p,i);it.classList.add('unread');list.append(it)}); // unread first, then a few already read
         posts.filter(p=>!f.includes(p)).slice(0,Math.max(0,5-f.length)).forEach((p,i)=>list.append(item(p,f.length+i)))}
-      else{const e=el('p','nempty');e.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg>');e.append(document.createTextNode("You're all caught up."));list.append(e);posts.slice(0,3).forEach((p,i)=>list.append(item(p,i)))} // and the latest few underneath
-      $('newsH').textContent=f.length?(f.length===1?'1 new update':f.length+' new updates'):'News';
+      else posts.slice(0,5).forEach((p,i)=>list.append(item(p,i)));
+      if(!posts.length)list.append(el('p','nempty','No updates yet.'));
+      $('newsH').textContent=f.length?(f.length===1?'1 new update':f.length+' new updates'):'Updates';
       if(posts[0])try{localStorage.setItem(SEEN,String(+new Date(posts[0].publish_at)))}catch(e){};paintDot()}
     menu.hidden=!on;btn.setAttribute('aria-expanded',String(on))};
   window.dcCloseNews=()=>{if(!menu.hidden)open(false)};
@@ -898,7 +898,7 @@ rail.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();
 /* pages: home, #contact, #privacy, #do-not-sell */
 const views={privacy:$('privacy'),'do-not-sell':$('do-not-sell'),contact:$('contact'),news:$('news')},home=$('top');
 function route(){if(location.hash==='#admin'){location.replace('/admin');return}const v=views[location.hash.slice(1)];home.hidden=!!v;for(const k in views)views[k].hidden=views[k]!==v;
-  if(v){scrollTo(0,0);document.title={privacy:'Privacy',contact:'Contact',news:'News','do-not-sell':'Do not sell or share my personal information'}[v.id]+' · Dailycade'}else{document.title='Dailycade – Free Daily Arcade Games';fit();paint();const gi=panels.findIndex(p=>p.id===location.hash.slice(1));if(gi>0)setTimeout(()=>go(gi),50);}}
+  if(v){scrollTo(0,0);document.title={privacy:'Privacy',contact:'Contact',news:'Updates','do-not-sell':'Do not sell or share my personal information'}[v.id]+' · Dailycade'}else{document.title='Dailycade – Free Daily Arcade Games';fit();paint();const gi=panels.findIndex(p=>p.id===location.hash.slice(1));if(gi>0)setTimeout(()=>go(gi),50);}}
 addEventListener('hashchange',route);route();
 /* countdown to the next daily game: every game turns over at 12am in the player's own time zone */
 function countdown(){const n=new Date(),mid=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1),s=Math.max(0,Math.floor((mid-n)/1000));
