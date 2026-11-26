@@ -925,19 +925,19 @@ let panels=allPanels.slice(),dots=allDots.slice();
     const again=document.createElement('button');again.type='button';again.className='suagain';again.textContent='Change email';again.onclick=reset;n.append(again);n.hidden=false};
   // back to the form, to sign up another address from this browser
   const reset=()=>{box.classList.remove('done');note.className='';note.textContent=NOTE;$('suNote').hidden=true;inp.value='';btn.disabled=true;
-    try{localStorage.removeItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed')}catch(e){}inp.focus()};
-  try{if(localStorage.getItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed'))done()}catch(e){}
+inp.focus()};
+  try{localStorage.removeItem('dc.subscribed');localStorage.removeItem('dc.stg.subscribed')}catch(e){} // the form always shows on a fresh visit
   const RE=/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i,valid=()=>RE.test(inp.value.trim());
   inp.addEventListener('input',()=>{btn.disabled=!valid();if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
   // one handshake pops up from the button, grows and fades
   const shake=()=>{const h=document.createElement('i');h.className='sushake';h.textContent='🤝';h.setAttribute('aria-hidden','true');btn.append(h);setTimeout(()=>h.remove(),1650)};
   form.addEventListener('submit',async e=>{e.preventDefault();const v=inp.value.trim();
     if(!valid()){note.className='err';note.textContent='Enter a valid email address.';inp.focus();return}
-    shake();
     if(!window.DCSB){note.className='err';note.textContent="Couldn't connect. Try again in a moment.";return}
     btn.disabled=true;
     try{const r=await DCSB.rpc('subscribe',{p_email:v,p_staging:!!window.DC_STAGING,p_source:'home'});if(r.error)throw r.error;
-      try{localStorage.setItem(window.DC_STAGING?'dc.stg.subscribed':'dc.subscribed','1')}catch(e){}setTimeout(done,1650)}
+      if(r.data==='exists'){note.className='err';note.textContent='That email is already signed up.';inp.focus();return}
+      shake();setTimeout(done,1650)}
     catch(err){note.className='err';note.textContent=/invalid/.test(err.message||'')?'Enter a valid email address.':"Couldn't sign you up. Try again in a moment."}
     finally{btn.disabled=!valid()}});
 })();
