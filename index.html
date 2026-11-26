@@ -389,12 +389,11 @@ html[data-theme="dark"] .pback{background:#f2f2f0;color:#0d0d0d}
 /* the same link rides in the sticky header while reading a post */
 .navback{display:none!important}
 body.onpost .nav.stuck .navback{display:inline-flex!important;margin-right:0;padding:7px 14px 7px 12px;font-size:14px;animation:hhIn .25s ease-out}
-@media (max-width:760px){body.onpost .nav.stuck .navback .pbdots{display:none}body.onpost .nav.stuck .navback{margin-right:2px;padding:7px 11px 7px 9px;font-size:13px;gap:6px}body.onpost .nav.stuck .brand .beta{display:none}}
+@media (max-width:760px){body.onpost .nav.stuck .navback .pall,body.onpost .nav.stuck .navback .pshort{display:none!important}body.onpost .nav.stuck .navback{margin-right:2px;padding:7px 11px 7px 9px;font-size:13px;gap:6px}body.onpost .nav.stuck .brand .beta{display:none}body.onpost .nav.stuck .navback .pbdots i{margin-left:3px}}
 .navback .pshort{display:none}
-@media (max-width:380px){body.onpost .nav.stuck .navback .pall{display:none}body.onpost .nav.stuck .navback .pshort{display:inline}}
-@media (max-width:340px){body.onpost .nav.stuck .navback .pshort{display:none}body.onpost .nav.stuck .navback{padding:9px}}
 body.onpost .nav.stuck .wrap{gap:24px}
-@media (max-width:760px){body.onpost .nav.stuck .wrap{gap:8px}}html[data-theme="dark"] .pback:hover{background:#dcdcd8}
+@media (max-width:760px){body.onpost .nav.stuck .wrap{gap:8px}}
+@media (max-width:340px){body.onpost .nav.stuck .navback .pbdots i:nth-child(n+3){display:none}}html[data-theme="dark"] .pback:hover{background:#dcdcd8}
 
 .legal .back:hover{color:var(--ink)}
 .legal h1{font-family:var(--sans);font-weight:700;font-size:clamp(36px,5vw,56px);line-height:1.02;letter-spacing:-.04em;margin:0 0 12px}
