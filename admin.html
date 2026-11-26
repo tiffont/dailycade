@@ -214,6 +214,15 @@ html,body{background:#f1f1ee}
 .sidefoot .whoami{margin:0;color:var(--muted);word-break:break-all}
 .sidefoot .whoami button{border:0;background:none;padding:0;color:var(--ink);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
 .sidefoot .back{color:var(--muted);text-decoration:none;font-weight:600}.sidefoot .back:hover{color:var(--ink)}
+/* back to the site: same pill as the site's back links */
+.sidefoot .pback{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;padding:8px 14px 8px 12px;border-radius:999px;background:#0d0d0d;color:#fff!important;font-size:13px;font-weight:700;text-decoration:none;transition:background .2s}
+.sidefoot .pback .pbi{display:grid;place-items:center}
+.sidefoot .pback .pbdots{display:inline-flex}
+.sidefoot .pback .pbdots i{width:7px;height:7px;border-radius:50%;margin-left:3px;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.sidefoot .pback .pbdots i:nth-child(1){background:#9deba8}.sidefoot .pback .pbdots i:nth-child(2){background:#c49bff;transition-delay:.03s}.sidefoot .pback .pbdots i:nth-child(3){background:#ff8ad8;transition-delay:.06s}.sidefoot .pback .pbdots i:nth-child(4){background:#f2c14e;transition-delay:.09s}
+.sidefoot .pback:hover{background:#2a2a2a}.sidefoot .pback:hover .pbdots i{transform:translateY(-3px)}
+html[data-theme="dark"] .sidefoot .pback{background:#f2f2f0;color:#0d0d0d!important}html[data-theme="dark"] .sidefoot .pback:hover{background:#dcdcd8}
+@media (max-width:900px){.sidefoot .pback .pbdots{display:none}}
 .content{min-width:0;display:flex;flex-direction:column}
 .content .wrap{max-width:1180px;width:100%;margin:0;padding:0 32px}
 .content main{flex:1}
@@ -331,7 +340,7 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
   <div class="brand"><a class="logo" href="/" aria-label="Dailycade home"><svg viewBox="0 0 53 69" aria-hidden="true"><path d="M4.03865 58.5444L28.7422 58.4145C32.5052 58.5538 35.6995 56.1602 36.9927 53.1536C37.5344 51.894 37.6625 50.7215 37.359 49.7708C37.3251 49.1516 37.1874 48.5274 36.9324 47.9231L32.7664 38.051L40.2475 38.07C50.5051 38.3367 55.1171 45.5211 51.5191 53.6912C48.1059 61.8232 37.5355 68.4919 27.3734 68.0026L0 67.9357L4.03865 58.5444Z"/><path d="M24.7505 47.5023L8.75173 47.5868L12.8741 38.0031L20.749 38.0218L24.7505 47.5023Z"/><path d="M16.5587 0.738192C8.75457 3.285 4.48766 11.6712 7.02349 19.4788C9.55916 27.2863 17.9392 31.5651 25.7505 29.0404C33.5774 26.5107 37.8665 18.1101 35.3257 10.2869C32.785 2.4635 24.3783 -1.8137 16.5587 0.738192Z"/></svg>Dailycade</a><span class="tag">Admin</span></div>
   <nav id="nav" aria-label="Admin sections"></nav>
   <button class="theme" id="themeBtn" type="button" role="switch" aria-checked="false"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><span>Dark mode</span><i class="sw" aria-hidden="true"></i></button>
-  <div class="sidefoot"><p class="whoami" id="whoami" hidden></p><a class="back" href="/">← Back to site</a></div>
+  <div class="sidefoot"><p class="whoami" id="whoami" hidden></p><a class="pback back" href="/"><span class="pbi" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg></span>Back to site<span class="pbdots" aria-hidden="true"><i></i><i></i><i></i><i></i></span></a></div>
 </aside>
 <div class="content">
 
