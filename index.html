@@ -376,6 +376,17 @@ footer .flinks{display:flex;gap:20px;flex-wrap:wrap}
 footer .flinks a:hover{color:var(--ink)}
 .legal{max-width:760px;padding-top:24px;padding-bottom:40px}
 .legal .back{display:inline-block;color:var(--muted);font-size:15px;margin-bottom:28px}
+/* post page: back to all updates, as a little pill with the game colors */
+#post .pback{display:inline-flex;align-items:center;gap:10px;margin-bottom:28px;padding:6px 16px 6px 6px;border-radius:999px;background:#f4f4f2;color:var(--ink);font-size:15px;font-weight:700;text-decoration:none;transition:background .2s}
+#post .pback .pbi{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+#post .pback .pbdots{display:inline-flex;margin-left:0}
+#post .pback .pbdots i{width:8px;height:8px;border-radius:50%;margin-left:4px;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+#post .pback .pbdots i:nth-child(1){background:#9deba8}#post .pback .pbdots i:nth-child(2){background:#c49bff;transition-delay:.03s}#post .pback .pbdots i:nth-child(3){background:#ff8ad8;transition-delay:.06s}#post .pback .pbdots i:nth-child(4){background:#f2c14e;transition-delay:.09s}
+#post .pback:hover{background:#ebebe8}
+#post .pback:hover .pbi{transform:translateX(-3px)}
+#post .pback:hover .pbdots i{transform:translateY(-3px)}
+html[data-theme="dark"] #post .pback{background:#1a1a1a}html[data-theme="dark"] #post .pback:hover{background:#222}
+html[data-theme="dark"] #post .pback .pbi{color:#0d0d0d}
 .legal .back:hover{color:var(--ink)}
 .legal h1{font-family:var(--sans);font-weight:700;font-size:clamp(36px,5vw,56px);line-height:1.02;letter-spacing:-.04em;margin:0 0 12px}
 .legal .eff{color:var(--muted);margin:0 0 32px}
@@ -756,7 +767,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
   <div class="nfeed" id="newsAll"></div>
 </section>
 <article class="legal wrap" id="post" hidden aria-labelledby="postT">
-  <a class="back" href="/updates">← All updates</a>
+  <a class="pback" href="/updates"><span class="pbi" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg></span>All updates<span class="pbdots" aria-hidden="true"><i></i><i></i><i></i><i></i></span></a>
   <header class="phead"><span class="npill" id="postCat"></span><h1 id="postT"></h1><time id="postWhen"></time></header>
   <div class="part" id="postArt" aria-hidden="true"></div>
   <div class="pbody" id="postBody"></div>
