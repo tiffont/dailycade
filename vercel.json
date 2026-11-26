@@ -16,6 +16,14 @@
     {
       "source": "/c/:game",
       "destination": "/api/c?game=:game"
+    },
+    {
+      "source": "/updates",
+      "destination": "/api/u"
+    },
+    {
+      "source": "/updates/:slug",
+      "destination": "/api/u?slug=:slug"
     }
   ],
   "cleanUrls": true,
@@ -36,5 +44,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/u.js": {
+      "includeFiles": "index.html"
+    }
+  }
 }

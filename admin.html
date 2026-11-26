@@ -84,6 +84,10 @@ h1{font-size:34px;letter-spacing:-.02em;margin:32px 0 6px;font-weight:700}
 .nwmh{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}.nwmh h2{margin:0}
 .nwx{width:36px;height:36px;display:grid;place-items:center;border:0;border-radius:8px;background:none;color:inherit;cursor:pointer}.nwx:hover{background:rgba(0,0,0,.06)}
 html[data-theme="dark"] .nwx:hover{background:rgba(255,255,255,.08)}
+.nwhelp{display:block;font-weight:400;opacity:.65;margin:-2px 0 2px;font-size:12.5px;line-height:1.45}
+.nwurl{display:flex;align-items:center;border:1px solid var(--line,rgba(0,0,0,.14));border-radius:11px;overflow:hidden}
+.nwurl span{padding:0 0 0 12px;opacity:.55;font-weight:400;white-space:nowrap;font-size:14px}
+.nwurl input{border:0!important;border-radius:0!important;flex:1;min-width:0;padding-left:2px!important;box-shadow:none!important}
 .nwnew{display:inline-flex;align-items:center;gap:6px}
 .nwtop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.nwtop h2{margin:0}
 body.nwopen{overflow:hidden}
@@ -442,8 +446,10 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
     <p class="hint" style="margin:0 0 14px">Posts show in the bell on the homepage, newest first, with a dot until each visitor has seen them. Save a draft, publish now, or pick a date and time to schedule it.</p>
     <div class="nwform">
       <label>Title<input id="nwTitle" maxlength="120" autocomplete="off" placeholder="Meet Trace, our newest game"></label>
-      <label><span>Message <small id="nwBodyN">0 / 600</small></span><textarea id="nwBody" maxlength="600" placeholder="Ten shapes. Stay on the line. Build your pile. Play today's Trace on the homepage."></textarea></label>
-      <div class="two"><label>Link <small>optional</small><input id="nwUrl" maxlength="300" autocomplete="off" placeholder="/trace or https://…"></label><label>Link text <small>optional</small><input id="nwLink" maxlength="40" autocomplete="off" placeholder="Play Trace"></label></div>
+      <label class="nwslug">Page address <span class="nwurl"><span>dailycadegames.com/updates/</span><input id="nwSlug" maxlength="80" autocomplete="off" spellcheck="false" placeholder="meet-trace"></span></label>
+      <label><span>Summary <small id="nwBodyN">0 / 600</small></span><small class="nwhelp">Shows on the card and in the bell.</small><textarea id="nwBody" maxlength="600" rows="3" placeholder="Ten shapes. Stay on the line. Build your pile."></textarea></label>
+      <label><span>Full post <small>optional</small></span><small class="nwhelp">Shows on the post's own page. Leave empty to use the summary. A blank line starts a new paragraph. ## Heading · **bold** · *italic* · - list item · [link text](https://…)</small><textarea id="nwContent" maxlength="20000" rows="12" placeholder="Trace is the newest game on Dailycade…"></textarea></label>
+      <div class="two"><label>Button link <small>optional · at the end of the post</small><input id="nwUrl" maxlength="300" autocomplete="off" placeholder="/trace or https://…"></label><label>Button text <small>optional</small><input id="nwLink" maxlength="40" autocomplete="off" placeholder="Play Trace"></label></div>
       <div class="nwimg"><div class="nwthumb" id="nwThumb" aria-hidden="true"></div><div><span class="nwlab">Image <small>optional · PNG, JPG, WebP or GIF up to 3 MB. Sits on top of the colored shape; a transparent PNG looks best.</small></span>
         <div class="bkbar"><label class="btn ghost small nwpick">Choose image<input type="file" id="nwFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button class="btn ghost small" id="nwImgX" type="button" hidden>Remove</button><span class="hint" id="nwImgNote"></span></div></div></div>
       <div class="nwtags"><span class="nwlab">Categories <small>players filter the Updates page by these. The first game picked shows above the post; with no game it's Dailycade. Linking to a game picks it for you.</small></span>
@@ -824,7 +830,8 @@ function nwPaintTags(){const chip=t=>{const c=document.createElement('button');c
 function nwAddTag(){const t=nwSlug($('nwTagNew').value);if(t&&nwTags.size<8){nwTags.add(t);nwPaintTags()}$('nwTagNew').value=''}
 nwPaintTags();$('nwTagAdd').onclick=nwAddTag;$('nwTagNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nwAddTag()}});
 $('nwUrl').addEventListener('change',()=>{const m=$('nwUrl').value.trim().match(/^(?:https?:\/\/(?:www\.|staging\.)?dailycadegames\.com)?\/([a-z]+)/i);const g=m&&m[1].toLowerCase();if(g&&NW_GAMES[g]&&!nwTags.has(g)&&nwTags.size<8){nwTags.add(g);nwPaintTags()}});
-function nwForm(row){nwEdit=row||null;$('nwTitle').value=row?row.title:'';$('nwBody').value=row?row.body||'':'';$('nwUrl').value=row?row.link_url||'':'';$('nwLink').value=row?row.link_text||'':'';
+let nwSlugSet=false;const nwSlugOf=t=>t.toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60).replace(/-+$/,'');
+function nwForm(row){nwEdit=row||null;$('nwTitle').value=row?row.title:'';$('nwBody').value=row?row.body||'':'';$('nwSlug').value=row?row.slug||'':'';nwSlugSet=!!row;$('nwContent').value=row&&row.content&&row.content!==row.body?row.content:'';$('nwUrl').value=row?row.link_url||'':'';$('nwLink').value=row?row.link_text||'':'';
   $('nwWhen').value=row&&row.publish_at?nwLocal(new Date(row.publish_at)):'';nwImg(row?row.image_url:null);$('nwFeat').checked=!!(row&&row.featured);nwTags=new Set(row&&row.tags||[]);nwPaintTags();$('nwFile').value='';$('nwFormH').textContent=row?'Edit post':'New post';nwCount()}
 function nwCount(){$('nwBodyN').textContent=$('nwBody').value.length+' / 600'}
 async function loadNw(){if(!window.DCSB)return;if(nwOn)$('nwNote').textContent='Loading…';
@@ -843,6 +850,7 @@ function paintNw(){const list=$('nwList');list.replaceChildren();const live=nwRo
     del.onclick=async()=>{if(!await ask('Delete "'+x.title+'"?',"It's removed from the bell and the news page"+(window.DC_STAGING?' on staging':'')+'. This can\'t be undone.','Delete'))return;
       try{const r=await DCSB.from('news').delete().eq('id',x.id);if(r.error)throw r.error;if(nwEdit&&nwEdit.id===x.id)nwForm(null);msg('Deleted.','ok');loadNw()}catch(e){msg("Couldn't delete: "+(e.message||e),'err')}};
     if(x.status!=='published'||cls==='sched'){const pb=document.createElement('button');pb.type='button';pb.className='btn small';pb.textContent='Publish';pb.onclick=()=>nwQuick(x);a.prepend(pb)} // quick publish
+    if(x.status==='published'&&cls!=='sched'){const v=document.createElement('a');v.className='btn ghost small';v.textContent='View';v.href='/updates/'+x.slug;v.target='_blank';v.rel='noopener';a.append(v)}
     const fb=document.createElement('button');fb.type='button';fb.className='btn ghost small';fb.textContent=x.featured?'Unfeature':'Feature';fb.onclick=()=>nwFeature(x,!x.featured);
     a.append(fb,ed,del);
     if(x.image_url){const m=document.createElement('span');m.className='nwmini';m.style.backgroundImage='url("'+encodeURI(x.image_url)+'")';row.append(m)}
@@ -865,15 +873,20 @@ $('nwFile').addEventListener('change',async()=>{const f=$('nwFile').files[0];if(
 $('nwImgX').onclick=()=>nwImg(null);
 async function nwSave(publish){const title=$('nwTitle').value.trim(),body=$('nwBody').value.trim(),url=$('nwUrl').value.trim(),lt=$('nwLink').value.trim(),w=$('nwWhen').value;
   if(!title){msg('Give the post a title.','err');$('nwTitle').focus();return}
+  const slug=nwSlugOf($('nwSlug').value||title);if(!slug){msg('Give the post a page address.','err');$('nwSlug').focus();return}$('nwSlug').value=slug;
+  if(nwRows.some(x=>x.slug===slug&&(!nwEdit||x.id!==nwEdit.id))){msg('Another post already uses that page address.','err');$('nwSlug').focus();return}
+  const content=$('nwContent').value.trim();
   if(url&&!/^(https?:\/\/|\/)/.test(url)){msg('The link should start with https:// or /','err');$('nwUrl').focus();return}
   const when=publish?(w?new Date(w):new Date()):null;
   if(publish&&w&&isNaN(when)){msg('That date and time don\'t look right.','err');return}
-  const row={scope:NW_SCOPE(),title,body,link_url:url||null,link_text:url?(lt||null):null,image_url:nwImgUrl,featured:$('nwFeat').checked,tags:[...nwTags].slice(0,8),status:publish?'published':'draft',publish_at:when?when.toISOString():(nwEdit&&!publish?null:null),updated_at:new Date().toISOString()};
+  const row={scope:NW_SCOPE(),title,slug,body,content:content||body,link_url:url||null,link_text:url?(lt||null):null,image_url:nwImgUrl,featured:$('nwFeat').checked,tags:[...nwTags].slice(0,8),status:publish?'published':'draft',publish_at:when?when.toISOString():(nwEdit&&!publish?null:null),updated_at:new Date().toISOString()};
   if(publish&&!await ask(when>new Date()?'Schedule this post?':'Publish this post now?',(when>new Date()?'It shows in the bell'+(window.DC_STAGING?' on staging':'')+' on '+bkWhen(when)+'.':'It shows in the bell'+(window.DC_STAGING?' on staging':'')+' right away, with a dot for everyone who hasn\'t seen it.'),when>new Date()?'Schedule':'Publish'))return;
   try{if(row.featured)await nwUnfeatureOthers(nwEdit&&nwEdit.id);
     const r=nwEdit?await DCSB.from('news').update(row).eq('id',nwEdit.id):await DCSB.from('news').insert(row);if(r.error)throw r.error;
     msg(publish?(when>new Date()?'Scheduled.':'Published.'):'Draft saved.','ok');nwClose();loadNw()}catch(e){msg("Couldn't save: "+(e.message||e),'err')}}
 $('nwBody').addEventListener('input',nwCount);
+$('nwTitle').addEventListener('input',()=>{if(!nwSlugSet)$('nwSlug').value=nwSlugOf($('nwTitle').value)});
+$('nwSlug').addEventListener('input',()=>{nwSlugSet=true});$('nwSlug').addEventListener('change',()=>{$('nwSlug').value=nwSlugOf($('nwSlug').value)});
 $('nwDraft').onclick=()=>nwSave(false);$('nwPub').onclick=()=>nwSave(true);
 function nwOpen(row){nwForm(row||null);$('nwModal').hidden=false;document.body.classList.add('nwopen');$('nwModal').scrollTop=0;setTimeout(()=>$('nwTitle').focus(),30)}
 function nwClose(){if($('nwModal').hidden)return;$('nwModal').hidden=true;document.body.classList.remove('nwopen');nwForm(null)}
