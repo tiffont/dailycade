@@ -100,7 +100,6 @@ html[data-theme="dark"] .ntag{background:rgba(255,255,255,.08)}html[data-theme="
 .npill::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--shape)}
 .npill.cl::before,.nopt.cl::before,.nchip.cl::before{background:#8a8f96;box-shadow:none}
 .npill.dc::before{background:conic-gradient(#9deba8 0 25%,#c49bff 0 50%,#ff8ad8 0 75%,#f2c14e 0)}
-.npill.new{background:var(--ink);color:#fff}
 .ncard h3{margin:0 0 8px;font-size:24px;font-weight:700;line-height:32px;letter-spacing:-.02em}
 .ncard p{margin:0;font-size:15px;line-height:1.55;color:#5b6068}
 #news .ncard a,#post .ncard a,#post a.btn{text-decoration:none}
@@ -148,14 +147,14 @@ html[data-theme="dark"] .ncard{background:#161616}
 html[data-theme="dark"] .ncard p{color:#a9aca9}
 /* the featured update flips the page: a dark card with a light button in light mode, a light card with a dark button in dark mode */
 .ncard.lead{background:#0d0d0d;color:#fff}.ncard.lead h3 a{color:#fff}.ncard.lead p{color:#b5b5b0}
-.ncard.lead .ntag{background:rgba(255,255,255,.12);color:#fff}.ncard.lead .npill.new{background:#fff;color:#0d0d0d}.ncard.lead button.ntag:hover{background:rgba(255,255,255,.2)}
+.ncard.lead .ntag{background:rgba(255,255,255,.12);color:#fff}.ncard.lead button.ntag:hover{background:rgba(255,255,255,.2)}
 html[data-theme="dark"] .ncard.lead{background:#f2f2f0;color:#0d0d0d}html[data-theme="dark"] .ncard.lead h3 a{color:#0d0d0d}html[data-theme="dark"] .ncard.lead p{color:#5b6068}
-html[data-theme="dark"] .ncard.lead .npill{background:#fff;color:#0d0d0d}html[data-theme="dark"] .ncard.lead .npill.new{background:#0d0d0d;color:#fff}
+html[data-theme="dark"] .ncard.lead .npill{background:#fff;color:#0d0d0d}
 html[data-theme="dark"] .ncard.lead .ntag{background:rgba(0,0,0,.07);color:#0d0d0d}html[data-theme="dark"] .ncard.lead button.ntag:hover{background:rgba(0,0,0,.13)}
 html[data-theme="dark"] .ncard.lead .btn.light{color:#fff;background:radial-gradient(90% 140% at 32% 18%,#4a4a4a 0%,#1c1c1c 45%,#050505 100%);box-shadow:0 5px 0 0 #4a4a4a,0 10px 14px -4px rgba(0,0,0,.35)}
 html[data-theme="dark"] .ncard.lead .btn.light::after{background:rgba(255,255,255,.16)}
 html[data-theme="dark"] .npill{background:#262626}
-html[data-theme="dark"] .npill.new{background:#f2f2f0;color:#0d0d0d}
+
 @media (max-width:760px){
   .nhero{margin-bottom:24px}.nblobs{position:absolute;right:0;top:4px;width:220px;height:150px;transform:scale(.5);transform-origin:top right}
   .nhero .eff{font-size:17px}
