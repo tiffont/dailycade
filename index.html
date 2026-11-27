@@ -111,6 +111,9 @@ html[data-theme="dark"] .ntag{background:rgba(255,255,255,.08)}html[data-theme="
 .ncard .btn.nmore{align-self:flex-start;font-size:15px;font-weight:700}
 .ncard .nmorew{margin-top:auto;padding-top:18px}
 .ncard .pback.nmore{padding:9px 16px;font-size:14px}
+/* Read more matches its page: white in light mode, dark in dark mode */
+.ncard .pback.nmore{background:#fff;color:#0d0d0d}.ncard:hover .pback.nmore{background:#fff}
+html[data-theme="dark"] .ncard .pback.nmore{background:#262626;color:#f2f2f0}html[data-theme="dark"] .ncard:hover .pback.nmore{background:#2e2e2e}
 .ncard .nmarr{transition:transform .2s}.ncard:hover .nmarr{transform:translateX(3px)}
 .ncard.lead .nmore{margin-top:28px;padding-top:0}
 /* post page */
