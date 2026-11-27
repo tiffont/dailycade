@@ -2291,10 +2291,10 @@ function drawShotChart(cvs,th,P,dotCol){
   const box=cvs.parentElement;if(!box||!box.clientWidth)return;
   const csz=box.clientWidth,dpr=Math.min(2,devicePixelRatio||1);if(csz<60)return;
   // frame it on the target: centred, and zoomed so the edges just clear the target's rim or the farthest throw.
-  // The width is the summary's; the height is only what the target and the throws need (never taller than wide)
-  const r=Math.max(7,csz*.034),pad=r*1.6+8;
+  // The width is the summary's; the height is only what the target and the throws need, at most a little over half the width
+  const r=Math.max(6,csz*.028),pad=r*1.6+6,Hmax=Math.round(csz*.56); // a short, wide strip so the buttons below stay in view
   let Ex=1+Field.TUBE,Ey=1+Field.TUBE;P.forEach(p=>{if(p){Ex=Math.max(Ex,Math.abs(p[0]));Ey=Math.max(Ey,Math.abs(p[1]))}});
-  const F=csz*1.22,D=Math.max(Ex*F/(csz/2-pad),Ey*F/(csz/2-pad)),hgt=Math.min(csz,Math.round(2*(Ey*F/D+pad)));
+  const F=csz*1.22,D=Math.max(Ex*F/(csz/2-pad),Ey*F/(Hmax/2-pad)),hgt=Math.min(Hmax,Math.round(2*(Ey*F/D+pad)));
   cvs.width=Math.round(csz*dpr);cvs.height=Math.round(hgt*dpr);cvs.style.width=csz+'px';cvs.style.height=hgt+'px';
   const g=cvs.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);
   const css=v=>{const s=String(v).match(/var\((--[^)]+)\)/);return s?getComputedStyle(document.documentElement).getPropertyValue(s[1]).trim()||'#fff':v};
