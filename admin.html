@@ -89,6 +89,16 @@ html[data-theme="dark"] .nwx:hover{background:rgba(255,255,255,.08)}
 .nwurl span{padding:0 0 0 12px;opacity:.55;font-weight:400;white-space:nowrap;font-size:14px}
 .nwurl input{border:0!important;border-radius:0!important;flex:1;min-width:0;padding-left:2px!important;box-shadow:none!important}
 .nwnew{display:inline-flex;align-items:center;gap:6px}
+.nwtopb{display:inline-flex;gap:8px;align-items:center}
+.ntbox{max-width:560px}
+.ntlist{display:flex;flex-direction:column;margin:14px 0 16px}
+.ntrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line,rgba(0,0,0,.08))}
+.ntrow:first-child{border-top:0}
+.ntname{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ntname small{display:block;font-weight:400;opacity:.6;font-size:12px}
+.ntrow input[type=text]{width:100%;min-width:0;padding:7px 10px!important}
+.ntlist.nwform label{flex-direction:row}
+.ntpick{display:inline-flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;cursor:pointer}.ntpick input{width:16px;height:16px;margin:0}
+.ntadd{max-width:none}
 .nwtop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.nwtop h2{margin:0}
 body.nwopen{overflow:hidden}
 .login{display:grid;gap:12px;max-width:420px}.login input{border:1px solid #d9d9d9;border-radius:11px;padding:11px 14px;background:#fff}.login p{margin:0;color:var(--muted);font-size:14px}.whoami{font-size:13px;color:var(--muted);margin:-8px 0 16px}.whoami button{border:0;background:none;padding:0;text-decoration:underline;color:inherit;cursor:pointer}
@@ -393,7 +403,7 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
     <div id="knobs"></div>
   </section>
   <section class="card" id="nwListCard" aria-labelledby="nwH" hidden>
-    <div class="nwtop"><h2 id="nwH">Posts <span class="note" id="nwNote"></span></h2><button class="btn small nwnew" id="nwNew" type="button"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New post</button></div>
+    <div class="nwtop"><h2 id="nwH">Posts <span class="note" id="nwNote"></span></h2><span class="nwtopb"><button class="btn ghost small" id="ntOpen" type="button">Manage tags</button><button class="btn small nwnew" id="nwNew" type="button"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New post</button></span></div>
     <div class="bklist" id="nwList"></div>
   </section>
   <section class="card" id="suCard" aria-labelledby="suH" hidden>
@@ -450,6 +460,12 @@ html[data-theme="dark"] .side>.theme .moon{display:block}
 </div></div>
 <footer></footer>
 
+<div class="modal nwmodal" id="ntModal" hidden role="dialog" aria-modal="true" aria-labelledby="ntH"><div class="box nwbox ntbox">
+    <div class="nwmh"><h2 id="ntH">Manage tags</h2><button class="nwx" id="ntX" type="button" aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <p class="hint">Rename or delete a tag across every post. <b>In picker</b> tags show on the post form even when no post uses them yet. Categories (Dailycade, the games, Changelog) aren't tags, so they aren't listed here.</p>
+    <div id="ntList" class="ntlist nwform"></div>
+    <div class="nwaddtag ntadd nwform"><input id="ntNew" maxlength="24" placeholder="New tag for the picker" autocomplete="off"><button class="btn ghost small" type="button" id="ntAdd">Add</button></div>
+  </div></div>
 <div class="modal nwmodal" id="nwModal" hidden role="dialog" aria-modal="true" aria-labelledby="nwFormH"><div class="box nwbox">
     <div class="nwmh"><h2 id="nwFormH">New post</h2><button class="nwx" id="nwX" type="button" aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <p class="hint" style="margin:0 0 14px">Posts show in the bell on the homepage, newest first, with a dot until each visitor has seen them. Save a draft, publish now, or pick a date and time to schedule it.</p>
@@ -828,7 +844,7 @@ let nwOn=false, nwRows=[], nwEdit=null;
 const NW_SCOPE=()=>window.DC_STAGING?'staging':'live';
 const nwLocal=d=>{const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())};
 const NW_GAMES={gambit:'#9deba8',dropface:'#c49bff',slice:'#ff8ad8',trace:'#f2c14e',spiral:'#5fc9f3',frames:'#ff9f5a',rings:'#3fd4c0'};
-const NW_CATS=['dailycade',...Object.keys(NW_GAMES),'changelog'],NW_PRESET=['new-game','update','holiday','event','site'];
+const NW_CATS=['dailycade',...Object.keys(NW_GAMES),'changelog'];let NW_PRESET=['new-game','update','holiday','event','site']; // suggested tags; editable in Manage tags (site_config/news_tags)
 const nwTagName=t=>t.split('-').map((w,i)=>i?w:w[0].toUpperCase()+w.slice(1)).join(' ');
 const nwSlug=t=>t.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
 let nwTags=new Set();
@@ -844,7 +860,7 @@ let nwSlugSet=false;const nwSlugOf=t=>t.toLowerCase().replace(/['’]/g,'').repl
 function nwForm(row){nwEdit=row||null;$('nwTitle').value=row?row.title:'';$('nwBody').value=row?row.body||'':'';$('nwSlug').value=row?row.slug||'':'';nwSlugSet=!!row;$('nwContent').value=row&&row.content&&row.content!==row.body?row.content:'';$('nwUrl').value=row?row.link_url||'':'';$('nwLink').value=row?row.link_text||'':'';
   $('nwWhen').value=row&&row.publish_at?nwLocal(new Date(row.publish_at)):'';nwImg(row?row.image_url:null);$('nwFeat').checked=!!(row&&row.featured);nwTags=new Set(row&&row.tags||[]);nwPaintTags();$('nwFile').value='';$('nwFormH').textContent=row?'Edit post':'New post';nwCount()}
 function nwCount(){$('nwBodyN').textContent=$('nwBody').value.length+' / 600'}
-async function loadNw(){if(!window.DCSB)return;if(nwOn)$('nwNote').textContent='Loading…';
+async function loadNw(){ntLoadPresets().then(()=>nwPaintTags());if(!window.DCSB)return;if(nwOn)$('nwNote').textContent='Loading…';
   try{const r=await DCSB.from('news').select('*').eq('scope',NW_SCOPE()).order('created_at',{ascending:false});if(r.error)throw r.error;nwRows=r.data||[];paintNw()}
   catch(e){if(nwOn)$('nwNote').textContent="Couldn't load news: "+(e.message||e)}}
 function nwState(x){if(x.status!=='published')return['Draft',''];const t=new Date(x.publish_at);return t>new Date()?['Scheduled · '+bkWhen(x.publish_at),'sched']:['Live · '+bkWhen(x.publish_at),'live']}
@@ -900,7 +916,42 @@ $('nwSlug').addEventListener('input',()=>{nwSlugSet=true});$('nwSlug').addEventL
 $('nwDraft').onclick=()=>nwSave(false);$('nwPub').onclick=()=>nwSave(true);
 function nwOpen(row){nwForm(row||null);$('nwModal').hidden=false;document.body.classList.add('nwopen');$('nwModal').scrollTop=0;setTimeout(()=>$('nwTitle').focus(),30)}
 function nwClose(){if($('nwModal').hidden)return;$('nwModal').hidden=true;document.body.classList.remove('nwopen');nwForm(null)}
-$('nwNew').onclick=()=>nwOpen(null);$('nwCancel').onclick=$('nwX').onclick=nwClose;
+$('nwNew').onclick=()=>nwOpen(null);
+/* ---- Manage tags: rename or delete a tag on every post, choose which tags the post form suggests ---- */
+const ntDoc=()=>db.doc('site_config/news_tags');
+async function ntLoadPresets(){try{const sn=await ntDoc().get();const v=sn.exists&&sn.data().presets;if(Array.isArray(v))NW_PRESET=v.filter(t=>/^[a-z0-9-]{1,24}$/.test(t))}catch(e){}}
+async function ntSavePresets(){await ntDoc().set({presets:NW_PRESET,updatedAt:Date.now()})}
+function ntCounts(){const c={};nwRows.forEach(r=>(r.tags||[]).forEach(t=>{if(!NW_CATS.includes(t))c[t]=(c[t]||0)+1}));return c}
+function ntPaint(){const c=ntCounts(),all=[...new Set([...NW_PRESET,...Object.keys(c)])].sort((a,b)=>(c[b]||0)-(c[a]||0)||a.localeCompare(b)),box=$('ntList');box.replaceChildren();
+  if(!all.length){const p=document.createElement('p');p.className='hint';p.textContent='No tags yet.';box.append(p);return}
+  all.forEach(t=>{const row=document.createElement('div');row.className='ntrow';
+    const nm=document.createElement('div');nm.className='ntname';nm.textContent=nwTagName(t);const sm=document.createElement('small');sm.textContent=(c[t]?c[t]+(c[t]===1?' post':' posts'):'Not on any post');nm.append(sm);
+    const pk=document.createElement('label');pk.className='ntpick';const cb=document.createElement('input');cb.type='checkbox';cb.checked=NW_PRESET.includes(t);pk.append(cb,document.createTextNode('In picker'));
+    cb.onchange=async()=>{NW_PRESET=cb.checked?[...NW_PRESET,t]:NW_PRESET.filter(x=>x!==t);try{await ntSavePresets();nwPaintTags();ntPaint()}catch(e){msg("Couldn't save: "+(e.message||e),'err')}};
+    const rn=document.createElement('button');rn.type='button';rn.className='btn ghost small';rn.textContent='Rename';rn.onclick=()=>ntRename(t,row,nm);
+    const del=document.createElement('button');del.type='button';del.className='btn ghost small';del.textContent='Delete';del.onclick=()=>ntDelete(t,c[t]||0);
+    row.append(nm,pk,rn,del);box.append(row)})}
+async function ntApply(fn){ // fn(tags) -> new tags or null (unchanged)
+  for(const r of nwRows){const nt=fn(r.tags||[]);if(!nt)continue;const res=await DCSB.from('news').update({tags:nt}).eq('id',r.id);if(res.error)throw res.error;r.tags=nt}}
+function ntRename(t,row,nm){const inp=document.createElement('input');inp.type='text';inp.value=nwTagName(t);inp.maxLength=24;nm.replaceChildren(inp);inp.focus();inp.select();
+  const go=async()=>{const n=nwSlug(inp.value);if(!n||n===t){ntPaint();return}
+    if(NW_CATS.includes(n)){msg('That name is taken by a category.','err');inp.focus();return}
+    try{await ntApply(tags=>tags.includes(t)?[...new Set(tags.map(x=>x===t?n:x))]:null);
+      if(NW_PRESET.includes(t)){NW_PRESET=[...new Set(NW_PRESET.map(x=>x===t?n:x))];await ntSavePresets()}
+      msg('Renamed to '+nwTagName(n)+'.','ok');ntPaint();paintNw();nwPaintTags()}catch(e){msg("Couldn't rename: "+(e.message||e),'err')}};
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go()}else if(e.key==='Escape'){e.stopPropagation();ntPaint()}});inp.addEventListener('blur',go,{once:true})}
+async function ntDelete(t,n){if(!await ask('Delete the '+nwTagName(t)+' tag?',n?'It comes off '+n+(n===1?' post':' posts')+(window.DC_STAGING?' on staging':'')+'. The posts stay.':'It stops showing in the tag picker.','Delete'))return;
+  try{await ntApply(tags=>tags.includes(t)?tags.filter(x=>x!==t):null);if(NW_PRESET.includes(t)){NW_PRESET=NW_PRESET.filter(x=>x!==t);await ntSavePresets()}
+    msg('Tag deleted.','ok');ntPaint();paintNw();nwPaintTags()}catch(e){msg("Couldn't delete: "+(e.message||e),'err')}}
+async function ntAddPreset(){const t=nwSlug($('ntNew').value);$('ntNew').value='';if(!t)return;if(NW_CATS.includes(t)){msg('That name is taken by a category.','err');return}
+  if(!NW_PRESET.includes(t)){NW_PRESET=[...NW_PRESET,t];try{await ntSavePresets()}catch(e){msg("Couldn't save: "+(e.message||e),'err')}}ntPaint();nwPaintTags()}
+$('ntAdd').onclick=ntAddPreset;$('ntNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ntAddPreset()}});
+function ntOpen(){ntPaint();$('ntModal').hidden=false;document.body.classList.add('nwopen')}
+function ntClose(){$('ntModal').hidden=true;document.body.classList.remove('nwopen')}
+$('ntOpen').onclick=async()=>{await ntLoadPresets();ntOpen()};$('ntX').onclick=ntClose;
+$('ntModal').addEventListener('mousedown',e=>{if(e.target===$('ntModal'))ntClose()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('ntModal').hidden&&$('modal').hidden)ntClose()});
+ntLoadPresets().then(()=>nwPaintTags());$('nwCancel').onclick=$('nwX').onclick=nwClose;
 $('nwModal').addEventListener('mousedown',e=>{if(e.target===$('nwModal'))nwClose()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('nwModal').hidden&&$('modal').hidden)nwClose()});
 $('nwWhen').addEventListener('input',()=>{const w=$('nwWhen').value;$('nwPub').textContent=w&&new Date(w)>new Date()?'Schedule':'Publish now'});
