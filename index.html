@@ -871,10 +871,12 @@ let panels=allPanels.slice(),dots=allDots.slice();
   const GAMES={};allPanels.forEach(p=>{if(!p.dataset.base)return;const cs=getComputedStyle(p),img=p.querySelector('img.cabimg');
     GAMES[p.id]={name:p.getAttribute('aria-label')||p.id,img:img&&img.getAttribute('src'),shape:cs.getPropertyValue('--shape'),blob:cs.getPropertyValue('--blob'),tilt:cs.getPropertyValue('--tilt')}});
   const PAL=Object.values(GAMES);
-  const gameOf=(p,i)=>{let g=null;const u=p.link_url&&safeUrl(p.link_url);
-    if(u){const x=new URL(u);if(x.host===location.host||/dailycadegames\.com$/.test(x.host))g=GAMES[x.pathname.split('/')[1]]}
-    if(!g){const t=(p.title+' '+(p.body||'')).toLowerCase();g=Object.entries(GAMES).find(([k])=>new RegExp('\\b'+k+'\\b').test(t))?.[1]||null}
-    return g||{shape:PAL[i%PAL.length]?.shape||'#9deba8',blob:PAL[i%PAL.length]?.blob,tilt:PAL[i%PAL.length]?.tilt}};
+  // a post's colors follow its category, the same as the dot on its label: the game's color (and handheld), gray for Changelog, the rainbow for Dailycade
+  const DC_RAINBOW='conic-gradient(from 30deg,#9deba8,#c49bff,#ff8ad8,#f2c14e,#9deba8)';
+  const gameOf=(p,i)=>{const sh=PAL[i%PAL.length]||{},tags=p.tags||[];
+    if(tags.includes('changelog'))return{shape:'#8a8f96',blob:sh.blob,tilt:sh.tilt};
+    const gk=tags.find(t=>GAMES[t]);if(gk)return GAMES[gk];
+    return{shape:DC_RAINBOW,blob:sh.blob,tilt:sh.tilt}};
   const isCl=p=>(p.tags||[]).includes('changelog'); // release notes: what changed in a ship
   const catOf=p=>{if(isCl(p))return 'Changelog';const g=(p.tags||[]).find(t=>GAMES[t]);return g?GAMES[g].name:'Dailycade'}; // the label above each post
   const catCls=p=>isCl(p)?' cl':catOf(p)==='Dailycade'?' dc':'';
