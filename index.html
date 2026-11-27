@@ -186,8 +186,8 @@ html[data-theme="dark"] .npill{background:#262626}
 .nav.stuck.calm{animation:none}.nav.stuck.calm::before{display:none}
 html[data-theme="dark"] .nav.stuck::before{background:rgba(28,30,30,.72);box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.07)}
 body.navstuck{padding-top:var(--navH,80px)}
-/* desktop: a menu opened from the sticky tray drops 8px below it, as wide as the tray */
-@media (min-width:761px){.nav.stuck>.hhmenu{position:absolute;top:calc(100% + 8px);left:0;right:0;width:auto;max-width:none}.nav.stuck>.hhmenu .hhrow{justify-content:center}}
+/* desktop: a menu opened from the sticky tray drops 8px below it, its right edge lined up with the tray's */
+@media (min-width:761px){.nav.stuck>.hhmenu{position:absolute;top:calc(100% + 8px);left:auto;right:0}}
 @media (max-width:760px){
   .nav.stuck .wrap{height:56px}
   /* phones: the menus open inside the tray: the tray grows down to hold them (script moves the menus into the tray) */
