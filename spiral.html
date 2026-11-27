@@ -2375,12 +2375,13 @@ function fillOver(m){
     const go=()=>drawShotChart(cvs,th,P,dotCol);requestAnimationFrame(go);setTimeout(go,350);shotInfo(cvs,th)}
   const ic={star:'<path d="M12 5l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7L5.2 10l4.7-.7z"/>',target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".8"/>',
     spiral:'<path d="M3 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/>',ok:'<path d="M6 12.5l4 4 8-9"/>',streak:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',crown:'<path d="M4 18 3 7l5 4 4-6 4 6 5-4-1 11z"/>',
-    ruler:'<path d="M4 16 16 4l4 4L8 20z"/><path d="M8 12l2 2M11 9l2 2M14 6l2 2"/>',hit:'<circle cx="12" cy="12" r="8"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>'};
+    ruler:'<path d="M4 16 16 4l4 4L8 20z"/><path d="M8 12l2 2M11 9l2 2M14 6l2 2"/>',hit:'<circle cx="12" cy="12" r="8"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',top:'<path d="M12 19V6M7 11l5-5 5 5"/><path d="M5 21h14"/>'};
   const row=(c,i,label,val)=>`<li style="--c:${c}"><span class="sic2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic[i]}</svg></span><span class="sl">${label}</span><b>${val}</b></li>`;
   const bestNow=Math.max(m.best||0,m.practice?abest:best);
   $('#oMore').open=false; // More info starts closed
   $('#oFacts').innerHTML=m.partial?row('var(--fg)','star','Personal best',fmtN(bestNow)):[
     row(KB,'target','Bullseyes',m.bulls),row(KS,'spiral','Perfect spirals',m.spirals),row(KO,'hit','Targets hit',m.hits),
+    (()=>{const top=th.reduce((b,t,i)=>t&&t.pts>(b?b.pts:0)?{pts:t.pts,i}:b,null);return top?row('var(--gold-solid,#f6d77a)','top','Highest point hit',fmtN(top.pts)):''})(),
     m.longest?row('var(--fg)','ruler','Longest hit',yd(m.longest)+' yd'):'',
     m.bulls===10?row(KB,'crown','Perfect game','10 for 10'):'',
     m.streak>1?row('var(--amber)','streak','Bullseyes in a row',m.streak):'',
