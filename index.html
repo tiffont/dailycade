@@ -508,9 +508,6 @@ html[data-theme="dark"] .lede{color:#a3a7ad}
 html[data-theme="dark"] .nav .games{color:#7d8187}
 html[data-theme="dark"] .btn{color:#0d0d0d;background:radial-gradient(90% 140% at 32% 18%,#ffffff 0%,#ececea 45%,#cfcfcb 100%);box-shadow:0 5px 0 0 #8a8a85,0 10px 14px -4px rgba(0,0,0,.6)}
 html[data-theme="dark"] .btn::after{background:rgba(255,255,255,.7)}
-/* the featured update's Read more matches its page: white in light mode, black in dark mode */
-html[data-theme="dark"] .ncard.lead .btn.light{color:#fff;background:radial-gradient(90% 140% at 32% 18%,#4a4a4a 0%,#1c1c1c 45%,#050505 100%);box-shadow:0 5px 0 0 #3a3a3a,0 10px 14px -4px rgba(0,0,0,.6)}
-html[data-theme="dark"] .ncard.lead .btn.light::after{background:rgba(255,255,255,.16)}
 html[data-theme="dark"] .btn:active{box-shadow:0 1px 0 0 #8a8a85,0 3px 6px -2px rgba(0,0,0,.5)}
 html[data-theme="dark"] .dots button{background:#3a3a3a}
 html[data-theme="dark"] .arrows button{color:#0d0d0d;background:#f2f2f0}
@@ -870,7 +867,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
     const tx=el('div','ntxt'),pill=el('span','npill'+(isNew?' new':'')+(catOf(p)==='Dailycade'?' dc':''),catOf(p));
     if(isNew)pill.append(document.createTextNode(' · New'));
     const h=el('h3'),hl=el('a',null,p.title);hl.href=postUrl(p);h.append(hl);tx.append(tagRow(p,pill),h);if(p.body)tx.append(el('p',null,p.body));
-    if(lead){const b=el('span','btn light nmore','Read more');b.insertAdjacentHTML('beforeend',ARROW);tx.append(b)}else{const w=el('div','nmorew'),m=el('span','pback nmore');m.insertAdjacentHTML('beforeend','Read more<svg class="nmarr" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>');w.append(m);tx.append(w)} // same pill as the back links
+    if(lead){const b=el('span','btn nmore','Read more');b.insertAdjacentHTML('beforeend',ARROW);tx.append(b)}else{const w=el('div','nmorew'),m=el('span','pback nmore');m.insertAdjacentHTML('beforeend','Read more<svg class="nmarr" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>');w.append(m);tx.append(w)} // same pill as the back links
     c.append(tx);c.addEventListener('click',e=>{if(!e.target.closest('a,button')&&!getSelection().toString())hl.click()});return c};
   // post page
   const inl=t=>t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
