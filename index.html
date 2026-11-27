@@ -49,7 +49,18 @@ html[data-theme="dark"] .nitem p{color:#a9aca9}
 .nblobs i:nth-child(3){--c:#ff8ad8;--b:63% 37% 54% 46% / 41% 57% 43% 59%;--t:-28deg;width:64px;height:64px;left:150px;top:78px;animation-delay:-4s}
 .nblobs i:nth-child(4){--c:#f2c14e;--b:45% 55% 38% 62% / 57% 44% 56% 43%;--t:18deg;width:40px;height:40px;left:96px;top:104px;animation-delay:-1s}
 @keyframes nfloat{to{translate:0 -8px}}
-.nfilter{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px}
+.nfilter{position:relative;display:flex;margin:0 0 24px}
+.ndd .nddl{font-weight:500;color:var(--muted)}.ndd .nddc{margin-left:2px;transition:transform .2s}.ndd[aria-expanded="true"] .nddc{transform:rotate(180deg)}
+.nddm{position:absolute;left:0;top:calc(100% + 8px);z-index:20;min-width:220px;margin:0;padding:6px;list-style:none;border-radius:12px;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:0 12px 32px rgba(0,0,0,.12),inset 0 0 0 1px rgba(0,0,0,.06)}
+.nddm[hidden]{display:none}
+#newsFilter .nddm{padding:6px!important;margin:0!important}#newsFilter .nddm li{margin:0!important;padding:0!important;list-style:none}#newsFilter .nddm li::before,#newsFilter .nddm li::marker{content:none}
+.nopt{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border:0;border-radius:8px;background:none;color:var(--ink);font:600 15px/1.2 var(--sans);text-align:left;cursor:pointer}
+.nopt::before{content:"";width:10px;height:10px;border-radius:50%;background:transparent;box-shadow:inset 0 0 0 1.5px currentColor;flex:none}
+.nopt.g::before{background:var(--shape);box-shadow:none}.nopt.dc::before{background:conic-gradient(#9deba8 0 25%,#c49bff 0 50%,#ff8ad8 0 75%,#f2c14e 0);box-shadow:none}
+.nopt:hover,.nopt:focus-visible{background:rgba(0,0,0,.05);outline:none}
+.nopt[aria-selected="true"]{background:var(--ink);color:#fff}
+html[data-theme="dark"] .nddm{background:rgba(28,30,30,.9);box-shadow:0 12px 32px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.07)}
+html[data-theme="dark"] .nopt:hover,html[data-theme="dark"] .nopt:focus-visible{background:rgba(255,255,255,.07)}html[data-theme="dark"] .nopt[aria-selected="true"]{color:#0d0d0d}
 .nfilter[hidden]{display:none}
 .nchip{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;border:1px solid rgba(0,0,0,.14);background:none;color:var(--ink);font:600 14px/1 var(--sans);cursor:pointer;transition:background .15s,border-color .15s}
 .nchip.dc::before{content:"";width:10px;height:10px;border-radius:50%;background:conic-gradient(#9deba8 0 25%,#c49bff 0 50%,#ff8ad8 0 75%,#f2c14e 0)}
@@ -62,7 +73,7 @@ html[data-theme="dark"] .nchip[aria-pressed="true"]{color:#0d0d0d}
 .ntags span,.ntags button{padding:4px 10px;border-radius:999px;border:0;background:rgba(0,0,0,.06);color:var(--ink);font:600 12px/1.2 var(--sans);cursor:pointer}
 .ntags button:hover{background:rgba(0,0,0,.12)}
 html[data-theme="dark"] .ntags span,html[data-theme="dark"] .ntags button{background:rgba(255,255,255,.08)}html[data-theme="dark"] .ntags button:hover{background:rgba(255,255,255,.16)}
-@media (max-width:760px){.nfilter{flex-wrap:nowrap;overflow-x:auto;margin:0 -20px 18px;padding:0 20px;scrollbar-width:none}.nfilter::-webkit-scrollbar{display:none}.nchip{flex:none}}
+@media (max-width:760px){.nfilter{margin:0 0 18px}}
 .nfeed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .ncard{position:relative;overflow:hidden;background:#f4f4f2;border-radius:16px;padding:28px 28px 26px;display:flex;flex-direction:column;min-height:240px}
 .ncard .nart{position:absolute;right:-30px;bottom:-34px;width:150px;height:150px;pointer-events:none}
@@ -880,8 +891,19 @@ let panels=allPanels.slice(),dots=allDots.slice();
     const games=Object.keys(GAMES).filter(t=>cnt[t]); // only games that have posts
     const dc=posts.some(isDc);
     f.replaceChildren();f.hidden=!(games.length+dc);if(tag&&tag!=='dailycade'&&!cnt[tag])tag=null;
-    [null,...(dc?['dailycade']:[]),...games].forEach(t=>{const b=el('button','nchip',t?tagName(t):'All');b.type='button';b.setAttribute('aria-pressed',String(tag===t));
-      if(t&&GAMES[t]){b.classList.add('g');b.style.setProperty('--shape',GAMES[t].shape)}if(t==='dailycade')b.classList.add('dc');b.onclick=()=>setTag(t);f.append(b)})};
+    // one dropdown: the current choice on a button, the rest in a list under it
+    const opts=[null,...(dc?['dailycade']:[]),...games],mark=(e,t)=>{if(t&&GAMES[t]){e.classList.add('g');e.style.setProperty('--shape',GAMES[t].shape)}if(t==='dailycade')e.classList.add('dc')};
+    const btn=el('button','nchip ndd');btn.type='button';btn.setAttribute('aria-haspopup','listbox');btn.setAttribute('aria-expanded','false');mark(btn,tag);
+    btn.append(el('span','nddl','Show'),el('span',null,tag?tagName(tag):'All updates'));btn.insertAdjacentHTML('beforeend','<svg class="nddc" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>');
+    const list=el('ul','nddm');list.setAttribute('role','listbox');list.hidden=true;
+    const close=()=>{list.hidden=true;btn.setAttribute('aria-expanded','false')};
+    opts.forEach(t=>{const li=el('li');const o=el('button','nopt',t?tagName(t):'All updates');o.type='button';o.setAttribute('role','option');o.setAttribute('aria-selected',String(tag===t));mark(o,t);
+      o.onclick=()=>{close();setTag(t)};li.append(o);list.append(li)});
+    btn.onclick=e=>{e.stopPropagation();const on=list.hidden;list.hidden=!on;btn.setAttribute('aria-expanded',String(on));if(on)list.querySelector('[aria-selected="true"]')?.focus()};
+    list.addEventListener('keydown',e=>{const bs=[...list.querySelectorAll('button')],i=bs.indexOf(document.activeElement);
+      if(e.key==='ArrowDown'){e.preventDefault();bs[Math.min(bs.length-1,i+1)].focus()}else if(e.key==='ArrowUp'){e.preventDefault();bs[Math.max(0,i-1)].focus()}else if(e.key==='Escape'){close();btn.focus()}});
+    f.append(btn,list)};
+  document.addEventListener('click',e=>{const m=document.querySelector('#newsFilter .nddm');if(m&&!m.hidden&&!e.target.closest('#newsFilter')){m.hidden=true;document.querySelector('#newsFilter .ndd')?.setAttribute('aria-expanded','false')}});
   const paintAll=()=>{paintFilter();all.replaceChildren();const list=tag==='dailycade'?posts.filter(isDc):tag?posts.filter(p=>(p.tags||[]).includes(tag)):posts;
     if(!list.length){all.append(el('p','nempty',posts.length?'Nothing here yet.':'No updates yet.'));return}
     const lead=list.find(p=>p.featured)||list[0];[lead,...list.filter(p=>p!==lead)].forEach((p,i)=>all.append(card(p,i,newIds.has(p.id))))};
