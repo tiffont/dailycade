@@ -83,7 +83,7 @@ html[data-theme="dark"] .ntags span,html[data-theme="dark"] .ntags button{backgr
 .ncard.lead .nart.own img{width:84%;height:84%;left:8%;top:8%;transform:rotate(-4deg)}
 .nitem .nico img{max-width:40px;object-fit:contain}
 .ncard .ntxt{position:relative;max-width:calc(100% - 110px);display:flex;flex-direction:column;flex:1}
-.npill{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#fff;font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--ink);margin:0}
+.npill{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#fff;font-size:12px;line-height:1.2;font-weight:700;letter-spacing:.02em;color:var(--ink);margin:0}
 .nhrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:16px}
 .ntag{padding:5px 10px;border-radius:999px;border:0;background:rgba(0,0,0,.06);color:var(--ink);font:700 12px/1.2 var(--sans);letter-spacing:.02em;white-space:nowrap}
 button.ntag{cursor:pointer}button.ntag:hover{background:rgba(0,0,0,.12)}
@@ -111,7 +111,7 @@ html[data-theme="dark"] .ntag{background:rgba(255,255,255,.08)}html[data-theme="
 .ncard .btn.nmore{align-self:flex-start;font-size:15px;font-weight:700}
 .ncard .nmorew{margin-top:auto;padding-top:18px}
 .ncard .pback.nmore{padding:9px 16px;font-size:14px}
-.ncard:hover .pback .pbdots i{transform:translateY(-3px)}
+.ncard .nmarr{transition:transform .2s}.ncard:hover .nmarr{transform:translateX(3px)}
 .ncard.lead .nmore{margin-top:28px;padding-top:0}
 /* post page */
 #post.legal{max-width:820px}
@@ -864,7 +864,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
     const tx=el('div','ntxt'),pill=el('span','npill'+(isNew?' new':'')+(catOf(p)==='Dailycade'?' dc':''),catOf(p));
     if(isNew)pill.append(document.createTextNode(' · New'));
     const h=el('h3'),hl=el('a',null,p.title);hl.href=postUrl(p);h.append(hl);tx.append(tagRow(p,pill),h);if(p.body)tx.append(el('p',null,p.body));
-    if(lead){const b=el('span','btn nmore','Read more');b.insertAdjacentHTML('beforeend',ARROW);tx.append(b)}else{const w=el('div','nmorew'),m=el('span','pback nmore');m.insertAdjacentHTML('beforeend','Read more<span class="pbdots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>');w.append(m);tx.append(w)} // same pill as the back links
+    if(lead){const b=el('span','btn nmore','Read more');b.insertAdjacentHTML('beforeend',ARROW);tx.append(b)}else{const w=el('div','nmorew'),m=el('span','pback nmore');m.insertAdjacentHTML('beforeend','Read more<svg class="nmarr" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>');w.append(m);tx.append(w)} // same pill as the back links
     c.append(tx);c.addEventListener('click',e=>{if(!e.target.closest('a,button')&&!getSelection().toString())hl.click()});return c};
   // post page
   const inl=t=>t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
