@@ -139,6 +139,14 @@ html[data-theme="dark"] .pmore{border-color:rgba(255,255,255,.12)}
 .nfeed>.nempty{grid-column:1/-1;color:var(--muted);font-size:16px}
 html[data-theme="dark"] .ncard{background:#161616}
 html[data-theme="dark"] .ncard p{color:#a9aca9}
+/* the featured update flips the page: a dark card with a light button in light mode, a light card with a dark button in dark mode */
+.ncard.lead{background:#0d0d0d;color:#fff}.ncard.lead h3 a{color:#fff}.ncard.lead p{color:#b5b5b0}
+.ncard.lead .ntag{background:rgba(255,255,255,.12);color:#fff}.ncard.lead button.ntag:hover{background:rgba(255,255,255,.2)}
+html[data-theme="dark"] .ncard.lead{background:#f2f2f0;color:#0d0d0d}html[data-theme="dark"] .ncard.lead h3 a{color:#0d0d0d}html[data-theme="dark"] .ncard.lead p{color:#5b6068}
+html[data-theme="dark"] .ncard.lead .npill{background:#fff;color:#0d0d0d}html[data-theme="dark"] .ncard.lead .npill.new{background:#0d0d0d;color:#fff}
+html[data-theme="dark"] .ncard.lead .ntag{background:rgba(0,0,0,.07);color:#0d0d0d}html[data-theme="dark"] .ncard.lead button.ntag:hover{background:rgba(0,0,0,.13)}
+html[data-theme="dark"] .ncard.lead .btn.light{color:#fff;background:radial-gradient(90% 140% at 32% 18%,#4a4a4a 0%,#1c1c1c 45%,#050505 100%);box-shadow:0 5px 0 0 #4a4a4a,0 10px 14px -4px rgba(0,0,0,.35)}
+html[data-theme="dark"] .ncard.lead .btn.light::after{background:rgba(255,255,255,.16)}
 html[data-theme="dark"] .npill{background:#262626}
 html[data-theme="dark"] .npill.new{background:#f2f2f0;color:#0d0d0d}
 @media (max-width:760px){
@@ -867,7 +875,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
     const tx=el('div','ntxt'),pill=el('span','npill'+(isNew?' new':'')+(catOf(p)==='Dailycade'?' dc':''),catOf(p));
     if(isNew)pill.append(document.createTextNode(' · New'));
     const h=el('h3'),hl=el('a',null,p.title);hl.href=postUrl(p);h.append(hl);tx.append(tagRow(p,pill),h);if(p.body)tx.append(el('p',null,p.body));
-    if(lead){const b=el('span','btn nmore','Read more');b.insertAdjacentHTML('beforeend',ARROW);tx.append(b)}else{const w=el('div','nmorew'),m=el('span','pback nmore');m.insertAdjacentHTML('beforeend','Read more<svg class="nmarr" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>');w.append(m);tx.append(w)} // same pill as the back links
+    if(lead){const b=el('span','btn light nmore','Read more');b.insertAdjacentHTML('beforeend',ARROW);tx.append(b)}else{const w=el('div','nmorew'),m=el('span','pback nmore');m.insertAdjacentHTML('beforeend','Read more<svg class="nmarr" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>');w.append(m);tx.append(w)} // same pill as the back links
     c.append(tx);c.addEventListener('click',e=>{if(!e.target.closest('a,button')&&!getSelection().toString())hl.click()});return c};
   // post page
   const inl=t=>t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
