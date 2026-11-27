@@ -574,7 +574,7 @@ const IC={
   gauge:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 17a9 9 0 1 1 17 0"/><path d="M12 13l4-4"/><circle cx="12" cy="13" r="1.2"/></svg>'};
 const PAGES=[['overview','Overview',IC.grid,'How Dailycade is doing today.'],['feedback','Feedback',IC.chat,'Notes and reactions from players.'],
   ['leaderboards','Leaderboards',IC.trophy,'Review scores and remove anything that looks wrong.'],['stats','Activity',IC.chart,'Plays counted by Dailycade, by day (New York time).'],
-  ['usage','Usage',IC.gauge,'How close each service is to its free plan limits.'],['news','News',IC.bell,'Draft, schedule and publish the posts in the homepage bell.'],['signups','Email signups',IC.mail,'People who joined the email list on the homepage.'],['backups','Backups',IC.safe,'Copies of your scores, feedback and settings, and how to put one back.']];
+  ['usage','Usage',IC.gauge,'How close each service is to its free plan limits.'],['news','Updates',IC.bell,'Draft, schedule and publish posts for the Updates page and the homepage bell.'],['signups','Email signups',IC.mail,'People who joined the email list on the homepage.'],['backups','Backups',IC.safe,'Copies of your scores, feedback and settings, and how to put one back.']];
 const curPage=()=>ovOn?'overview':fbOn?'feedback':lbOn?'leaderboards':stOn?'stats':usOn?'usage':bkOn?'backups':suOn?'signups':nwOn?'news':game;
 function paintTabs(){const nav=$('nav');if(!nav)return;nav.replaceChildren();const cur=curPage();
   const item=(k,label,icon,extra)=>{const b=document.createElement('button');b.type='button';b.className='nv';b.setAttribute('aria-current',String(k===cur));b.innerHTML=icon+'<span>'+label+'</span>'+(extra||'');b.onclick=()=>goPage(k);return b};
@@ -857,7 +857,7 @@ function paintNw(){const list=$('nwList');list.replaceChildren();const live=nwRo
     const a=document.createElement('div');a.className='bka';
     const ed=document.createElement('button');ed.type='button';ed.className='btn ghost small';ed.textContent='Edit';ed.onclick=()=>nwOpen(x);
     const del=document.createElement('button');del.type='button';del.className='btn danger small';del.textContent='Delete';
-    del.onclick=async()=>{if(!await ask('Delete "'+x.title+'"?',"It's removed from the bell and the news page"+(window.DC_STAGING?' on staging':'')+'. This can\'t be undone.','Delete'))return;
+    del.onclick=async()=>{if(!await ask('Delete "'+x.title+'"?',"It's removed from the bell and the Updates page"+(window.DC_STAGING?' on staging':'')+'. This can\'t be undone.','Delete'))return;
       try{const r=await DCSB.from('news').delete().eq('id',x.id);if(r.error)throw r.error;if(nwEdit&&nwEdit.id===x.id)nwForm(null);msg('Deleted.','ok');loadNw()}catch(e){msg("Couldn't delete: "+(e.message||e),'err')}};
     if(x.status!=='published'||cls==='sched'){const pb=document.createElement('button');pb.type='button';pb.className='btn small';pb.textContent='Publish';pb.onclick=()=>nwQuick(x);a.prepend(pb)} // quick publish
     if(x.status==='published'&&cls!=='sched'){const v=document.createElement('a');v.className='btn ghost small';v.textContent='View';v.href='/updates/'+x.slug;v.target='_blank';v.rel='noopener';a.append(v)}
