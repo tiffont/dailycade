@@ -173,6 +173,7 @@ body.navstuck{padding-top:var(--navH,80px)}
 .signup input:focus{outline:none;border-color:#0d0d0d;box-shadow:0 0 0 3px rgba(0,0,0,.08)}
 .signup form button{height:44px;border:0;border-radius:8px;padding:0 18px;font:inherit;font-size:14px;font-weight:600;background:#0d0d0d;color:#fff;cursor:pointer;white-space:nowrap}
 .signup form button:disabled{opacity:.35;cursor:default}
+.signup input.bad{border-color:#c2412d;box-shadow:0 0 0 3px rgba(194,65,45,.15)}html[data-theme="dark"] .signup input.bad{border-color:#ff8a75;box-shadow:0 0 0 3px rgba(255,138,117,.18)}
 .signup button{position:relative;overflow:visible}
 .sushake{position:absolute;left:50%;top:50%;z-index:5;font-style:normal;font-size:24px;line-height:1;width:1.25em;height:1.25em;display:grid;place-items:center;transform-origin:50% 50%;pointer-events:none;transform:translate(-50%,-50%) scale(.3);opacity:0;animation:suShake 1.6s cubic-bezier(.3,.7,.3,1) forwards}
 /* grows up out of the button, shakes, then shrinks back and disappears */
@@ -736,7 +737,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
     <div class="signup" id="signup">
       <h3 id="suT" aria-live="polite">For news, updates, and new game drops.</h3>
       <p id="suNote" hidden></p>
-      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="Email address" aria-label="Email address" required><button type="submit" id="suBtn" disabled>Sign up</button></form>
+      <form id="suForm" novalidate aria-labelledby="suT"><input type="email" id="suEmail" name="email" autocomplete="email" inputmode="email" placeholder="Email address" aria-label="Email address" required><button type="submit" id="suBtn">Sign up</button></form>
     </div>
     <div class="tiles">
     <a class="tile x" href="https://x.com/dailycadegames" target="_blank" rel="noopener" aria-label="Follow Dailycade on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Follow</a>
@@ -951,22 +952,24 @@ let panels=allPanels.slice(),dots=allDots.slice();
   const done=()=>{if(!box.querySelector('.sudone')){const row=document.createElement('div'),th=document.createElement('span'),tx=document.createElement('div');row.className='sudone';th.className='suthumb';th.setAttribute('aria-hidden','true');th.textContent='👍';tx.className='sutext';box.prepend(row);tx.append(note,$('suNote'));row.append(tx,th)}
     box.classList.add('done');note.className='';note.textContent="You'll be the first to know.";const n=$('suNote');n.textContent='';n.hidden=true};
   // back to the form, to sign up another address from this browser
-  const reset=()=>{box.classList.remove('done');note.className='';note.textContent=NOTE;$('suNote').hidden=true;inp.value='';btn.disabled=true;
+  const reset=()=>{box.classList.remove('done');note.className='';note.textContent=NOTE;$('suNote').hidden=true;inp.value='';btn.disabled=false;
 inp.focus()};
   try{localStorage.removeItem('dc.subscribed');localStorage.removeItem('dc.stg.subscribed')}catch(e){} // the form always shows on a fresh visit
   const RE=/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i,valid=()=>RE.test(inp.value.trim());
-  inp.addEventListener('input',()=>{btn.disabled=!valid();if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
+  const ok=()=>{inp.classList.remove('bad');inp.removeAttribute('aria-invalid')},bad=m=>{note.className='err';note.textContent=m;inp.classList.add('bad');inp.setAttribute('aria-invalid','true');inp.focus()};
+  inp.addEventListener('input',()=>{ok();if(note.classList.contains('err')){note.className='';note.textContent=NOTE}});
   // one handshake pops up from the button, grows and fades
   const shake=()=>{const h=document.createElement('i');h.className='sushake';h.textContent='🤝';h.setAttribute('aria-hidden','true');btn.append(h);setTimeout(()=>h.remove(),1650)};
   form.addEventListener('submit',async e=>{e.preventDefault();const v=inp.value.trim();
-    if(!valid()){note.className='err';note.textContent='Enter a valid email address.';inp.focus();return}
+    if(!v){bad('Enter your email address.');return}
+    if(!valid()){bad("That doesn't look like an email address.");return}
     if(!window.DCSB){note.className='err';note.textContent="Couldn't connect. Try again in a moment.";return}
     btn.disabled=true;
     try{const r=await DCSB.rpc('subscribe',{p_email:v,p_staging:!!window.DC_STAGING,p_source:'home'});if(r.error)throw r.error;
-      if(r.data==='exists'){note.className='err';note.textContent='That email is already signed up.';inp.focus();return}
+      if(r.data==='exists'){bad('That email is already signed up.');return}
       shake();setTimeout(done,1650)}
-    catch(err){note.className='err';note.textContent=/invalid/.test(err.message||'')?'Enter a valid email address.':"Couldn't sign you up. Try again in a moment."}
-    finally{btn.disabled=!valid()}});
+    catch(err){if(/invalid/.test(err.message||''))bad("That doesn't look like an email address.");else{note.className='err';note.textContent="Couldn't sign you up. Try again in a moment."}}
+    finally{btn.disabled=false}});
 })();
 /* all-games menu: each game's handheld from its panel; hidden games stay hidden (applyHidden covers .games links) */
 (()=>{const row=$('hhRow'),menu=$('hhMenu'),btn=$('appsBtn');
