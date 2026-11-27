@@ -1160,7 +1160,7 @@ body.cele-on .dock{visibility:hidden}
       <li><span class="sic2">5</span><span class="sl">Throw a perfect spiral<small>They're rare. Make one very smooth swipe with no shake or kinks, flick it fast, and keep speeding up right through the release instead of easing off. A perfect spiral is worth 50 bonus points when it hits the target. A shaky swipe throws a wobbly ball that drifts and falls short</small></span></li>
     </ol>
     <div class="hwatch">
-      <p class="hcombo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span>Ten throws. A bullseye shatters the orange centre, and its pieces stay on the field. Every hit scores 1 to 100 for accuracy, more the closer it lands to dead centre, plus a bonus for the part it hits: bullseye +50, white +25, grid +10. Longer throws earn up to +30, and hitting a target while it moves fast earns up to +30. A perfect spiral adds 50, a tight spiral earns full points, a looser spiral scores three quarters, and a wobbly throw scores half. Each target sits at a random distance; from throw 6 it slides along the cable, and from throw 8 it bobs too.</span></p>
+      <p class="hcombo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span>Ten throws. A bullseye shatters the orange centre, and its pieces stay on the field. Every hit scores 1 to 100 for accuracy, more the closer it lands to dead centre, plus a bonus for the part it hits: bullseye +50, white +25, grid +10. Longer throws earn up to +30, and hitting a target while it moves fast earns up to +30. A perfect spiral adds 50, a tight spiral adds 25, a looser spiral earns regular points, and a wobbly throw scores half. Each target sits at a random distance; from throw 6 it slides along the cable, and from throw 8 it bobs too.</span></p>
     </div>
 
     <button class="drop go2 white" data-close>Got it</button>
@@ -1809,11 +1809,12 @@ const RING_MARK=['B','50','25','R'];
 // a higher "spiral" setting makes the perfect spiral easier to throw
 const isPerfect=f=>f.spiral>=1-(1-Field.PERFECT_Q)*TF.spiral&&f.power>=Field.PERFECT_POWER/TF.spiral&&(f.snap==null||f.snap>=Field.PERFECT_SNAP/TF.spiral);
 // how the ball was thrown changes what a hit is worth: perfect spiral +50, tight spiral full points, wobbly half
-// four kinds of throw: perfect (+50), tight (full points), spiral, a little loose (three quarters), wobbly (half)
+// four kinds of throw: perfect (+50), tight (+25), spiral, a little loose (regular points), wobbly (half)
+const TIGHT_BONUS=25;
 const WOBBLY_Q=.55,TIGHT_Q=.85;
 const gradeOf=(f,perfect)=>perfect?'perfect':!f?'tight':f.spiral<WOBBLY_Q?'wobbly':f.spiral<TIGHT_Q?'spiral':'tight';
 const pointsFor=(res,grade)=>{grade=grade===true?'perfect':grade===false?'tight':grade;if(!(res.base>0))return 0;
-  return grade==='perfect'?res.base+Field.SPIRAL_BONUS:grade==='wobbly'?Math.max(1,Math.round(res.base*.5)):grade==='spiral'?Math.max(1,Math.round(res.base*.75)):res.base};
+  return grade==='perfect'?res.base+Field.SPIRAL_BONUS:grade==='tight'?res.base+TIGHT_BONUS:grade==='wobbly'?Math.max(1,Math.round(res.base*.5)):res.base};
 const yd=m=>Math.round(m/Field.YD);
 
 /* ---------- state ---------- */
@@ -1854,7 +1855,7 @@ function pointsPop(res,grade,pts){const board=$('#board');board.querySelector('.
   const parts=document.createElement('i');const zone=['Bullseye','White','Grid','Rim'][res.ring];
   parts.textContent=res.acc!=null?[res.acc+' accuracy',res.bonus?'+'+res.bonus+' '+zone.toLowerCase():'',res.dist?'+'+res.dist+' distance':'',res.move?'+'+res.move+' moving':''].filter(Boolean).join('  '):'';
   const tag=document.createElement('span');
-  tag.textContent=grade==='perfect'?'Perfect spiral +'+Field.SPIRAL_BONUS:grade==='wobbly'?'Wobbly throw · half points':grade==='spiral'?'Spiral · ¾ points':'Tight spiral';
+  tag.textContent=grade==='perfect'?'Perfect spiral +'+Field.SPIRAL_BONUS:grade==='wobbly'?'Wobbly throw · half points':grade==='spiral'?'Spiral':'Tight spiral +'+TIGHT_BONUS;
   p.append(n,parts,tag);board.append(p);setTimeout(()=>p.remove(),1900);
   const sc=$('#mScore');if(sc){sc.classList.remove('bump');void sc.offsetWidth;sc.classList.add('bump')}}
 /* the crowd: a roar that grows with the ring and the spiral. Noise shaped into voices, plus a few whoops for the big ones */
@@ -2319,7 +2320,7 @@ function shotInfo(cvs,th){const box=cvs.parentElement;box.style.position='relati
     if(best.i!==on){on=best.i;const t=th[best.i],hit=t.ring>=0;
       const rows=[];if(hit&&t.acc!=null)rows.push(t.acc+' accuracy'+(t.bonus?' + '+t.bonus+' '+ZN[t.ring].toLowerCase()+' bonus':''));
       if(hit&&(t.dist||t.move))rows.push([t.dist?'+'+t.dist+' distance':'',t.move?'+'+t.move+' moving target':''].filter(Boolean).join(' · '));
-      if(t.g&&hit)rows.push(GR[t.g]+(t.g==='p'?' +'+Field.SPIRAL_BONUS:t.g==='w'?' · half points':t.g==='s'?' · ¾ points':''));else if(t.spiral)rows.push('Perfect spiral');
+      if(t.g&&hit)rows.push(GR[t.g]+(t.g==='p'?' +'+Field.SPIRAL_BONUS:t.g==='w'?' · half points':t.g==='t'?' +'+TIGHT_BONUS:''));else if(t.spiral)rows.push('Perfect spiral');
       if(t.d)rows.push(yd(t.d)+' yd');
       tip.innerHTML='';const h=document.createElement('b');h.textContent='Throw '+(best.i+1)+' · '+(hit?ZN[t.ring]:(t.why||'Miss'));
       const pts=document.createElement('strong');pts.textContent=(t.pts||0)+' pts';const hd=document.createElement('div');hd.className='sth';hd.append(h,pts);tip.append(hd);
