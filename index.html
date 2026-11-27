@@ -182,7 +182,7 @@ html[data-theme="dark"] .npill{background:#262626}
 .nav.stuck{position:fixed;top:max(16px,env(safe-area-inset-top,0px));left:max(16px,calc((100vw - 1124px)/2 - 16px));right:max(16px,calc((100vw - 1124px)/2 - 16px));z-index:70;border-radius:12px;animation:navDrop .3s cubic-bezier(.2,.8,.2,1)}
 /* the glass lives on a layer behind the bar, so the dropdowns inside it can blur the page too */
 .nav.stuck::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:0 8px 24px rgba(0,0,0,.08),inset 0 0 0 1px rgba(0,0,0,.05)}
-.nav.stuck .wrap{height:64px;max-width:none;padding-left:16px;padding-right:12px}
+.nav.stuck .wrap{height:64px;max-width:none;padding-left:16px;padding-right:16px}
 .nav.stuck.calm{animation:none}.nav.stuck.calm::before{display:none}
 html[data-theme="dark"] .nav.stuck::before{background:rgba(28,30,30,.72);box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.07)}
 body.navstuck{padding-top:var(--navH,80px)}
