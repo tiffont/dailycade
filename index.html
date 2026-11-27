@@ -137,7 +137,7 @@ html[data-theme="dark"] .ntag{background:rgba(255,255,255,.08)}html[data-theme="
 .pbody a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .pcta{margin:36px 0 0}.pcta:empty{display:none}
 .pmore{margin-top:72px;padding-top:40px;border-top:1px solid rgba(0,0,0,.1)}
-.pmore h2{font-size:28px!important;letter-spacing:-.02em;margin:0 0 20px!important}
+.pmore h2{font-size:16px!important;font-weight:600!important;letter-spacing:0;color:var(--muted)!important;margin:0 0 16px!important}
 .pmiss{font-size:18px;color:var(--muted)}
 html[data-theme="dark"] .part{background:#161616}
 html[data-theme="dark"] .pmore{border-color:rgba(255,255,255,.12)}
@@ -910,7 +910,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
     art.className='part'+(ownImg(p)?' own':'');art.replaceChildren();if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';art.append(im)}
     $('postBody').innerHTML=md(p.content||p.body);
     const u=p.link_url&&safeUrl(p.link_url);if(u){const l=el('a','btn',p.link_text||'Learn more');l.href=u;l.insertAdjacentHTML('beforeend',ARROW);$('postCta').append(l)}
-    const more=posts.filter(x=>x!==p).slice(0,2);if(more.length){const f=$('postMore').querySelector('.nfeed');f.replaceChildren(...more.map(x=>card(x,posts.indexOf(x),false,false)));$('postMore').hidden=false}
+    const more=posts.filter(x=>x!==p&&catOf(x)===catOf(p)).slice(0,2); // only posts in the same category; none, and the section stays hiddenif(more.length){const f=$('postMore').querySelector('.nfeed');f.replaceChildren(...more.map(x=>card(x,posts.indexOf(x),false,false)));$('postMore').hidden=false}
     document.title=p.title+' · Dailycade';
     if(newIds.has(p.id))try{if(+new Date(p.publish_at)>seen())localStorage.setItem(SEEN,String(+new Date(p.publish_at)));paintDot()}catch(e){}}
   let loaded=false;
