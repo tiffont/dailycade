@@ -137,6 +137,15 @@ html[data-theme="dark"] .ntag{background:rgba(255,255,255,.08)}html[data-theme="
 .pbody a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .pcta{margin:36px 0 0}.pcta:empty{display:none}
 .pmore{margin-top:72px;padding-top:40px;border-top:1px solid rgba(0,0,0,.1)}
+.nlead{margin-bottom:28px}
+.pmhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px}.pmhead h2{margin:0!important}
+.pcarnav{display:flex;gap:8px}.pmore.fits .pcarnav{display:none}
+.pcarb{width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;background:#f4f4f2;color:var(--ink);cursor:pointer}
+.pcarb:hover:not(:disabled){background:#e9e9e6}.pcarb:disabled{opacity:.35;cursor:default}
+html[data-theme="dark"] .pcarb{background:#1f1f1f}html[data-theme="dark"] .pcarb:hover:not(:disabled){background:#2a2a2a}
+.pcar{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 16px)/2);gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px}
+.pcar::-webkit-scrollbar{display:none}.pcar>.ncard{scroll-snap-align:start}
+@media (max-width:760px){.pcar{grid-auto-columns:86%}}
 .pmore h2{font-size:16px!important;font-weight:600!important;letter-spacing:0;color:var(--muted)!important;margin:0 0 16px!important}
 .pmiss{font-size:18px;color:var(--muted)}
 html[data-theme="dark"] .part{background:#161616}
@@ -810,6 +819,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
   <a class="pback" href="/"><span class="pbi" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg></span>Back to games<span class="pbdots" aria-hidden="true"><i></i><i></i><i></i><i></i></span></a>
   <div class="nhero"><div><h1 id="newsT">Updates</h1>
   <p class="eff">New games, updates and what's changed on Dailycade.</p></div><div class="nblobs" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
+  <div class="nfeed nlead" id="newsLead"></div>
   <div class="nfilter" id="newsFilter" role="group" aria-label="Filter updates" hidden></div>
   <div class="nfeed" id="newsAll"></div>
 </section>
@@ -819,7 +829,7 @@ html[data-theme="dark"] .floor{background:radial-gradient(closest-side,rgba(0,0,
   <div class="part" id="postArt" aria-hidden="true"></div>
   <div class="pbody" id="postBody"></div>
   <div class="pcta" id="postCta"></div>
-  <section class="pmore" id="postMore" hidden aria-labelledby="pmoreH"><h2 id="pmoreH">More updates</h2><div class="nfeed"></div></section>
+  <section class="pmore" id="postMore" hidden aria-labelledby="pmoreH"><div class="pmhead"><h2 id="pmoreH">More updates</h2><div class="pcarnav"><button type="button" class="pcarb" id="pcarPrev" aria-label="Previous"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg></button><button type="button" class="pcarb" id="pcarNext" aria-label="Next"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg></button></div></div><div class="pcar"></div></section>
 </article>
 <section class="legal wrap" id="contact" hidden aria-labelledby="conT">
   <a class="pback" href="/"><span class="pbi" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg></span>Back to games<span class="pbdots" aria-hidden="true"><i></i><i></i><i></i><i></i></span></a>
@@ -910,10 +920,15 @@ let panels=allPanels.slice(),dots=allDots.slice();
     art.className='part'+(ownImg(p)?' own':'');art.replaceChildren();if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';art.append(im)}
     $('postBody').innerHTML=md(p.content||p.body);
     const u=p.link_url&&safeUrl(p.link_url);if(u){const l=el('a','btn',p.link_text||'Learn more');l.href=u;l.insertAdjacentHTML('beforeend',ARROW);$('postCta').append(l)}
-    const more=posts.filter(x=>x!==p&&catOf(x)===catOf(p)).slice(0,2); // only posts in the same category; none, and the section stays hiddenif(more.length){const f=$('postMore').querySelector('.nfeed');f.replaceChildren(...more.map(x=>card(x,posts.indexOf(x),false,false)));$('postMore').hidden=false}
+    {const rel=posts.filter(x=>x!==p&&catOf(x)===catOf(p)),more=(rel.length?rel:posts.filter(x=>x!==p)).slice(0,5); // same category first; otherwise the latest posts
+      $('pmoreH').textContent=rel.length?'More '+catOf(p)+' updates':'More updates';
+      const f=$('postMore').querySelector('.pcar');f.replaceChildren(...more.map(x=>card(x,posts.indexOf(x),false,false)));f.scrollLeft=0;$('postMore').hidden=!more.length;carNav()}
     document.title=p.title+' · Dailycade';
     if(newIds.has(p.id))try{if(+new Date(p.publish_at)>seen())localStorage.setItem(SEEN,String(+new Date(p.publish_at)));paintDot()}catch(e){}}
   let loaded=false;
+  function carNav(){const c=document.querySelector('#postMore .pcar');if(!c)return;const max=c.scrollWidth-c.clientWidth-2;$('pcarPrev').disabled=c.scrollLeft<=2;$('pcarNext').disabled=c.scrollLeft>=max;$('postMore').classList.toggle('fits',max<=0)}
+  {const c=document.querySelector('#postMore .pcar'),step=d=>{const card=c.querySelector('.ncard');c.scrollBy({left:d*((card?card.offsetWidth:300)+16),behavior:'smooth'})};
+    $('pcarPrev').onclick=()=>step(-1);$('pcarNext').onclick=()=>step(1);c.addEventListener('scroll',carNav,{passive:true});addEventListener('resize',carNav)}
   window.dcPost=showPost;
   {const pm=location.pathname.match(/^\/updates\/([a-z0-9-]+)/);if(pm)showPost(pm[1])} // opened straight on a post
   const paintDot=()=>{const n=fresh().length;dot.hidden=!n;btn.setAttribute('aria-label',n?'Updates, '+n+' new':'Updates')};
@@ -923,9 +938,9 @@ let panels=allPanels.slice(),dots=allDots.slice();
   const tagName=t=>t==='dailycade'?'Dailycade':t==='changelog'?'Changelog':GAMES[t]?GAMES[t].name:t.split('-').map((w,i)=>i?w:w[0].toUpperCase()+w.slice(1)).join(' ');
   const showList=t=>{if(!location.pathname.startsWith('/updates')||/^\/updates\/./.test(location.pathname)){window.dcNav?.('/updates');}setTag(t)};
   const setTag=t=>{tag=t;paintAll();const f=$('newsFilter');if(!f.hidden)f.scrollIntoView({block:'nearest',behavior:'smooth'})};
-  const paintFilter=()=>{const f=$('newsFilter'),cnt={};posts.forEach(p=>(p.tags||[]).forEach(t=>cnt[t]=(cnt[t]||0)+1));
+  let LEAD=null;const paintFilter=()=>{const f=$('newsFilter'),cnt={},rest=posts.filter(p=>p!==LEAD);rest.forEach(p=>(p.tags||[]).forEach(t=>cnt[t]=(cnt[t]||0)+1));
     const games=Object.keys(GAMES).filter(t=>cnt[t]); // only games that have posts
-    const dc=posts.some(isDc),cl=posts.some(isCl);
+    const dc=rest.some(isDc),cl=rest.some(isCl);
     f.replaceChildren();f.hidden=!(games.length+dc+cl);if(tag&&tag!=='dailycade'&&!cnt[tag])tag=null;
     // one dropdown: the current choice on a button, the rest in a list under it
     const opts=[null,...(dc?['dailycade']:[]),...games,...(cl?['changelog']:[])],mark=(e,t)=>{if(t&&GAMES[t]){e.classList.add('g');e.style.setProperty('--shape',GAMES[t].shape)}if(t==='dailycade')e.classList.add('dc');if(t==='changelog')e.classList.add('cl')};
@@ -940,9 +955,13 @@ let panels=allPanels.slice(),dots=allDots.slice();
       if(e.key==='ArrowDown'){e.preventDefault();bs[Math.min(bs.length-1,i+1)].focus()}else if(e.key==='ArrowUp'){e.preventDefault();bs[Math.max(0,i-1)].focus()}else if(e.key==='Escape'){close();btn.focus()}});
     f.append(btn,list)};
   document.addEventListener('click',e=>{const m=document.querySelector('#newsFilter .nddm');if(m&&!m.hidden&&!e.target.closest('#newsFilter')){m.hidden=true;document.querySelector('#newsFilter .ndd')?.setAttribute('aria-expanded','false')}});
-  const paintAll=()=>{paintFilter();all.replaceChildren();const list=tag==='dailycade'?posts.filter(isDc):tag?posts.filter(p=>(p.tags||[]).includes(tag)):posts;
-    if(!list.length){all.append(el('p','nempty',posts.length?'Nothing here yet.':'No updates yet.'));return}
-    const lead=list.find(p=>p.featured)||list[0];[lead,...list.filter(p=>p!==lead)].forEach((p,i)=>all.append(card(p,i,newIds.has(p.id))))};
+  // the featured post always leads, above the filter; the filter only sorts the posts under it
+  const paintAll=()=>{const leadBox=$('newsLead');leadBox.replaceChildren();all.replaceChildren();
+    if(!posts.length){paintFilter();all.append(el('p','nempty','No updates yet.'));return}
+    const lead=LEAD=posts.find(p=>p.featured)||posts[0];leadBox.append(card(lead,posts.indexOf(lead),newIds.has(lead.id),true));
+    paintFilter();const rest=posts.filter(p=>p!==lead),list=tag==='dailycade'?rest.filter(isDc):tag?rest.filter(p=>(p.tags||[]).includes(tag)):rest;
+    if(!list.length){all.append(el('p','nempty','Nothing else here yet.'));return}
+    list.forEach(p=>all.append(card(p,posts.indexOf(p),newIds.has(p.id),false)))};
   async function load(){if(!window.DCSB){setTimeout(load,400);return}
     try{const r=await DCSB.from('news').select('id,slug,title,body,content,link_url,link_text,publish_at,image_url,featured,tags').eq('scope',window.DC_STAGING?'staging':'live').eq('status','published').lte('publish_at',new Date().toISOString()).order('publish_at',{ascending:false}).limit(50);
       if(r.error)throw r.error;posts=r.data||[];if(previewUnread!=null){const p=posts[previewUnread];try{localStorage.setItem(SEEN,String(p?+new Date(p.publish_at):0))}catch(e){}previewUnread=null}newIds=new Set(fresh().map(p=>p.id));paintDot();paintAll();loaded=true;if(want)showPost(want)}catch(e){if(!loaded){loaded=true;if(want)showPost(want)}}}
