@@ -868,7 +868,8 @@ let panels=allPanels.slice(),dots=allDots.slice();
   const isCl=p=>(p.tags||[]).includes('changelog'); // release notes: what changed in a ship
   const catOf=p=>{if(isCl(p))return 'Changelog';const g=(p.tags||[]).find(t=>GAMES[t]);return g?GAMES[g].name:'Dailycade'}; // the label above each post
   const catCls=p=>isCl(p)?' cl':catOf(p)==='Dailycade'?' dc':'';
-  const pic=(p,g)=>p.image_url&&safeUrl(p.image_url)||g.img;
+  const FLOPPY='/news/changelog-floppy.webp',ownImg=p=>p.image_url||(isCl(p)?FLOPPY:null); // changelog posts get the floppy disk unless they have their own picture
+  const pic=(p,g)=>{const o=ownImg(p);return o&&safeUrl(o)||g.img};
   const paint=(el,g)=>{el.style.setProperty('--shape',g.shape);if(g.blob)el.style.setProperty('--blob',g.blob);if(g.tilt)el.style.setProperty('--tilt',g.tilt)};
   const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
   const ARROW='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
@@ -883,7 +884,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
     if(p.body)tx.append(el('p',null,p.body));tx.append(el('span','ngo','Read more →'));a.append(tx);return a};
   // Updates page card: the whole card opens the post; the first is the lead
   const card=(p,i,isNew,lead=i===0)=>{const g=gameOf(p,i),c=el('article','ncard'+(lead?' lead':''));paint(c,g);
-    const art=el('div','nart'+(p.image_url?' own':''));art.setAttribute('aria-hidden','true');if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';im.decoding='async';art.append(im)}c.append(art);
+    const art=el('div','nart'+(ownImg(p)?' own':''));art.setAttribute('aria-hidden','true');if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';im.decoding='async';art.append(im)}c.append(art);
     const tx=el('div','ntxt'),pill=el('span','npill'+(isNew?' new':'')+catCls(p),catOf(p));
     if(isNew)pill.append(document.createTextNode(' · New'));
     const h=el('h3'),hl=el('a',null,p.title);hl.href=postUrl(p);h.append(hl);tx.append(tagRow(p,pill),h);if(p.body)tx.append(el('p',null,p.body));
@@ -907,7 +908,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
     $('postCat').className='npill'+catCls(p);$('postCat').textContent=catOf(p);
     {const r=$('postTags'),c=$('postCat');r.replaceChildren(c);extraTags(p).forEach(t=>r.append(el('span','ntag',tagName(t))))}
     T.textContent=p.title;const w=$('postWhen');w.dateTime=p.publish_at;w.textContent=fullDate(p.publish_at);
-    art.className='part'+(p.image_url?' own':'');art.replaceChildren();if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';art.append(im)}
+    art.className='part'+(ownImg(p)?' own':'');art.replaceChildren();if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';art.append(im)}
     $('postBody').innerHTML=md(p.content||p.body);
     const u=p.link_url&&safeUrl(p.link_url);if(u){const l=el('a','btn',p.link_text||'Learn more');l.href=u;l.insertAdjacentHTML('beforeend',ARROW);$('postCta').append(l)}
     const more=posts.filter(x=>x!==p).slice(0,2);if(more.length){const f=$('postMore').querySelector('.nfeed');f.replaceChildren(...more.map(x=>card(x,posts.indexOf(x),false,false)));$('postMore').hidden=false}

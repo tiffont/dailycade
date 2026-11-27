@@ -35,7 +35,8 @@ export async function GET(req) {
     title = `${post.title} · Dailycade`;
     desc = post.body || desc;
     const game = (post.tags || []).find(t => GAMES.includes(t));
-    if (post.image_url) image = new URL(post.image_url, url.origin).href;
+    const own = post.image_url || ((post.tags || []).includes('changelog') ? '/news/changelog-floppy.webp' : null);
+    if (own) image = new URL(own, url.origin).href;
     else if (game) image = `${url.origin}/api/og?game=${game}&v=4`;
   }
 
@@ -49,7 +50,7 @@ export async function GET(req) {
   html = setMeta(html, 'property', 'og:description', desc);
   html = setMeta(html, 'property', 'og:image', image);
   html = setMeta(html, 'name', 'twitter:image', image);
-  if (post && post.image_url) html = html.replace('<meta name="twitter:card" content="summary_large_image">', '<meta name="twitter:card" content="summary">');
+  if (post && (post.image_url || (post.tags || []).includes('changelog'))) html = html.replace('<meta name="twitter:card" content="summary_large_image">', '<meta name="twitter:card" content="summary">');
 
   return new Response(html, { status: slug && !post ? 404 : 200, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=60' } });
 }
