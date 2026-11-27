@@ -98,6 +98,7 @@ html[data-theme="dark"] .ntags span,html[data-theme="dark"] .ntags button{backgr
 button.ntag{cursor:pointer}button.ntag:hover{background:rgba(0,0,0,.12)}
 html[data-theme="dark"] .ntag{background:rgba(255,255,255,.08)}html[data-theme="dark"] button.ntag:hover{background:rgba(255,255,255,.16)}
 .npill::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--shape)}
+.npill.cl::before,.nopt.cl::before,.nchip.cl::before{background:#8a8f96;box-shadow:none}
 .npill.dc::before{background:conic-gradient(#9deba8 0 25%,#c49bff 0 50%,#ff8ad8 0 75%,#f2c14e 0)}
 .npill.new{background:var(--ink);color:#fff}
 .ncard h3{margin:0 0 8px;font-size:24px;font-weight:700;line-height:32px;letter-spacing:-.02em}
@@ -147,7 +148,7 @@ html[data-theme="dark"] .ncard{background:#161616}
 html[data-theme="dark"] .ncard p{color:#a9aca9}
 /* the featured update flips the page: a dark card with a light button in light mode, a light card with a dark button in dark mode */
 .ncard.lead{background:#0d0d0d;color:#fff}.ncard.lead h3 a{color:#fff}.ncard.lead p{color:#b5b5b0}
-.ncard.lead .ntag{background:rgba(255,255,255,.12);color:#fff}.ncard.lead button.ntag:hover{background:rgba(255,255,255,.2)}
+.ncard.lead .ntag{background:rgba(255,255,255,.12);color:#fff}.ncard.lead .npill.new{background:#fff;color:#0d0d0d}.ncard.lead button.ntag:hover{background:rgba(255,255,255,.2)}
 html[data-theme="dark"] .ncard.lead{background:#f2f2f0;color:#0d0d0d}html[data-theme="dark"] .ncard.lead h3 a{color:#0d0d0d}html[data-theme="dark"] .ncard.lead p{color:#5b6068}
 html[data-theme="dark"] .ncard.lead .npill{background:#fff;color:#0d0d0d}html[data-theme="dark"] .ncard.lead .npill.new{background:#0d0d0d;color:#fff}
 html[data-theme="dark"] .ncard.lead .ntag{background:rgba(0,0,0,.07);color:#0d0d0d}html[data-theme="dark"] .ncard.lead button.ntag:hover{background:rgba(0,0,0,.13)}
@@ -864,14 +865,16 @@ let panels=allPanels.slice(),dots=allDots.slice();
     if(u){const x=new URL(u);if(x.host===location.host||/dailycadegames\.com$/.test(x.host))g=GAMES[x.pathname.split('/')[1]]}
     if(!g){const t=(p.title+' '+(p.body||'')).toLowerCase();g=Object.entries(GAMES).find(([k])=>new RegExp('\\b'+k+'\\b').test(t))?.[1]||null}
     return g||{shape:PAL[i%PAL.length]?.shape||'#9deba8',blob:PAL[i%PAL.length]?.blob,tilt:PAL[i%PAL.length]?.tilt}};
-  const catOf=p=>{const g=(p.tags||[]).find(t=>GAMES[t]);return g?GAMES[g].name:'Dailycade'}; // the label above each post
+  const isCl=p=>(p.tags||[]).includes('changelog'); // release notes: what changed in a ship
+  const catOf=p=>{if(isCl(p))return 'Changelog';const g=(p.tags||[]).find(t=>GAMES[t]);return g?GAMES[g].name:'Dailycade'}; // the label above each post
+  const catCls=p=>isCl(p)?' cl':catOf(p)==='Dailycade'?' dc':'';
   const pic=(p,g)=>p.image_url&&safeUrl(p.image_url)||g.img;
   const paint=(el,g)=>{el.style.setProperty('--shape',g.shape);if(g.blob)el.style.setProperty('--blob',g.blob);if(g.tilt)el.style.setProperty('--tilt',g.tilt)};
   const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
   const ARROW='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
   const postUrl=p=>'/updates/'+p.slug;
   // the colorful category first, then the post's other tags in gray
-  const extraTags=p=>{const cat=(p.tags||[]).find(t=>GAMES[t])||'dailycade';return (p.tags||[]).filter(t=>t!==cat)};
+  const extraTags=p=>{const cat=isCl(p)?'changelog':(p.tags||[]).find(t=>GAMES[t])||'dailycade';return (p.tags||[]).filter(t=>t!==cat)};
   const tagRow=(p,pill)=>{const r=el('div','nhrow');r.append(pill);extraTags(p).forEach(t=>{if(GAMES[t]||t==='dailycade'){const b=el('button','ntag',tagName(t));b.type='button';b.onclick=e=>{e.stopPropagation();showList(t)};r.append(b)}else r.append(el('span','ntag',tagName(t)))});return r};
   // dropdown row: opens the post
   const item=(p,i)=>{const g=gameOf(p,i),a=el('a','nitem');a.href=postUrl(p);paint(a,g);
@@ -881,7 +884,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
   // Updates page card: the whole card opens the post; the first is the lead
   const card=(p,i,isNew,lead=i===0)=>{const g=gameOf(p,i),c=el('article','ncard'+(lead?' lead':''));paint(c,g);
     const art=el('div','nart'+(p.image_url?' own':''));art.setAttribute('aria-hidden','true');if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';im.decoding='async';art.append(im)}c.append(art);
-    const tx=el('div','ntxt'),pill=el('span','npill'+(isNew?' new':'')+(catOf(p)==='Dailycade'?' dc':''),catOf(p));
+    const tx=el('div','ntxt'),pill=el('span','npill'+(isNew?' new':'')+catCls(p),catOf(p));
     if(isNew)pill.append(document.createTextNode(' · New'));
     const h=el('h3'),hl=el('a',null,p.title);hl.href=postUrl(p);h.append(hl);tx.append(tagRow(p,pill),h);if(p.body)tx.append(el('p',null,p.body));
     if(lead){const b=el('span','btn light nmore','Read more');b.insertAdjacentHTML('beforeend',ARROW);tx.append(b)}else{const w=el('div','nmorew'),m=el('span','pback nmore');m.insertAdjacentHTML('beforeend','Read more<svg class="nmarr" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>');w.append(m);tx.append(w)} // same pill as the back links
@@ -901,7 +904,7 @@ let panels=allPanels.slice(),dots=allDots.slice();
     $('postArt').hidden=$('postTags').hidden=!p;$('postWhen').textContent='';$('postCta').replaceChildren();$('postMore').hidden=true;
     if(!p){T.textContent="This update isn't available";$('postBody').innerHTML='<p class="pmiss">It may have been taken down. <a href="/updates">See all updates</a></p>';document.title='Updates · Dailycade';return}
     const i=posts.indexOf(p),g=gameOf(p,i),art=$('postArt');paint(art,g);paint($('postCat'),g);
-    $('postCat').className='npill'+(catOf(p)==='Dailycade'?' dc':'');$('postCat').textContent=catOf(p);
+    $('postCat').className='npill'+catCls(p);$('postCat').textContent=catOf(p);
     {const r=$('postTags'),c=$('postCat');r.replaceChildren(c);extraTags(p).forEach(t=>r.append(el('span','ntag',tagName(t))))}
     T.textContent=p.title;const w=$('postWhen');w.dateTime=p.publish_at;w.textContent=fullDate(p.publish_at);
     art.className='part'+(p.image_url?' own':'');art.replaceChildren();if(pic(p,g)){const im=el('img');im.src=pic(p,g);im.alt='';art.append(im)}
@@ -916,16 +919,16 @@ let panels=allPanels.slice(),dots=allDots.slice();
   const paintDot=()=>{const n=fresh().length;dot.hidden=!n;btn.setAttribute('aria-label',n?'Updates, '+n+' new':'Updates')};
   let newIds=new Set();
   let tag=null;
-  const isDc=p=>{const t=p.tags||[];return t.includes('dailycade')||!t.some(x=>GAMES[x])}; // general site news: tagged Dailycade, or about no game
-  const tagName=t=>t==='dailycade'?'Dailycade':GAMES[t]?GAMES[t].name:t.split('-').map((w,i)=>i?w:w[0].toUpperCase()+w.slice(1)).join(' ');
+  const isDc=p=>{const t=p.tags||[];return !t.includes('changelog')&&(t.includes('dailycade')||!t.some(x=>GAMES[x]))}; // general site news: tagged Dailycade, or about no game
+  const tagName=t=>t==='dailycade'?'Dailycade':t==='changelog'?'Changelog':GAMES[t]?GAMES[t].name:t.split('-').map((w,i)=>i?w:w[0].toUpperCase()+w.slice(1)).join(' ');
   const showList=t=>{if(!location.pathname.startsWith('/updates')||/^\/updates\/./.test(location.pathname)){window.dcNav?.('/updates');}setTag(t)};
   const setTag=t=>{tag=t;paintAll();const f=$('newsFilter');if(!f.hidden)f.scrollIntoView({block:'nearest',behavior:'smooth'})};
   const paintFilter=()=>{const f=$('newsFilter'),cnt={};posts.forEach(p=>(p.tags||[]).forEach(t=>cnt[t]=(cnt[t]||0)+1));
     const games=Object.keys(GAMES).filter(t=>cnt[t]); // only games that have posts
-    const dc=posts.some(isDc);
-    f.replaceChildren();f.hidden=!(games.length+dc);if(tag&&tag!=='dailycade'&&!cnt[tag])tag=null;
+    const dc=posts.some(isDc),cl=posts.some(isCl);
+    f.replaceChildren();f.hidden=!(games.length+dc+cl);if(tag&&tag!=='dailycade'&&!cnt[tag])tag=null;
     // one dropdown: the current choice on a button, the rest in a list under it
-    const opts=[null,...(dc?['dailycade']:[]),...games],mark=(e,t)=>{if(t&&GAMES[t]){e.classList.add('g');e.style.setProperty('--shape',GAMES[t].shape)}if(t==='dailycade')e.classList.add('dc')};
+    const opts=[null,...(dc?['dailycade']:[]),...games,...(cl?['changelog']:[])],mark=(e,t)=>{if(t&&GAMES[t]){e.classList.add('g');e.style.setProperty('--shape',GAMES[t].shape)}if(t==='dailycade')e.classList.add('dc');if(t==='changelog')e.classList.add('cl')};
     const btn=el('button','nchip ndd');btn.type='button';btn.setAttribute('aria-haspopup','listbox');btn.setAttribute('aria-expanded','false');mark(btn,tag);
     btn.append(el('span','nddl','Show'),el('span',null,tag?tagName(tag):'All updates'));btn.insertAdjacentHTML('beforeend','<svg class="nddc" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>');
     const list=el('ul','nddm');list.setAttribute('role','listbox');list.hidden=true;
