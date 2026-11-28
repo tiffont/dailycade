@@ -633,6 +633,32 @@ body.is-playing .mutebtn{display:none} /* sound settings live in the home header
 #challengeBtn{transition:background .2s,color .2s,box-shadow .2s}
 #challengeBtn.copied{background:var(--mint);color:var(--mint-ink);box-shadow:0 4px 0 var(--btn-edge)}
 /* how to play in the summary style */
+/* ball picker (same sheet as Frames) */
+#ballm{background:rgba(22,22,22,.5);-webkit-backdrop-filter:blur(18px) saturate(1.2);backdrop-filter:blur(18px) saturate(1.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 18px 50px rgba(0,0,0,.5)}
+#ballm::backdrop{background:rgba(0,0,0,.18)}
+#ballm .shead{background:transparent}
+#ballm h2:focus,#ballm h2:focus-visible{outline:none}
+#ballm .bopt{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+#ballm .bopt[aria-checked="true"]{background:rgba(157,235,168,.12);box-shadow:inset 0 0 0 2px var(--mint)}
+.bpick{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding-inline:24px;margin:0 -24px;padding:2px 24px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.bpick::-webkit-scrollbar{display:none}
+/* the row stops at the sheet's inner edge: cards scroll under that edge, lined up with the title and the Play button */
+.bpick{margin:0;padding:2px 0 6px;scroll-padding-inline:0}
+.bopt{flex:0 0 116px;scroll-snap-align:start;position:relative}
+.bopt[aria-disabled="true"]{cursor:default}
+.bopt[aria-disabled="true"] b{color:var(--muted)}
+.bopt .lk{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff}
+.bopt .lk svg{width:12px;height:12px}
+.bopt .rule{color:var(--fg);opacity:.75}
+.bopt{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 12px;border:0;border-radius:12px;background:#141414;color:var(--fg);font:inherit;cursor:pointer;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);transition:box-shadow .15s,background .15s}
+.bopt canvas{width:100%;max-width:92px;aspect-ratio:1;display:block}
+.bopt b{font-family:var(--font-wide);font-stretch:125%;font-weight:900;text-transform:uppercase;font-size:.72rem;letter-spacing:.03em;margin-top:2px}
+.bopt small{font-size:.72rem;color:var(--muted);line-height:1.25;text-align:center}
+.bopt[aria-checked="true"]{background:#16211a;box-shadow:inset 0 0 0 2px var(--mint)}
+.bopt:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+#ballm .shead{padding-top:24px}
+#ballm .sbody{padding-top:8px}
 #help.sumv{background:var(--bg);width:min(440px,calc(var(--appw) - 32px));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 .helpv .slist .sl{display:flex;flex-direction:column;gap:3px}
 .helpv .slist small{font-size:.85rem;color:var(--muted)}
@@ -1146,6 +1172,16 @@ body.cele-on .dock{visibility:hidden}
 
 <div class="toast" id="toast" role="status" popover="manual"><span class="tbadge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" fill="currentColor"/></svg></span><span><small>New best!</small><b id="toastB">0</b></span></div>
 
+<dialog class="modal sumv ballv" id="ballm" aria-labelledby="ballT">
+  <div class="shead">
+    <h2 id="ballT" tabindex="-1" autofocus>Choose your ball</h2>
+  </div>
+  <div class="sbody">
+    <div class="bpick" role="radiogroup" aria-label="Ball" id="bpick"></div>
+    <button class="drop go2" id="ballGo">Play</button>
+  </div>
+</dialog>
+
 <dialog class="modal sumv helpv" id="help" aria-labelledby="helpT">
   <div class="shead">
     <h2 id="helpT" tabindex="-1" autofocus>How to play</h2>
@@ -1402,6 +1438,32 @@ const R3 = (() => {
     }
     return out;
   })();
+  /* the other balls, same football shape:
+     NFL: brown leather, white stripes near each end, a white lace on one side; Glass: clear, and it shatters into cubes on impact */
+  const shell = (twist, colour) => { const out = [], m = 28, n = 18, HL = .14, prof = [];
+    for (let i = 0; i <= n; i++) { const y = HL - 2 * HL * i / n; prof.push([.086 * Math.pow(Math.max(0, 1 - (y / (HL * 1.005)) ** 2), .72), y]); }
+    const P = (i, j) => { const [r, y] = prof[i], a = (j / m + (y + HL) / (2 * HL) * twist) * 2 * Math.PI; return [r * Math.cos(a), y, r * Math.sin(a)]; };
+    for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) { const q = [P(i, j), P(i, j + 1), P(i + 1, j + 1), P(i + 1, j)];
+      out.push({ p: prof[i][0] < 1e-6 ? [q[0], q[2], q[3]] : prof[i + 1][0] < 1e-6 ? [q[0], q[1], q[2]] : q, c: colour(i, j, n, m) }); }
+    return out; };
+  const BROWN = [140, 74, 38], DARK_BROWN = [92, 46, 22], WHITE = [244, 240, 232], GLASS = [196, 232, 255];
+  const NFL = shell(0, (i, j, n, m) => { const mid = i >= n * .3 && i < n * .7;
+    if (i === 0 || i === n - 1) return DARK_BROWN;                    // the points
+    if (i === 3 || i === n - 4) return WHITE;                         // the stripes near each end
+    if (mid && j === 0) return WHITE;                                 // the lace seam
+    if (mid && i % 2 === 0 && (j === m - 1 || j === 1)) return WHITE; // its cross stitches
+    return BROWN; });
+  const GLASS_BALL = shell(0, () => GLASS);
+  const BALLS = { classic: { mesh: BALL, a: 1, la: .45 }, nfl: { mesh: NFL, a: 1, la: .4 }, glass: { mesh: GLASS_BALL, a: .42, la: .9 } };
+  let ballKind = 'classic';
+  function setBall(id) { if (BALLS[id]) ballKind = id; }
+  // a glass ball breaking: little clear cubes thrown on from where it hit
+  function shatter(b) { const out = [];
+    for (let i = 0; i < 46; i++) { const a = Math.random() * 6.283, e = Math.random() * 3.14, k = 1.2 + Math.random() * 2.6;
+      out.push({ c: [b.x + (Math.random() - .5) * .12, b.y + (Math.random() - .5) * .12, b.z], s: .014 + Math.random() * .018, glass: true,
+        v: [Math.cos(a) * Math.sin(e) * k + b.vx * .08, Math.cos(e) * k + 1.2 + Math.max(0, b.vy) * .1, -Math.abs(Math.sin(a) * Math.sin(e)) * k * .6 + b.vz * .05],
+        r: [Math.random() * 6, Math.random() * 6, Math.random() * 6], w: [(Math.random() - .5) * 30, (Math.random() - .5) * 30, (Math.random() - .5) * 30], rest: false }); }
+    return out; }
   // the target's rim: a ring of tube around the z axis, unit radius (scaled per target)
   const TORUS = new Map();
   function torus(R) {
@@ -1421,7 +1483,7 @@ const R3 = (() => {
     return [[v(1, -1, -1), v(1, 1, -1), v(1, 1, 1), v(1, -1, 1)], [v(-1, -1, 1), v(-1, 1, 1), v(-1, 1, -1), v(-1, -1, -1)],
       [v(-1, 1, -1), v(-1, 1, 1), v(1, 1, 1), v(1, 1, -1)], [v(-1, -1, 1), v(-1, -1, -1), v(1, -1, -1), v(1, -1, 1)],
       [v(-1, -1, 1), v(1, -1, 1), v(1, 1, 1), v(-1, 1, 1)], [v(1, -1, -1), v(-1, -1, -1), v(-1, 1, -1), v(1, 1, -1)]].map(p => ({ p, c: col })); })();
-  const CUBE = cubeMesh(GOLD), CUBE_GOLD = cubeMesh(SPIRAL_GOLD);
+  const CUBE = cubeMesh(GOLD), CUBE_GOLD = cubeMesh(SPIRAL_GOLD), CUBE_GLASS = cubeMesh([200, 236, 255]);
   function burst(tg, bv, gold) {
     const out = [], br = tg.R * RINGS[0], n = gold ? 68 : 34, boom = gold ? 1.7 : 1;
     for (let i = 0; i < n; i++) {
@@ -1449,8 +1511,8 @@ const R3 = (() => {
   function cubeItems(list, C, a = 1) {
     for (const q of C) {
       const [rx, ry, rz] = q.r, cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry), cz = Math.cos(rz), sz = Math.sin(rz), s = q.s;
-      queue(list, q.gold ? CUBE_GOLD : CUBE, ([x, y, z]) => { let y1 = y * cx - z * sx, z1 = y * sx + z * cx, x2 = x * cy + z1 * sy, z2 = -x * sy + z1 * cy, x3 = x2 * cz - y1 * sz, y3 = x2 * sz + y1 * cz;
-        return [q.c[0] + x3 * s, q.c[1] + y3 * s, q.c[2] + z2 * s]; }, a, .35);
+      queue(list, q.glass ? CUBE_GLASS : q.gold ? CUBE_GOLD : CUBE, ([x, y, z]) => { let y1 = y * cx - z * sx, z1 = y * sx + z * cx, x2 = x * cy + z1 * sy, z2 = -x * sy + z1 * cy, x3 = x2 * cz - y1 * sz, y3 = x2 * sz + y1 * cz;
+        return [q.c[0] + x3 * s, q.c[1] + y3 * s, q.c[2] + z2 * s]; }, q.glass ? a * .55 : a, q.glass ? .95 : .35);
     }
   }
 
@@ -1669,18 +1731,18 @@ const R3 = (() => {
     if (o.target) targetItems(list, o.target, o.alpha == null ? 1 : o.alpha, o.marks, o.broken, o.flash);
     for (const C of o.cubes || []) cubeItems(list, C);
     const b = o.ball;
-    if (b && b.z < FAR && Math.abs(b.x) < 60) {
+    if (b && !b.gone && b.z < FAR && Math.abs(b.x) < 60) {
       shadow(b.x, b.z, .11, Math.max(.08, .5 - b.y * .06));
       // a perfect spiral glows gold as it flies
       if (o.glow > 0) { const c = proj(b.x, b.y, b.z); if (c[2] > NEAR) { const rr = Math.max(14, .32 * cam.F / c[2]), pulse = .8 + .2 * Math.sin(performance.now() / 90);
         list.push({ z: c[2] + .3, draw: () => { const g = cx2.createRadialGradient(c[0], c[1], 0, c[0], c[1], rr * pulse);
           g.addColorStop(0, 'rgba(246,215,122,' + (.55 * o.glow) + ')'); g.addColorStop(.45, 'rgba(246,215,122,' + (.22 * o.glow) + ')'); g.addColorStop(1, 'rgba(246,215,122,0)');
           cx2.fillStyle = g; cx2.beginPath(); cx2.arc(c[0], c[1], rr * pulse, 0, 6.283); cx2.fill(); } }); } }
-      queue(list, BALL, ballXf(b), 1, .45);
+      { const K = BALLS[ballKind]; queue(list, K.mesh, ballXf(b), K.a, K.la); }
     }
     drawList(list);
   }
-  return { cam, size, proj, unprojZ, look, burst, pile, stepCubes, drawField, rigging, drawTrail, drawObjects, ballFrame, line, NEAR, BALL };
+  return { cam, size, proj, unprojZ, look, burst, pile, stepCubes, drawField, rigging, drawTrail, drawObjects, ballFrame, line, NEAR, BALL, BALLS, setBall, shatter, ballKind: () => ballKind };
 })();
 
 </script>
@@ -2091,6 +2153,7 @@ function smash(w,into){if(w.broken)return;const b=w.ball,tg=tgtNow(w);w.broken=t
 const FLASH_T=1.3,flashK=f=>{if(!f)return 0;const u=f.t/FLASH_T;return u>=1?0:(1-u)*(.55+.45*Math.cos(u*3*2*Math.PI))};
 function startFlash(w,ring){if(ring>=0)w.flash={ring,t:0}}
 function judged(res){startFlash(W,res.ring);
+  if(R3.ballKind()==='glass'&&W.ball&&!W.ball.gone){W.ball.gone=true;debris.push(R3.shatter(W.ball));glassSmash()} // the glass ball breaks wherever it lands
   showcase=false;
   const r=res.ring,perfect=W.perfect,grade=gradeOf(W.flick,perfect),pts=pointsFor(res,grade);
   pointsPop(res,grade,pts);if(r>=0)cheer(r,grade);
@@ -2272,7 +2335,7 @@ function pause(auto){
 function resume(){if(mode!=='pause')return;mode=prevMode||'aim';prevMode=null;last=performance.now();
   if(mode==='result')autoT=setTimeout(act,900);setBar()}
 function quit(){if(mode!=='pause'||!G||!G.practice)return;flight(null);endRun();mode='idle';setBar();updateHUD()}
-function start(){
+function start(quiet){
   if(!practice&&dailyLocked())return;
   unlockAudio();SFX.start();
   if(TF_PENDING)applyTF(TF_PENDING);
@@ -2282,8 +2345,8 @@ function start(){
   COURSE=tunedCourse(G.seed);clock=0;setTarget(G.i);W.fade=1;prevW=null;trail=null;rebuildDebris();
   homeHand();
   mode='aim';hud={};countEl.replaceChildren();
-  // the one notice at the start: how to throw
-  setTimeout(()=>{if(mode==='aim'||mode==='drag')stageBanner({t:'Swipe to throw',s:'Flick faster for distance, longer for height, and curve to bend. Keep it smooth for a perfect spiral.',plain:true,i:BAN_ICON.howto})},400);
+  // the one notice at the start: how to throw (after the ball is picked)
+  if(!quiet)setTimeout(()=>{if(mode==='aim'||mode==='drag')stageBanner({t:'Swipe to throw',s:'Flick faster for distance, longer for height, and curve to bend. Keep it smooth for a perfect spiral.',plain:true,i:BAN_ICON.howto})},400);
   setBar();updateHUD();
 }
 let tipShown=true;
@@ -2472,15 +2535,48 @@ document.addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey||docum
   if(mode==='aim'&&mv){setPlace({fx:place.fx+mv[0],fy:place.fy+mv[1]});e.preventDefault()}});
 
 /* ---------- buttons and sheets ---------- */
+/* ---------- ball picker: asked before every game; remembers the last pick ---------- */
+const BALLS={classic:{name:'Classic',sub:'The Spiral ball'},nfl:{name:'Pro',sub:'Leather, laces and stripes'},glass:{name:'Glass',sub:'Shatters on impact'}};
+let ballId=lsGet('ball','classic');if(!BALLS[ballId])ballId='classic';R3.setBall(ballId);
+let pickCb=null,pickRaf=0,pickOk=false;
+function glassSmash(){if(!live())return;const t=AC.currentTime;
+  for(let i=0;i<9;i++){const o=AC.createOscillator(),g=AC.createGain(),st=t+Math.random()*.12,f=2200+Math.random()*4200;o.type='triangle';o.frequency.setValueAtTime(f,st);
+    g.gain.setValueAtTime(.0001,st);g.gain.exponentialRampToValueAtTime(.05,st+.004);g.gain.exponentialRampToValueAtTime(.0001,st+.25+Math.random()*.3);o.connect(g);out(g,.5,.4);o.start(st);o.stop(st+.6)}
+  const n=Math.floor(AC.sampleRate*.35),buf=AC.createBuffer(1,n,AC.sampleRate),d=buf.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
+  const src=AC.createBufferSource(),hp=AC.createBiquadFilter(),g=AC.createGain();src.buffer=buf;hp.type='highpass';hp.frequency.value=2500;g.gain.value=.35;src.connect(hp);hp.connect(g);out(g,.6,.4);src.start(t)}
+function buildPick(){const box=$('#bpick');box.replaceChildren();
+  for(const id of Object.keys(BALLS)){const B=BALLS[id],b=document.createElement('button');b.className='bopt';b.setAttribute('role','radio');b.dataset.ball=id;
+    b.innerHTML='<canvas></canvas><b>'+B.name+'</b><small>'+B.sub+'</small>';b.setAttribute('aria-label',B.name+': '+B.sub);
+    b.addEventListener('click',()=>{ballId=id;lsSet('ball',ballId);R3.setBall(ballId);SFX.click();paintPick()});box.append(b)}}
+function paintPick(){document.querySelectorAll('.bopt').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.ball===ballId)))}
+function pickLoop(now){
+  document.querySelectorAll('.bopt').forEach(b=>{const cv2=b.querySelector('canvas'),d=Math.min(2,devicePixelRatio||1),w=cv2.clientWidth||80,id=b.dataset.ball,K=R3.BALLS[id];
+    if(cv2.width!==Math.round(w*d)){cv2.width=Math.round(w*d);cv2.height=Math.round(w*d)}
+    const ctx=cv2.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,w);
+    // the football lies tipped across the card and spins on its long axis (faster when picked)
+    const spin=now/1000*(id===ballId?2.4:.9)+id.length,tilt=-.9,cs=Math.cos(spin),ss=Math.sin(spin),ct=Math.cos(tilt),st=Math.sin(tilt);
+    const faces=K.mesh.map(f=>({p:f.p.map(([x,y,z])=>{const X=x/.14,Y=y/.14,Z=z/.14,x1=X*cs+Z*ss,z1=-X*ss+Z*cs;return[x1*ct-Y*st,x1*st+Y*ct,z1]}),c:f.c,a:K.a,two:id==='glass'}));
+    M3.draw(ctx,faces,{D:6,S:w*.4,cx:w/2,cy:w/2});
+    if(id==='glass'){ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.ellipse(w*.42,w*.36,w*.08,w*.03,-.9,0,6.283);ctx.fill()}});
+  pickRaf=requestAnimationFrame(pickLoop)}
+function chooseBall(cb){pickCb=cb;buildPick();paintPick();setTimeout(()=>{const sel=document.querySelector('.bopt[aria-checked="true"]');if(sel)sel.scrollIntoView({inline:'center',block:'nearest'})},30);
+  try{$('#ballm').showModal()}catch(e){pickCb=null;cb();return}cancelAnimationFrame(pickRaf);pickRaf=requestAnimationFrame(pickLoop)}
+// the game screen comes up first; the ball choice floats over it, and play begins when it closes
+function startWithPick(){start(true);const g=G;if(!g)return;setTimeout(()=>{if(G!==g)return;chooseBall(()=>{if(G!==g)return;
+  if(mode==='aim'||mode==='drag')stageBanner({t:'Swipe to throw',s:'Flick faster for distance, longer for height, and curve to bend. Keep it smooth for a perfect spiral.',plain:true,i:BAN_ICON.howto})})},450)}
+$('#ballGo').addEventListener('click',()=>{SFX.click();pickOk=true;$('#ballm').close()});
+// only Play closes it: if the browser closes it any other way (Esc, the back gesture), it comes straight back
+$('#ballm').addEventListener('close',()=>{const d=$('#ballm');if(!pickOk&&pickCb){try{d.showModal()}catch(e){}return}
+  pickOk=false;cancelAnimationFrame(pickRaf);const cb=pickCb;pickCb=null;if(cb)cb()});
 function playMode(p){
   if(!(mode==='idle'||mode==='over'))return;unlockAudio();SFX.click();
   if(!p&&dailyLocked())return;
   try{$('#over').close()}catch(e){}
-  practice=p;if(mode!=='idle')endRun();start();
+  practice=p;if(mode!=='idle')endRun();startWithPick();
 }
 goBtn.addEventListener('click',()=>playMode(false));
 $('#arcadeBtn').addEventListener('click',()=>playMode(true));
-$('#practiceBtn').addEventListener('click',()=>{unlockAudio();SFX.click();try{$('#over').close()}catch(e){}mode='over';practice=true;endRun();start()});
+$('#practiceBtn').addEventListener('click',()=>{unlockAudio();SFX.click();try{$('#over').close()}catch(e){}mode='over';practice=true;endRun();startWithPick()});
 $('#lbBtn').addEventListener('click',()=>{unlockAudio();SFX.click();try{$('#lbm').showModal()}catch(e){}renderLB()});
 document.querySelectorAll('#lbm [data-tab]').forEach(b=>b.addEventListener('click',()=>{lbTab=b.dataset.tab;renderLB()}));
 function paintSound(){const mb=$('#muteBtn');mb.classList.toggle('off',muted);mb.setAttribute('aria-pressed',String(muted));mb.setAttribute('aria-label',muted?'Turn sound on':'Mute sound')}
