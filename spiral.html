@@ -2166,7 +2166,7 @@ function judged(res){startFlash(W,res.ring);
   showcase=false;
   const r=res.ring,perfect=W.perfect,grade=gradeOf(W.flick,perfect),pts=pointsFor(res,grade);
   pointsPop(res,grade,pts);if(r>=0)cheer(r,grade);
-  if(r===0){flash('Bullseye','go goldc');buzz([20,20,40]);smash(W,debris)}
+  if(r===0){flash('Bullseye','go goldc');buzz([20,20,40]);smash(W,debris);if(R3.ballKind()==='fire'){W.burn={t:0};burnRoar()}}
   else if(r===1)flash('Inner ring','go','#e4e9e5');
   else if(r===2)flash('Outer ring','go','var(--mint)');
   else if(r===3)flash('Off the rim','go','var(--steel)');
@@ -2211,8 +2211,13 @@ function replayStep(dt){
   const r=RP;r.acc+=dt*RP_SPEED;
   while(r.acc>=STEP){Field.step(r.w,STEP);r.acc-=STEP;
     for(const e of r.w.events)if(e.k==='judge')startFlash(r.w,e.ring);
-    for(const e of r.w.events)if(e.k==='judge'&&e.ring===0){const b=r.w.ball,tg=tgtNow(r.w);r.w.broken=true;r.cubes.push(R3.burst(tg,[b.vx,b.vy,b.vz],!!r.w.perfect));if(live())(r.w.perfect?goldBurstSnd:shatterSnd)(AC.currentTime+.01);buzz(25)}
+    for(const e of r.w.events)if(e.k==='judge'&&e.ring===0){const b=r.w.ball,tg=tgtNow(r.w);r.w.broken=true;r.cubes.push(R3.burst(tg,[b.vx,b.vy,b.vz],!!r.w.perfect));if(live())(r.w.perfect?goldBurstSnd:shatterSnd)(AC.currentTime+.01);buzz(25);
+      if(R3.ballKind()==='fire'&&!r.w.burn)r.w.burn={t:0}}
+    // the replay breaks the special balls the same way the throw did
+    for(const e of r.w.events)if((e.k==='judge'&&e.ring>=0)||e.k==='bounce')glassBreak(r.w,r.cubes);
+    if(BREAKS[R3.ballKind()]&&r.w.ball&&!r.w.ball.gone&&r.w.ball.y<=Field.BALL_R*1.02)glassBreak(r.w,r.cubes);
     r.w.events=[]}
+  if(r.w.burn)burnStep(r.w,dt*RP_SPEED);
   for(const C of r.cubes)R3.stepCubes(C,dt*RP_SPEED);
   if(!r.w.res)pushTrail(r.trail,r.w.ball);else if(!r.trail.t1)r.trail.t1=performance.now();
   if(r.w.t-r.t0>r.tJ+RP_TAIL)endReplay();
@@ -2289,7 +2294,7 @@ function frame(now){
   if(mode==='idle'||mode==='over')homeStep(dt);
   if(mode==='replay'&&RP)replayStep(dt);
   for(const fw of [W,homeW,RP&&RP.w])if(fw&&fw.flash)fw.flash.t+=dt*(mode==='replay'&&fw===(RP&&RP.w)?RP_SPEED:mode==='fly'&&fw===W?tScale:1);
-  {const k=dt*(mode==='fly'?tScale:1);for(const C of debris)R3.stepCubes(C,k);for(const C of homeDebris)R3.stepCubes(C,dt);fxStep(k)}
+  {const k=dt*(mode==='fly'?tScale:1);for(const C of debris)R3.stepCubes(C,k);for(const C of homeDebris)R3.stepCubes(C,dt);if(W&&W.burn)burnStep(W,k);fxStep(k)}
   // camera
   let target;
   if(mode==='idle'||mode==='over'){if(!homeW)homeW=homeWorld();target=POSE.home(t)}
@@ -2306,9 +2311,9 @@ function frame(now){
   if(mode==='aim'||mode==='drag'||mode==='pan')placeHand();
   // draw
   const home=mode==='idle'||mode==='over',rp=mode==='replay'&&RP,w=home?homeW:rp?RP.w:W;
-  const tg=tgtNow(w);if(tg)tg.alpha=w.fade==null?1:w.fade;
+  const tg=tgtNow(w);if(tg)tg.alpha=(w.fade==null?1:w.fade)*(1-burnGone(w));
   R3.drawField(tg);
-  if(prevW&&mode==='pan'){const pt=tgtNow(prevW),a=Math.max(0,1-panT*2.2);R3.rigging(pt,a);R3.drawObjects({target:pt,alpha:a,marks:prevW.marks,broken:prevW.broken})}
+  if(prevW&&mode==='pan'){const pt=tgtNow(prevW),a=Math.max(0,1-panT*2.2)*(1-burnGone(prevW));R3.rigging(pt,a);R3.drawObjects({target:pt,alpha:a,marks:prevW.marks,broken:prevW.broken})}
   if(tg)R3.rigging(tg,tg.alpha);
   R3.drawTrail(home?homeTrail:rp?RP.trail:trail,now);
   let ball=null;
@@ -2317,6 +2322,7 @@ function frame(now){
   else if(rp)ball=RP.w.ball;
   else ball=W.ball;
   R3.drawObjects({target:tg,alpha:tg?tg.alpha:1,marks:w?w.marks:null,broken:w?w.broken:false,flash:w&&w.flash?{ring:w.flash.ring,k:flashK(w.flash)}:null,cubes:home?homeDebris:rp?debris.slice(0,-1).concat(RP.cubes):debris,ball,glow:rp?(RP.w.perfect&&!RP.w.res?1:0):!home&&mode==='fly'&&W.perfect&&ball===W.ball&&!W.ball.rest?(W.res?Math.max(0,1-(W.t-W.tRes)*1.5):1):0});
+  if(tg&&w&&w.burn)drawChar(tg,w.burn.t);
   fxDraw();
   drawSwipe();
   if(playing())updateHUD();
@@ -2552,8 +2558,8 @@ const BALLS={classic:{name:'Classic',sub:'The Spiral ball'},nfl:{name:'Pro',sub:
 let ballId=lsGet('ball','classic');if(!BALLS[ballId])ballId='classic';R3.setBall(ballId);
 let pickCb=null,pickRaf=0,pickOk=false;
 const BREAKS={glass:1,fire:1,water:1}; // balls that don't survive the hit
-function glassBreak(){const k=R3.ballKind();if(!BREAKS[k]||!W.ball||W.ball.gone)return;const b=W.ball;b.gone=true;
-  if(k==='glass'){debris.push(R3.shatter(b));glassSmash()}
+function glassBreak(w=W,into=debris){const k=R3.ballKind();if(!BREAKS[k]||!w.ball||w.ball.gone)return;const b=w.ball;b.gone=true;
+  if(k==='glass'){into.push(R3.shatter(b));glassSmash()}
   else if(k==='fire'){fxBurst('fire',b);fireWhoosh()}
   else if(k==='water'){fxBurst('water',b);splashSnd()}}
 /* ---------- fire and water: little glowing embers and droplets drawn over the field ---------- */
@@ -2571,12 +2577,15 @@ function fxBurst(k,b){
       fx.push({t:'drop',x:b.x,y:b.y,z:b.z,vx:Math.cos(a)*sp,vy:rnd(1,4),vz:Math.sin(a)*sp*.7-rnd(.5,2.5),life:0,max:3,s:rnd(.015,.04)})}}}
 function fxStep(dt){if(!fx.length)return;
   for(const p of fx){p.life+=dt;
+    if(p.t==='smoke'){p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy*=1-dt*.3;continue}
     if(p.t==='ember'){p.vy+=2.2*dt;p.vx*=1-dt*1.5;p.vz*=1-dt*1.5;p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt}
     else if(p.t==='drop'){if(p.splat)continue;p.vy-=9.81*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;if(p.y<=0){p.y=0;p.splat=true;p.life=p.max-.7}}}
   fx=fx.filter(p=>p.life<p.max);if(fx.length>900)fx.splice(0,fx.length-900)}
 function fxDraw(){if(!fx.length)return;cx.save();cx.globalCompositeOperation='source-over';
   for(const p of fx){const c=R3.proj(p.x,p.y,p.z);if(c[2]<R3.NEAR)continue;const k=p.life/p.max,F=R3.cam.F/c[2];
-    if(p.t==='ember'){const r=Math.min(5,Math.max(1,p.s*F*(1-k*.6))),col=k<.3?'255,230,140':k<.6?'255,150,40':'200,60,20';
+    if(p.t==='smoke'){const r=Math.min(120,p.s*F*(1+k*2.2));cx.globalCompositeOperation='source-over';const g=cx.createRadialGradient(c[0],c[1],0,c[0],c[1],r);
+      g.addColorStop(0,'rgba(60,58,56,'+(.42*(1-k))+')');g.addColorStop(1,'rgba(60,58,56,0)');cx.fillStyle=g;cx.beginPath();cx.arc(c[0],c[1],r,0,6.283);cx.fill();continue}
+    if(p.t==='ember'){const r=Math.min(p.s>.06?9:5,Math.max(1,p.s*F*(1-k*.6))),col=k<.3?'255,230,140':k<.6?'255,150,40':'200,60,20';
       cx.globalCompositeOperation='lighter';cx.fillStyle='rgba('+col+','+(1-k)*.9+')';cx.beginPath();cx.arc(c[0],c[1],r,0,6.283);cx.fill()}
     else if(p.t==='flash'){const r=Math.min(160,p.s*F*(.4+k*1.4));cx.globalCompositeOperation='lighter';const g=cx.createRadialGradient(c[0],c[1],0,c[0],c[1],r);
       g.addColorStop(0,'rgba(255,240,180,'+(1-k)*.9+')');g.addColorStop(.4,'rgba(255,140,30,'+(1-k)*.6+')');g.addColorStop(1,'rgba(255,60,0,0)');cx.fillStyle=g;cx.beginPath();cx.arc(c[0],c[1],r,0,6.283);cx.fill()}
@@ -2586,6 +2595,23 @@ function fxDraw(){if(!fx.length)return;cx.save();cx.globalCompositeOperation='so
       if(p.splat){const a=Math.max(0,(p.max-p.life)/.7)*.5;cx.fillStyle='rgba(120,190,255,'+a+')';cx.beginPath();cx.ellipse(c[0],c[1],r*2.2,r*.6,0,0,6.283);cx.fill()}
       else{cx.fillStyle='rgba(150,210,255,.85)';cx.beginPath();cx.arc(c[0],c[1],r,0,6.283);cx.fill();cx.fillStyle='rgba(255,255,255,.7)';cx.beginPath();cx.arc(c[0]-r*.3,c[1]-r*.3,r*.35,0,6.283);cx.fill()}}}
   cx.restore()}
+/* a fire-ball bullseye sets the whole target alight: it chars black, flames run over the face and smoke rolls up, then it burns away */
+const burnGone=w=>w&&w.burn?Math.max(0,Math.min(1,(w.burn.t-.9)/1.1)):0;
+function burnStep(w,dt){const b=w.burn;b.t+=dt;if(b.t>2.4)return;const tg=tgtNow(w);if(!tg)return;
+  const on=b.t<2,n=on?Math.ceil(dt*(b.t<1.2?260:120)):0;
+  for(let i=0;i<n;i++){const a=rnd(0,6.283),r=tg.R*Math.sqrt(Math.random())*1.08;
+    fx.push({t:'ember',x:tg.x+Math.cos(a)*r,y:tg.y+Math.sin(a)*r,z:tg.z-.02,vx:rnd(-.3,.3),vy:rnd(.6,2.2),vz:rnd(-.4,0),life:0,max:rnd(.35,.9),s:rnd(.04,.09)})}
+  if(Math.random()<dt*(b.t<2.2?26:6)){const a=rnd(0,6.283),r=tg.R*Math.random();fx.push({t:'smoke',x:tg.x+Math.cos(a)*r,y:tg.y+Math.sin(a)*r+tg.R*.3,z:tg.z,vx:rnd(-.2,.2),vy:rnd(.5,1.1),vz:rnd(-.1,.1),life:0,max:rnd(1.6,2.6),s:rnd(.25,.45)})}}
+function drawChar(tg,t){const k=Math.min(1,t/.8)*(1-Math.max(0,Math.min(1,(t-.9)/1.1)));if(k<=.01)return;const c=R3.proj(tg.x,tg.y,tg.z);if(c[2]<R3.NEAR)return;
+  const r=(tg.R+.1)*R3.cam.F/c[2],g=cx.createRadialGradient(c[0],c[1],0,c[0],c[1],r);
+  g.addColorStop(0,'rgba(20,8,2,'+.9*k+')');g.addColorStop(.75,'rgba(40,14,4,'+.85*k+')');g.addColorStop(.95,'rgba(255,110,20,'+.7*k+')');g.addColorStop(1,'rgba(255,60,0,0)');
+  cx.save();cx.fillStyle=g;cx.beginPath();cx.arc(c[0],c[1],r,0,6.283);cx.fill();cx.restore()}
+function burnRoar(){if(!live())return;const t=AC.currentTime,n=Math.floor(AC.sampleRate*2.2),buf=AC.createBuffer(1,n,AC.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<n;i++){const u=i/n;d[i]=(Math.random()*2-1)*Math.min(1,u*8)*Math.pow(1-u,1.2)*(.7+.3*Math.sin(i/AC.sampleRate*31))}
+  const src=AC.createBufferSource(),lp=AC.createBiquadFilter(),g=AC.createGain();src.buffer=buf;lp.type='lowpass';lp.frequency.setValueAtTime(900,t);lp.frequency.linearRampToValueAtTime(2200,t+.6);lp.frequency.exponentialRampToValueAtTime(400,t+2.1);
+  g.gain.value=.55;src.connect(lp);lp.connect(g);out(g,.7,.5);src.start(t);
+  for(let i=0;i<14;i++){const st=t+.2+Math.random()*1.6,o=AC.createBufferSource(),og=AC.createGain(),nb=AC.createBuffer(1,Math.floor(AC.sampleRate*.03),AC.sampleRate),dd=nb.getChannelData(0);for(let j=0;j<dd.length;j++)dd[j]=Math.random()*2-1;
+    o.buffer=nb;og.gain.setValueAtTime(.12,st);og.gain.exponentialRampToValueAtTime(.0001,st+.03);o.connect(og);out(og,.6,.3);o.start(st)}} // crackles
 function fireWhoosh(){if(!live())return;const t=AC.currentTime,n=Math.floor(AC.sampleRate*.9),buf=AC.createBuffer(1,n,AC.sampleRate),d=buf.getChannelData(0);
   for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,1.5);const src=AC.createBufferSource(),lp=AC.createBiquadFilter(),g=AC.createGain();src.buffer=buf;lp.type='lowpass';
   lp.frequency.setValueAtTime(3000,t);lp.frequency.exponentialRampToValueAtTime(300,t+.8);g.gain.value=.5;src.connect(lp);lp.connect(g);out(g,.7,.4);src.start(t);
