@@ -2290,21 +2290,21 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 
-/* the current frame as a classic scorecard box, painted on the approach just past the pin diagram:
-   the frame number on top, the little boxes for each ball's mark (X, /, -, pins), and the running total once it's known */
-const markOf=(r,i,all,tenth)=>{const v=r[i];if(v==null)return'';if(v===10&&(i===0||tenth&&(all[i-1]===10||(i===2&&all[0]+all[1]===10))))return'X';
-  if(i>0&&!(tenth&&(all[i-1]===10||(i===2&&all[0]+all[1]===10)))&&all[i-1]+v===10)return'/';return v===0?'-':String(v)};
+/* the current frame painted on the approach just past the pin diagram, drawn like a frame of the summary scorecard:
+   the frame number, a black box per ball (gold X, blue /), and the running total; a finished strike or spare fills gold or blue */
 function drawFrameCard(A){const sc=frames(G.rolls),f=G.over?9:(mode==='result'||mode==='ending'?lastFrame:G.frame),fr=sc.frames[f];if(!fr)return;
-  const tenth=f===9,nb=tenth?3:2,W2=tenth?25:20,H2=18,x0=-W2/200,zTop=-.715+H2/100+.015;    // card in cm, sitting right past the pin diagram
+  const tenth=f===9,mk=marks(f,fr.rolls).split(' ').filter(Boolean),cells=!tenth?(mk[0]==='X'?['','X']:[mk[0]||'',mk[1]||'']):[mk[0]||'',mk[1]||'',mk[2]||''];
+  const r=fr.rolls,k=!r.length?null:r[0]===10?'x':(r.length>1&&r[0]+r[1]===10)?'s':'o',fill=k==='x'?'246,215,122':k==='s'?'110,139,255':null;
+  const W2=tenth?27:22,H2=21,x0=-W2/200,zTop=-.715+H2/100+.015; // card in cm, sitting right past the pin diagram
   const P=(u,v)=>R3.proj(x0+u/100,.002,zTop-v/100),o=P(0,0),pu=P(1,0),pv=P(0,1);if(o[2]<R3.NEAR)return;
-  cx.save();cx.transform(pu[0]-o[0],pu[1]-o[1],pv[0]-o[0],pv[1]-o[1],o[0],o[1]);
-  const ink='rgba(242,244,243,'+(.5*A)+')',dim='rgba(242,244,243,'+(.22*A)+')';cx.lineWidth=.5;cx.strokeStyle=ink;cx.fillStyle=ink;
-  cx.strokeRect(0,0,W2,H2);cx.beginPath();cx.moveTo(0,6);cx.lineTo(W2,6);cx.stroke();                 // header band for the frame number
-  cx.textAlign='center';cx.textBaseline='middle';cx.font='800 4.4px Inter,system-ui,sans-serif';cx.fillText(String(f+1),W2/2,3.2);
-  const marks=!tenth&&fr.rolls[0]===10?['','X']:[0,1,2].map(i=>markOf(fr.rolls,i,fr.rolls,tenth)); // a strike goes in the right-hand box, like a real sheet
-  const bw=6,by=6;for(let i=0;i<nb;i++){const bx=W2-bw*(nb-i);cx.strokeStyle=dim;cx.strokeRect(bx,by,bw,bw);
-    const m=marks[i];if(m){cx.fillStyle=ink;cx.font='800 '+(m==='X'||m==='/'?4.6:4.1)+'px Inter,system-ui,sans-serif';cx.fillText(m,bx+bw/2,by+bw/2+.3)}}
-  if(fr.total!=null){cx.fillStyle=ink;cx.font='800 6px Inter,system-ui,sans-serif';cx.fillText(String(fr.total),W2/2,H2-3.2)}
+  const MONO='"JetBrains Mono",ui-monospace,Menlo,monospace',rr=(x,y,w,h,q)=>{cx.beginPath();cx.moveTo(x+q,y);cx.arcTo(x+w,y,x+w,y+h,q);cx.arcTo(x+w,y+h,x,y+h,q);cx.arcTo(x,y+h,x,y,q);cx.arcTo(x,y,x+w,y,q);cx.closePath()};
+  cx.save();cx.transform(pu[0]-o[0],pu[1]-o[1],pv[0]-o[0],pv[1]-o[1],o[0],o[1]);cx.globalAlpha=A;
+  rr(0,0,W2,H2,2.4);cx.fillStyle=fill?'rgb('+fill+')':'rgba(28,28,28,.95)';cx.fill();if(!fill){cx.lineWidth=.3;cx.strokeStyle='rgba(255,255,255,.1)';cx.stroke()}
+  const ink=fill?'#000':'#f2f4f3';
+  cx.textBaseline='middle';cx.textAlign='left';cx.font='500 3.6px '+MONO;cx.fillStyle=fill?'#000':'#8b908e';cx.fillText(String(f+1),2.4,4.4);
+  const bw=5.6,gap=.6,by=7.6;cells.forEach((c,i)=>{const bx=W2-2-(bw+gap)*(cells.length-i)+gap;rr(bx,by,bw,bw,1.1);cx.fillStyle=fill?'rgba(0,0,0,.16)':'#000';cx.fill();
+    if(c){cx.textAlign='center';cx.font='700 3.9px '+MONO;cx.fillStyle=fill?'#000':c==='X'?'#f6d77a':c==='/'?'#6e8bff':'#f2f4f3';cx.fillText(c,bx+bw/2,by+bw/2+.2)}});
+  if(fr.total!=null){cx.textAlign='right';cx.font='700 5px '+MONO;cx.fillStyle=ink;cx.fillText(fmtN(fr.total),W2-2.2,H2-3.6)}
   cx.restore()}
 
 /* ---------- modes ---------- */
