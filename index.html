@@ -75,6 +75,10 @@ html[data-theme="dark"] .nchip[aria-pressed="true"]{color:#0d0d0d}
 html[data-theme="dark"] .ntags span,html[data-theme="dark"] .ntags button{background:rgba(255,255,255,.08)}html[data-theme="dark"] .ntags button:hover{background:rgba(255,255,255,.16)}
 @media (max-width:760px){.nfilter{margin:0 0 18px}}
 .nfeed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+/* the list under the filter is a masonry: each card takes its own height and slots into the shorter column */
+#newsAll.mason{grid-auto-rows:4px;row-gap:0;align-items:start}
+#newsAll.mason>.ncard{min-height:0;margin-bottom:20px}
+#newsAll.mason>.ncard .nmorew{margin-top:0}
 .ncard{position:relative;overflow:hidden;background:#f4f4f2;border-radius:16px;padding:28px 28px 26px;display:flex;flex-direction:column;min-height:240px}
 .ncard .nart{position:absolute;right:-30px;bottom:-34px;width:150px;height:150px;pointer-events:none}
 .ncard .nart::before{content:"";position:absolute;inset:0;background:var(--shape);border-radius:var(--blob);transform:rotate(var(--tilt))}
@@ -972,7 +976,14 @@ let panels=allPanels.slice(),dots=allDots.slice();
     const lead=LEAD=posts.find(p=>p.featured)||posts[0];leadBox.append(card(lead,posts.indexOf(lead),newIds.has(lead.id),true));
     paintFilter();const rest=posts.filter(p=>p!==lead),list=tag==='dailycade'?rest.filter(isDc):tag?rest.filter(p=>(p.tags||[]).includes(tag)):rest;
     if(!list.length){all.append(el('p','nempty','Nothing else here yet.'));return}
-    list.forEach(p=>all.append(card(p,posts.indexOf(p),newIds.has(p.id),false)))};
+    list.forEach(p=>all.append(card(p,posts.indexOf(p),newIds.has(p.id),false)));mason()};
+  // masonry: each card spans as many 4px rows as it is tall (plus its 20px gap); redone when sizes change
+  function mason(){all.classList.add('mason');const cards=[...all.children].filter(c=>c.classList.contains('ncard'));
+    for(const c of cards){c.style.gridRowEnd='';}
+    for(const c of cards){c.style.gridRowEnd='span '+Math.ceil((c.getBoundingClientRect().height+20)/4)}}
+  addEventListener('resize',()=>{clearTimeout(mason.t);mason.t=setTimeout(mason,80)});
+  all.addEventListener('load',e=>{if(e.target.tagName==='IMG')mason()},true);
+  document.fonts&&document.fonts.ready.then(()=>mason());
   async function load(){if(!window.DCSB){setTimeout(load,400);return}
     try{const r=await DCSB.from('news').select('id,slug,title,body,content,link_url,link_text,publish_at,image_url,featured,tags').eq('scope',window.DC_STAGING?'staging':'live').eq('status','published').lte('publish_at',new Date().toISOString()).order('publish_at',{ascending:false}).limit(50);
       if(r.error)throw r.error;posts=r.data||[];if(previewUnread!=null){const p=posts[previewUnread];try{localStorage.setItem(SEEN,String(p?+new Date(p.publish_at):0))}catch(e){}previewUnread=null}newIds=new Set(fresh().map(p=>p.id));paintDot();paintAll();loaded=true;if(want)showPost(want)}catch(e){if(!loaded){loaded=true;if(want)showPost(want)}}}
