@@ -2153,7 +2153,7 @@ function smash(w,into){if(w.broken)return;const b=w.ball,tg=tgtNow(w);w.broken=t
 const FLASH_T=1.3,flashK=f=>{if(!f)return 0;const u=f.t/FLASH_T;return u>=1?0:(1-u)*(.55+.45*Math.cos(u*3*2*Math.PI))};
 function startFlash(w,ring){if(ring>=0)w.flash={ring,t:0}}
 function judged(res){startFlash(W,res.ring);
-  if(R3.ballKind()==='glass'&&W.ball&&!W.ball.gone){W.ball.gone=true;debris.push(R3.shatter(W.ball));glassSmash()} // the glass ball breaks wherever it lands
+  if(res.ring>=0)glassBreak(); // the glass ball breaks on the target; a miss flies on and breaks where it lands
   showcase=false;
   const r=res.ring,perfect=W.perfect,grade=gradeOf(W.flick,perfect),pts=pointsFor(res,grade);
   pointsPop(res,grade,pts);if(r>=0)cheer(r,grade);
@@ -2270,7 +2270,8 @@ function frame(now){
   if(mode==='fly'){
     if(W.res&&tScale<1)tScale=Math.min(1,tScale+dt*2.5);
     acc+=dt*tScale;let n=0;while(acc>=STEP&&n<40){Field.step(W,STEP);acc-=STEP;n++;
-      for(const e of W.events){if(e.k==='judge')judged(W.res);else if(e.k==='bounce'&&live())thud(AC.currentTime,e.v)}W.events=[]}
+      for(const e of W.events){if(e.k==='judge')judged(W.res);else if(e.k==='bounce'){if(R3.ballKind()==='glass')glassBreak();else if(live())thud(AC.currentTime,e.v)}}W.events=[];
+      if(R3.ballKind()==='glass'&&W.ball&&!W.ball.gone&&W.ball.y<=Field.BALL_R*1.02)glassBreak()}
     clock=W.t;
     if(!W.res)pushTrail(trail,W.ball);else if(!trail.t1)trail.t1=now;
     flight(W.ball,showcase);
@@ -2539,6 +2540,7 @@ document.addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey||docum
 const BALLS={classic:{name:'Classic',sub:'The Spiral ball'},nfl:{name:'Pro',sub:'Leather, laces and stripes'},glass:{name:'Glass',sub:'Shatters on impact'}};
 let ballId=lsGet('ball','classic');if(!BALLS[ballId])ballId='classic';R3.setBall(ballId);
 let pickCb=null,pickRaf=0,pickOk=false;
+function glassBreak(){if(R3.ballKind()!=='glass'||!W.ball||W.ball.gone)return;W.ball.gone=true;debris.push(R3.shatter(W.ball));glassSmash()}
 function glassSmash(){if(!live())return;const t=AC.currentTime;
   for(let i=0;i<9;i++){const o=AC.createOscillator(),g=AC.createGain(),st=t+Math.random()*.12,f=2200+Math.random()*4200;o.type='triangle';o.frequency.setValueAtTime(f,st);
     g.gain.setValueAtTime(.0001,st);g.gain.exponentialRampToValueAtTime(.05,st+.004);g.gain.exponentialRampToValueAtTime(.0001,st+.25+Math.random()*.3);o.connect(g);out(g,.5,.4);o.start(st);o.stop(st+.6)}
